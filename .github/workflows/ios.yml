@@ -1,0 +1,115 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [ main, test-google-auth ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Show Xcode version
+      run: |
+        xcodebuild -version
+        xcodebuild -showsdks
+    
+    - name: Show directory structure
+      run: |
+        echo "=== Repository root ==="
+        ls -la
+        echo "=== sbud directory ==="
+        ls -la sbud/
+    
+    - name: List schemes
+      working-directory: sbud
+      run: xcodebuild -list -project sbud.xcodeproj
+    
+    - name: List available simulators
+      run: xcrun simctl list devices available
+    
+    - name: Build and Test
+      working-directory: sbud
+      run: |
+        set -e
+        
+        # Just use any available iPhone - xcodebuild will pick the right OS
+        xcodebuild clean test \
+          -scheme sbud \
+          -project sbud.xcodeproj \
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+          -enableCodeCoverage YES \
+          -derivedDataPath DerivedData \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          | tee xcodebuild.log
+    
+    - name: Generate code coverage
+      if: success()
+      working-directory: sbud
+      run: |
+        xcrun llvm-cov export \
+          -format="lcov" \
+          DerivedData/Build/ProfileData/*/Coverage.profdata \
+          -instr-profile DerivedData/Build/ProfileData/*/Coverage.profdata \
+          DerivedData/Build/Products/Debug-iphonesimulator/sbud.app/sbud \
+          > coverage.lcov
+      continue-on-error: true
+    
+    - name: Upload coverage to Codecov
+      if: success()
+      uses: codecov/codecov-action@v4
+      with:
+        files: sbud/coverage.lcov
+        flags: unittests
+        fail_ci_if_error: false
+      continue-on-error: true
+    
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: sbud/DerivedData/Logs/Test/*.xcresult
+        retention-days: 30
+      continue-on-error: true
+    
+    - name: Upload build logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: sbud/xcodebuild.log
+        retention-days: 7
+  
+  lint:
+    name: SwiftLint
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install SwiftLint
+      run: brew install swiftlint
+    
+    - name: Run SwiftLint
+      working-directory: sbud
+      run: |
+        if [ -f ".swiftlint.yml" ]; then
+          swiftlint lint --reporter github-actions-logging
+        elif [ -f "../.swiftlint.yml" ]; then
+          cd .. && swiftlint lint --reporter github-actions-logging
+        else
+          echo "No .swiftlint.yml found, running with defaults..."
+          swiftlint lint --reporter github-actions-logging
+        fi
+      continue-on-error: true
