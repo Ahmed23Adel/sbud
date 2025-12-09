@@ -40,7 +40,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E289D7C02EE8356B005F9F37 /* Exceptions for "sbud" folder in "sbud" target */ = {
+		E289D8042EE873C6005F9F37 /* Exceptions for "sbud" folder in "sbud" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -53,7 +53,7 @@
 		E24825A22EE2DCA200330DC2 /* sbud */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E289D7C02EE8356B005F9F37 /* Exceptions for "sbud" folder in "sbud" target */,
+				E289D8042EE873C6005F9F37 /* Exceptions for "sbud" folder in "sbud" target */,
 			);
 			path = sbud;
 			sourceTree = "<group>";
@@ -371,6 +371,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = sbud/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -429,6 +430,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = sbud/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;

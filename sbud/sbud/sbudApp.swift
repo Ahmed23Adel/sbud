@@ -29,7 +29,7 @@ struct sbudApp: App {
                 if authManager.isLoading{
                     LoadingView()
                 } else if authManager.isSignedIn{
-                    // TODO: implement Main view
+                    ContentView()
                 } else{
                     SignUpView()
                 }
