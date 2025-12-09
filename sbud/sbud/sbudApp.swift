@@ -22,7 +22,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct sbudApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    let authManager = AuthenticationManager.shared
+    @StateObject var authManager = AuthenticationManager.shared
     var body: some Scene {
         WindowGroup {
             Group{
