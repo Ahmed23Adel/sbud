@@ -7,15 +7,15 @@
 
 import SwiftUI
 
-struct SignUpView: View {
-    @StateObject var viewModel = SignUpViewModel()
+struct SignInView: View {
+    @StateObject var viewModel = SignInViewModel()
     @State var isSigningIn = false
     var body: some View {
         ZStack{ //START : ZStack
             Color.backgroundColor
                 .ignoresSafeArea()
             VStack{ //START : main //START : ZStack
-                Text("Sign up")
+                Text("Sign In")
                     .foregroundColor(Color.mainColor)
                     .font(.title)
                     .bold()
@@ -36,7 +36,7 @@ struct SignUpView: View {
                 Button{
                     
                 } label: {
-                    Text("Sign in instead?")
+                    Text("Sign up instead?")
                         .foregroundColor(Color.mainColor)
                         .font(.headline)
                         .underline()
