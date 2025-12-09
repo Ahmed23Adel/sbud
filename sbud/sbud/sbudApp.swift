@@ -22,12 +22,23 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct sbudApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    let authManager = AuthenticationManager.shared
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .onOpenURL{ url in
-                    GIDSignIn.sharedInstance.handle(url)
+            Group{
+                if authManager.isLoading{
+                    LoadingView()
+                } else if authManager.isSignedIn{
+                    // TODO: implement Main view
+                } else{
+                    SignUpView()
                 }
+            }
+            .onOpenURL{ url in
+                GIDSignIn.sharedInstance.handle(url)
+            }
+            
         }
+        
     }
 }
