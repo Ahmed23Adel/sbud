@@ -13,7 +13,7 @@ struct LoadingView: View {
             Color.backgroundColor
                 .ignoresSafeArea()
             VStack{
-                ProgressView ("Loading")
+                ProgressView ("Loading...")
                     .progressViewStyle(CircularProgressViewStyle())
                     .tint(Color.mainColor)
                     .foregroundColor(Color.mainColor)

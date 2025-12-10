@@ -36,6 +36,8 @@ struct SignInView: View {
                     Image("ios_light_rd_na")
                         .resizable()
                         .frame(width: 50, height: 50)
+                        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
                 }
                 .disabled(isSigningIn)
                 
