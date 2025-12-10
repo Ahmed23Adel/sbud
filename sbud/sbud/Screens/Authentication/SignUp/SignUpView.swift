@@ -22,7 +22,9 @@ struct SignUpView: View {
                     .foregroundColor(Color.mainColor)
                     .font(.system(size: 60, weight: .bold))
                     .accessibilityAddTraits(.isHeader)
-                
+                Text("Bring athletes closer")
+                    .foregroundColor(Color.mainColor)
+                    .font(.title3)
                 
                 Button{
                     isSigningIn = true
