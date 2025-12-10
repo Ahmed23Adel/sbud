@@ -25,15 +25,7 @@ struct sbudApp: App {
     @StateObject var authManager = AuthenticationManager.shared
     var body: some Scene {
         WindowGroup {
-            Group{
-                if authManager.isLoading{
-                    LoadingView()
-                } else if authManager.isSignedIn{
-                    ContentView()
-                } else{
-                    SignUpView()
-                }
-            }
+            MainAppCoordinator()
             .onOpenURL{ url in
                 GIDSignIn.sharedInstance.handle(url)
             }

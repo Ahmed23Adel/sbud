@@ -9,12 +9,24 @@ import SwiftUI
 
 
 struct ContentView: View {
+    let authManager = AuthenticationManager.shared
+    @EnvironmentObject var coordinator: MainCoordinator
+    init(){
+    }
     var body: some View {
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("ContentView")
+            Button{
+                Task{
+                    try await authManager.signOut()
+                    coordinator.goToSignUp()
+                }
+            } label: {
+                Text("sign out")
+            }
         }
         .padding()
     }

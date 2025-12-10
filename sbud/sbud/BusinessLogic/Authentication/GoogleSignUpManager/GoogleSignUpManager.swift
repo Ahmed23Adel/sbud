@@ -15,7 +15,7 @@ class GoogleSignUpManager{
     
     func signUpWithGoogle() async throws{
         let clientId = try getClientID()
-        let GIDSignIn = getGIDSignInConfigured(clientID: clientId)
+        _ = getGIDSignInConfigured(clientID: clientId)
         let windowForLogin = try getWindowForLogin()
         try await performSignUpUsingGoogle(rootViewController: windowForLogin)
     }
@@ -51,7 +51,7 @@ class GoogleSignUpManager{
         let (idToken, accessToken) = try getIdAndAccessToken(user: user)
         let credentials = GoogleAuthProvider.credential(withIDToken: idToken.tokenString, accessToken: accessToken.tokenString)
         let _ = try await Auth.auth().signIn(with: credentials)
-        print("Successuly sign in")
+        print("Successuly sign up using google")
         
         
     }

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SignUpView: View {
     @StateObject var viewModel = SignUpViewModel()
+    @EnvironmentObject var coordinator: MainCoordinator
+    
     @State var isSigningIn = false
     var body: some View {
         ZStack{ //START : ZStack
@@ -38,17 +40,21 @@ struct SignUpView: View {
                 } label: {
                     Text("Sign in instead?")
                         .foregroundColor(Color.mainColor)
-                        .font(.headline)
+                        .font(.caption)
                         .underline()
                 }
                 
             } //END : main //START : ZStack
         } //END : ZStack
+        .onAppear{
+            viewModel.setCoordinator(coordinator: coordinator)
+        }
         .alert("Error", isPresented: $viewModel.showAlert){
             Button("Ok", role: .cancel) {}
         } message: {
             Text(viewModel.alertMsg)
         }
+        
     }
 }
 
