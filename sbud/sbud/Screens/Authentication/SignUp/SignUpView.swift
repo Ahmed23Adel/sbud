@@ -11,6 +11,7 @@ struct SignUpView: View {
     @StateObject var viewModel = SignUpViewModel()
     @EnvironmentObject var coordinator: MainCoordinator
     
+    
     @State var isSigningIn = false
     var body: some View {
         ZStack{ //START : ZStack
@@ -19,8 +20,9 @@ struct SignUpView: View {
             VStack{ //START : main //START : ZStack
                 Text("Sign up")
                     .foregroundColor(Color.mainColor)
-                    .font(.title)
-                    .bold()
+                    .font(.system(size: 60, weight: .bold))
+                    .accessibilityAddTraits(.isHeader)
+                
                 
                 Button{
                     isSigningIn = true
@@ -33,15 +35,18 @@ struct SignUpView: View {
                         .resizable()
                         .frame(width: 50, height: 50)
                 }
+                .popUp(delay: 0.3)
                 .disabled(isSigningIn)
                 
                 Button{
-                    
+                    viewModel.goToSignIn()
                 } label: {
                     Text("Sign in instead?")
                         .foregroundColor(Color.mainColor)
                         .font(.caption)
                         .underline()
+                        .popUp(delay: 0.3)
+                        .padding()
                 }
                 
             } //END : main //START : ZStack
@@ -58,6 +63,10 @@ struct SignUpView: View {
     }
 }
 
-#Preview {
-    SignUpView()
+
+struct SignUpView_Previews: PreviewProvider{
+    static var previews: some View {
+        SignUpView()
+            .environmentObject(MainCoordinator())
+    }
 }

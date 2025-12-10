@@ -38,4 +38,8 @@ class SignUpViewModel: ObservableObject{
         }        
     }
     
+    func goToSignIn(){
+        coordinator?.goToSignIn()
+    }
+    
 }
