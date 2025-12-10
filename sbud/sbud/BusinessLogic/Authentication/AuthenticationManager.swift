@@ -19,7 +19,10 @@ class AuthenticationManager: IAuthenticationManager{
     
     init(){
         if signInMethod == AuthenticationConstants.METHOD_UNKNOWN{
-            setUserLoggedOut()
+            Task { @MainActor in
+                setUserLoggedOut()
+            }
+            
             
         } else if signInMethod == AuthenticationConstants.METHOD_GOOGLE{
             signInMethodManager = AuthenticationManagerGoogle()
@@ -35,12 +38,15 @@ class AuthenticationManager: IAuthenticationManager{
     func setAuthTypeEmailAndPassword(){
         signInMethodManager = AuthenticationManagerEmailAndPassword()
     }
-    
-    private func setUserLoggedOut(){
-        isSignedIn = false
-        currentUser = nil
-        isLoading = false
+    @MainActor
+    private func setUserLoggedOut() {
+        Task { @MainActor in
+            self.isSignedIn = false
+            self.currentUser = nil
+            self.isLoading = false
+        }
     }
+    
     func signUp() async throws {
         try await signInMethodManager?.signUp()
     }

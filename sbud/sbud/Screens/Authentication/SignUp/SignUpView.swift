@@ -33,7 +33,7 @@ struct SignUpView: View {
                         isSigningIn = false
                     }
                 } label: {
-                    Image("ios_light_rd_na")
+                    Image("google_ios_light_rd_na")
                         .resizable()
                         .frame(width: 50, height: 50)
                         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
