@@ -47,11 +47,9 @@ struct SignInView: View {
                 } label: {
                     Text("Sign up instead?")
                         .foregroundColor(Color.mainColor)
-                        .font(.caption)
-                        .underline()
-                        .popUp(delay: 0.3)
-                        .padding()
                 }
+                .buttonStyle(.glass)
+                .popUp(delay: 0.3)
                 
             } //END : main //START : ZStack
         } //END : ZStack
