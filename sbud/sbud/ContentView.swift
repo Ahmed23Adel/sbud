@@ -7,18 +7,34 @@
 
 import SwiftUI
 
+
 struct ContentView: View {
+    let authManager = AuthenticationManager.shared
+    @EnvironmentObject var coordinator: MainCoordinator
+    init(){
+    }
     var body: some View {
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("ContentView")
+            Button{
+                Task{
+                    try await authManager.signOut()
+                    coordinator.goToSignUp()
+                }
+            } label: {
+                Text("sign out")
+            }
         }
         .padding()
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider{
+    static var previews: some View {
+        ContentView()
+            .environmentObject(MainCoordinator())
+    }
 }
