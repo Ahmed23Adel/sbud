@@ -48,7 +48,7 @@ struct SignUpView: View {
                     Text("Sign in instead?")
                         .foregroundColor(Color.mainColor)
                 }
-                .buttonStyle(.glass)
+                .adaptiveSecondaryButtonStyle()
                 .popUp(delay: 0.3)
                 
             } //END : main //START : ZStack
