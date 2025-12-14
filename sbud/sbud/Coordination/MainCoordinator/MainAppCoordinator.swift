@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainAppCoordinator: View {
-    @StateObject private var coordinator = MainCoordinator()
+    @StateObject private var coordinator = MainCoordinator(authManager: AuthenticationManager.shared)
     var body: some View {
         Group {
             switch coordinator.currentRoute { // START: switch

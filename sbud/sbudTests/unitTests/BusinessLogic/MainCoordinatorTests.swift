@@ -7,6 +7,8 @@
 
 import XCTest
 import Combine
+import FirebaseAuth
+import FirebaseCore
 @testable import sbud
 
 @MainActor
@@ -37,8 +39,8 @@ final class MainCoordinatorTests: XCTestCase {
         mockAuthManager.isAuthenticated = true
 
         // When
-        sut = MainCoordinator()
-
+        sut = MainCoordinator(authManager: mockAuthManager)
+        print("testInitialization_WhenUserIsAuthenticated_ShouldStartAtHomePage", mockAuthManager.isAuthenticated, sut.currentRoute)
         // Then
         XCTAssertEqual(sut.currentRoute, .homePage, "Should initialize to homePage when user is authenticated")
     }
@@ -48,7 +50,7 @@ final class MainCoordinatorTests: XCTestCase {
         mockAuthManager.isAuthenticated = false
 
         // When
-        sut = MainCoordinator()
+        sut = MainCoordinator(authManager: mockAuthManager)
 
         // Then
         XCTAssertEqual(sut.currentRoute, .signUp, "Should initialize to signUp when user is not authenticated")
@@ -58,8 +60,8 @@ final class MainCoordinatorTests: XCTestCase {
 
     func testNavigateTo_ShouldUpdateCurrentRoute() {
         // Given
-        sut = MainCoordinator()
-        let expectedRoute: mainRoute = .signIn
+        sut = MainCoordinator(authManager: MockAuthenticationManager())
+        let expectedRoute: MainRoute = .signIn
 
         // When
         sut.navigateTo(expectedRoute)
@@ -70,7 +72,7 @@ final class MainCoordinatorTests: XCTestCase {
 
     func testGoToSignUp_ShouldNavigateToSignUpRoute() {
         // Given
-        sut = MainCoordinator()
+        sut = MainCoordinator(authManager: mockAuthManager)
         sut.currentRoute = .homePage
 
         // When
@@ -82,7 +84,7 @@ final class MainCoordinatorTests: XCTestCase {
 
     func testGoToSignIn_ShouldNavigateToSignInRoute() {
         // Given
-        sut = MainCoordinator()
+        sut = MainCoordinator(authManager: mockAuthManager)
         sut.currentRoute = .signUp
 
         // When
@@ -94,7 +96,7 @@ final class MainCoordinatorTests: XCTestCase {
 
     func testGoToHome_ShouldNavigateToHomePageRoute() {
         // Given
-        sut = MainCoordinator()
+        sut = MainCoordinator(authManager: mockAuthManager)
         sut.currentRoute = .signIn
 
         // When
@@ -108,9 +110,9 @@ final class MainCoordinatorTests: XCTestCase {
 
     func testCurrentRoute_ShouldPublishChanges() {
         // Given
-        sut = MainCoordinator()
+        sut = MainCoordinator(authManager: MockAuthenticationManager())
         let expectation = XCTestExpectation(description: "currentRoute should publish changes")
-        var receivedRoutes: [mainRoute] = []
+        var receivedRoutes: [MainRoute] = []
 
         sut.$currentRoute
             .dropFirst() // Skip initial value
@@ -136,7 +138,7 @@ final class MainCoordinatorTests: XCTestCase {
 
     func testNavigationFlow_CompleteAuthenticationFlow() {
         // Given
-        sut = MainCoordinator()
+        sut = MainCoordinator(authManager: MockAuthenticationManager())
         sut.currentRoute = .signUp
 
         // When & Then - Simulate user flow
@@ -149,7 +151,7 @@ final class MainCoordinatorTests: XCTestCase {
 
     func testNavigationFlow_LogoutFlow() {
         // Given
-        sut = MainCoordinator()
+        sut = MainCoordinator(authManager: MockAuthenticationManager())
         sut.currentRoute = .homePage
 
         // When
@@ -162,8 +164,25 @@ final class MainCoordinatorTests: XCTestCase {
 
 // MARK: - Mock Objects
 
-class MockAuthenticationManager {
+class MockAuthenticationManager: IAuthenticationManager {
+    var isSignedIn: Bool = false
+    var currentUser: FirebaseAuth.User?
+    var isLoading: Bool = true
     var isAuthenticated = false
+    
+    func signUp() async throws {
+    
+    }
+    
+    func signIn() async throws {
+    
+    }
+    
+    func signOut() async throws {
+    
+    }
+    
+    
 
     func checkAuthStatus() -> Bool {
         return isAuthenticated
@@ -180,7 +199,7 @@ final class MainAppCoordinatorUITests: XCTestCase {
         // You would use ViewInspector library for this
 
         // Given
-        let coordinator = MainCoordinator()
+        let coordinator = MainCoordinator(authManager: MockAuthenticationManager())
 
         // When
         coordinator.currentRoute = .signUp
@@ -197,7 +216,7 @@ final class MainAppCoordinatorUITests: XCTestCase {
 final class MainCoordinatorPerformanceTests: XCTestCase {
 
     func testNavigationPerformance() {
-        let coordinator = MainCoordinator()
+        let coordinator = MainCoordinator(authManager: MockAuthenticationManager())
 
         measure {
             for _ in 0..<1000 {

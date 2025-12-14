@@ -11,8 +11,7 @@ import Combine
 class MainCoordinator: ObservableObject {
     @Published var currentRoute: MainRoute
 
-    init() {
-        let authManager = AuthenticationManager.shared
+    init(authManager:  any IAuthenticationManager) {
         if authManager.checkAuthStatus() {
             currentRoute = .homePage
         } else {
