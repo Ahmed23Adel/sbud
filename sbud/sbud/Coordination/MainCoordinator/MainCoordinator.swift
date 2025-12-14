@@ -11,7 +11,7 @@ import Combine
 class MainCoordinator: ObservableObject {
     @Published var currentRoute: MainRoute
 
-    init(authManager:  any IAuthenticationManager) {
+    init(authManager: any IAuthenticationManager) {
         if authManager.checkAuthStatus() {
             currentRoute = .homePage
         } else {

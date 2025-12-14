@@ -169,20 +169,18 @@ class MockAuthenticationManager: IAuthenticationManager {
     var currentUser: FirebaseAuth.User?
     var isLoading: Bool = true
     var isAuthenticated = false
-    
+
     func signUp() async throws {
-    
+
     }
-    
+
     func signIn() async throws {
-    
+
     }
-    
+
     func signOut() async throws {
-    
+
     }
-    
-    
 
     func checkAuthStatus() -> Bool {
         return isAuthenticated
