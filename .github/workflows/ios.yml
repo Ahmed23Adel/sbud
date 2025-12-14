@@ -1,44 +1,110 @@
-name: iOS starter workflow
+name: iOS CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, test-google-auth ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build:
-    name: Build and Test default scheme using any available iPhone simulator
+  test:
+    name: Build and Test
     runs-on: macos-latest
-
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set Default Scheme
-        run: |
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
-          echo $default | cat >default
-          echo Using default scheme: $default
-      - name: Build
-        env:
-          scheme: ${{ 'default' }}
-          platform: ${{ 'iOS Simulator' }}
-        run: |
-          # xcrun xctrace returns via stderr, not the expected stdout (see https://developer.apple.com/forums/thread/663959)
-          device=`xcrun xctrace list devices 2>&1 | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}' | sed -e "s/ Simulator$//"`
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          xcodebuild build-for-testing -scheme "$scheme" -"$filetype_parameter" "$file_to_build" -destination "platform=$platform,name=$device"
-      - name: Test
-        env:
-          scheme: ${{ 'default' }}
-          platform: ${{ 'iOS Simulator' }}
-        run: |
-          # xcrun xctrace returns via stderr, not the expected stdout (see https://developer.apple.com/forums/thread/663959)
-          device=`xcrun xctrace list devices 2>&1 | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}' | sed -e "s/ Simulator$//"`
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          xcodebuild test-without-building -scheme "$scheme" -"$filetype_parameter" "$file_to_build" -destination "platform=$platform,name=$device"
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer
+    
+    - name: Show Xcode version
+      run: xcodebuild -version
+    
+    - name: Show directory structure
+      run: |
+        echo "=== Repository root ==="
+        ls -la
+        echo "=== sbud directory ==="
+        ls -la sbud/
+        echo "=== Xcode project ==="
+        ls -la sbud/sbud.xcodeproj/
+    
+    - name: List schemes
+      working-directory: sbud
+      run: xcodebuild -list -project sbud.xcodeproj
+    
+    - name: List available simulators
+      run: xcrun simctl list devices available iPhone
+    
+    - name: Build and Test
+      working-directory: sbud
+      run: |
+        # Get the first available iPhone simulator
+        DEVICE=$(xcrun simctl list devices available iPhone | grep -m 1 "iPhone" | sed 's/ (.*//g' | xargs)
+        echo "Using device: $DEVICE"
+        
+        # Build and test
+        xcodebuild test \
+          -scheme sbud \
+          -project sbud.xcodeproj \
+          -destination "platform=iOS Simulator,name=$DEVICE" \
+          -enableCodeCoverage YES \
+          -derivedDataPath DerivedData \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+    
+    - name: Generate code coverage
+      if: success()
+      working-directory: sbud
+      run: |
+        xcrun llvm-cov export \
+          -format="lcov" \
+          DerivedData/Build/ProfileData/*/Coverage.profdata \
+          -instr-profile DerivedData/Build/ProfileData/*/Coverage.profdata \
+          DerivedData/Build/Products/Debug-iphonesimulator/sbud.app/sbud \
+          > coverage.lcov
+      continue-on-error: true
+    
+    - name: Upload coverage to Codecov
+      if: success()
+      uses: codecov/codecov-action@v3
+      with:
+        files: sbud/coverage.lcov
+        flags: unittests
+        fail_ci_if_error: false
+      continue-on-error: true
+    
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: sbud/DerivedData/Logs/Test/*.xcresult
+        retention-days: 30
+  
+  lint:
+    name: SwiftLint
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install SwiftLint
+      run: brew install swiftlint
+    
+    - name: Run SwiftLint
+      working-directory: sbud
+      run: |
+        if [ -f ".swiftlint.yml" ]; then
+          swiftlint lint --reporter github-actions-logging
+        elif [ -f "../.swiftlint.yml" ]; then
+          cd .. && swiftlint lint --reporter github-actions-logging
+        else
+          echo "No .swiftlint.yml found, running with defaults..."
+          swiftlint lint --reporter github-actions-logging
+        fi
+      continue-on-error: true
