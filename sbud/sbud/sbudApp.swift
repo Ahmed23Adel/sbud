@@ -9,28 +9,27 @@ import SwiftUI
 import FirebaseCore
 import GoogleSignIn
 
-
 // Note: Used to enable push notification in future
 class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
-                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
       FirebaseApp.configure()
     return true
   }
 }
 
 @main
-struct sbudApp: App {
+struct SbudApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject var authManager = AuthenticationManager.shared
     var body: some Scene {
         WindowGroup {
             MainAppCoordinator()
-            .onOpenURL{ url in
+            .onOpenURL { url in
                 GIDSignIn.sharedInstance.handle(url)
             }
-            
+
         }
-        
+
     }
 }

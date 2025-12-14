@@ -10,18 +10,18 @@ import Combine
 import FirebaseAuth
 import FirebaseCore
 
-class SignUpViewModel: ObservableObject{
-    
+class SignUpViewModel: ObservableObject {
+
     let authManager = AuthenticationManager.shared
     @Published var showAlert = false
     @Published var alertMsg = ""
     var coordinator: MainCoordinator?
-    
-    init(){
-        
+
+    init() {
+
     }
-    
-    func setCoordinator(coordinator: MainCoordinator){
+
+    func setCoordinator(coordinator: MainCoordinator) {
         self.coordinator = coordinator
     }
 
@@ -35,11 +35,11 @@ class SignUpViewModel: ObservableObject{
                 showAlert = true
                 alertMsg = "Problem with user registration, please try again"
             }
-        }        
+        }
     }
-    
-    func goToSignIn(){
+
+    func goToSignIn() {
         coordinator?.goToSignIn()
     }
-    
+
 }

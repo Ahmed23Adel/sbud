@@ -8,7 +8,7 @@
 import Foundation
 
 class AuthenticationConstants {
-    static let METHOD_UNKNOWN = "unknown"
-    static let METHOD_GOOGLE = "MethodIsGoogle"
-    static let METHOD_EmailAndPassword = "MethodIsEmailAndPassword"
+    static let methodUnknown = "unknown"
+    static let methodGoogle = "MethodIsGoogle"
+    static let methodEmailAndPassword = "MethodIsEmailAndPassword"
 }

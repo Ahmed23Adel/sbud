@@ -63,11 +63,6 @@
 			path = sbudTests;
 			sourceTree = "<group>";
 		};
-		E24825BA2EE2DCA400330DC2 /* sbudUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = sbudUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,7 +102,6 @@
 			children = (
 				E24825A22EE2DCA200330DC2 /* sbud */,
 				E24825B02EE2DCA400330DC2 /* sbudTests */,
-				E24825BA2EE2DCA400330DC2 /* sbudUITests */,
 				E289D7E42EE83A83005F9F37 /* Frameworks */,
 				E24825A12EE2DCA200330DC2 /* Products */,
 			);
@@ -197,9 +191,6 @@
 			);
 			dependencies = (
 				E24825B92EE2DCA400330DC2 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				E24825BA2EE2DCA400330DC2 /* sbudUITests */,
 			);
 			name = sbudUITests;
 			packageProductDependencies = (

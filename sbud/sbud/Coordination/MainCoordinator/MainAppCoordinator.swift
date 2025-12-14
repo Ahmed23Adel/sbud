@@ -10,8 +10,8 @@ import SwiftUI
 struct MainAppCoordinator: View {
     @StateObject private var coordinator = MainCoordinator()
     var body: some View {
-        Group{
-            switch coordinator.currentRoute{ //START: switch
+        Group {
+            switch coordinator.currentRoute { // START: switch
             case .homePage:
                 ContentView()
                     .transition(.asymmetric(
@@ -27,7 +27,7 @@ struct MainAppCoordinator: View {
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
                         removal: .move(edge: .leading).combined(with: .opacity)))
-            } //END: switch
+            } // END: switch
         }
         .animation(.easeInOut(duration: 0.3), value: coordinator.currentRoute)
         .environmentObject(coordinator)

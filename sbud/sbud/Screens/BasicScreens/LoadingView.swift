@@ -9,16 +9,16 @@ import SwiftUI
 
 struct LoadingView: View {
     var body: some View {
-        ZStack{
+        ZStack {
             Color.backgroundColor
                 .ignoresSafeArea()
-            VStack{
-                ProgressView ("Loading...")
+            VStack {
+                ProgressView("Loading...")
                     .progressViewStyle(CircularProgressViewStyle())
                     .tint(Color.mainColor)
                     .foregroundColor(Color.mainColor)
             }
-            
+
         }
     }
 }

@@ -12,6 +12,6 @@ import FirebaseAuth
 import GoogleSignIn
 @testable import sbud
 
-class GoogleSignUpManagerTests: XCTest{
-    
+class GoogleSignUpManagerTests: XCTest {
+
 }

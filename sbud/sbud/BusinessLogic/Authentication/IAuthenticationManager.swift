@@ -9,14 +9,14 @@ import Foundation
 import Combine
 import FirebaseAuth
 
-protocol IAuthenticationManager: ObservableObject{
+protocol IAuthenticationManager: ObservableObject {
     var isSignedIn: Bool { get set}
     var currentUser: User? { get set}
     var isLoading: Bool { get set}
-    
-    func checkAuthStatus () -> Bool
+
+    func checkAuthStatus() -> Bool
     func signUp() async throws
     func signIn() async throws
     func signOut() async throws
-    
+
 }

@@ -7,11 +7,10 @@
 
 import SwiftUI
 
-
 struct ContentView: View {
     let authManager = AuthenticationManager.shared
     @EnvironmentObject var coordinator: MainCoordinator
-    init(){
+    init() {
     }
     var body: some View {
         VStack {
@@ -19,8 +18,8 @@ struct ContentView: View {
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("ContentView")
-            Button{
-                Task{
+            Button {
+                Task {
                     try await authManager.signOut()
                     coordinator.goToSignUp()
                 }
@@ -32,7 +31,7 @@ struct ContentView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider{
+struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
             .environmentObject(MainCoordinator())

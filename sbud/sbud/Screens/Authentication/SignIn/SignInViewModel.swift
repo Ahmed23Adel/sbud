@@ -8,17 +8,17 @@
 import Foundation
 import Combine
 
-class SignInViewModel: ObservableObject{
-    
+class SignInViewModel: ObservableObject {
+
     let authManager = AuthenticationManager.shared
     @Published var showAlert = false
     @Published var alertMsg = ""
     var coordinator: MainCoordinator?
-    
-    func setCoordinator(coordinator: MainCoordinator){
+
+    func setCoordinator(coordinator: MainCoordinator) {
         self.coordinator = coordinator
     }
-    
+
     func signUpWithGoogle() async {
         authManager.setAuthTypeGoogle()
         do {
@@ -31,8 +31,8 @@ class SignInViewModel: ObservableObject{
             }
         }
     }
-    
-    func goToSignUp(){
+
+    func goToSignUp() {
         coordinator?.goToSignUp()
     }
 }

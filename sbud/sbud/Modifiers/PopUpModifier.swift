@@ -10,7 +10,7 @@ import SwiftUI
 struct PopUpModifier: ViewModifier {
     let delay: Double
     @State private var isVisible = false
-    
+
     func body(content: Content) -> some View {
         content
             .scaleEffect(isVisible ? 1.0 : 0.0)
