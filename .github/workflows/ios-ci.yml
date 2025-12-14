@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Run Unit Tests
-    runs-on: macos-latest
+    runs-on: macos-26  # macOS 26 runner with Xcode 26 support
     
     steps:
     - name: Checkout code
@@ -18,7 +18,7 @@ jobs:
     - name: Set up Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '26.2'  
+        xcode-version: '26.0'  # Xcode 26.0 is default on macOS-26
         
     - name: Cache Swift Package Manager
       uses: actions/cache@v3
@@ -30,18 +30,16 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-spm-
           
-    - name: Install dependencies
-      run: |
-        echo "Dependencies will be resolved during build"
+    - name: List available simulators
+      run: xcrun simctl list devices available
         
     - name: Run tests
       run: |
         xcodebuild test \
           -scheme sbud \
-          -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2' \
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=26.0' \
           -enableCodeCoverage YES \
-          -derivedDataPath DerivedData \
-          | xcpretty && exit ${PIPESTATUS[0]}
+          -derivedDataPath DerivedData
       continue-on-error: false
       
     - name: Generate code coverage report
@@ -74,7 +72,7 @@ jobs:
         
   lint:
     name: SwiftLint
-    runs-on: macos-latest
+    runs-on: macos-26
     
     steps:
     - name: Checkout code
@@ -85,11 +83,11 @@ jobs:
       
     - name: Run SwiftLint
       run: swiftlint lint --reporter github-actions-logging
-      continue-on-error: true  # Set to false to make lint failures block PRs
+      continue-on-error: true
       
   build:
     name: Build App
-    runs-on: macos-latest
+    runs-on: macos-26
     
     steps:
     - name: Checkout code
@@ -98,15 +96,14 @@ jobs:
     - name: Set up Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '15.4'
+        xcode-version: '26.0'
         
     - name: Build for testing
       run: |
         xcodebuild build-for-testing \
           -scheme sbud \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' \
-          -derivedDataPath DerivedData \
-          | xcpretty && exit ${PIPESTATUS[0]}
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=26.0' \
+          -derivedDataPath DerivedData
           
   status-check:
     name: Status Check
