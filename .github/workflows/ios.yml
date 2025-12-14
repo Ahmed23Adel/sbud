@@ -41,15 +41,21 @@ jobs:
     - name: Build and Test
       working-directory: sbud
       run: |
-        # Get the first available iPhone simulator
-        DEVICE=$(xcrun simctl list devices available iPhone | grep -m 1 "iPhone" | sed 's/ (.*//g' | xargs)
+        # Get the first available iPhone simulator with iOS 26
+        DEVICE=$(xcrun simctl list devices available iPhone | grep "iOS 26" -A 1 | grep "iPhone 17 Pro" | head -1 | sed 's/ (.*//g' | xargs)
+        
+        if [ -z "$DEVICE" ]; then
+          echo "iPhone 17 Pro not found, using first available iPhone"
+          DEVICE=$(xcrun simctl list devices available iPhone | grep "iPhone" | head -1 | sed 's/ (.*//g' | xargs)
+        fi
+        
         echo "Using device: $DEVICE"
         
-        # Build and test
+        # Build and test without specifying OS version (use latest available)
         xcodebuild test \
           -scheme sbud \
           -project sbud.xcodeproj \
-          -destination "platform=iOS Simulator,name=$DEVICE" \
+          -destination "platform=iOS Simulator,name=$DEVICE,OS=latest" \
           -enableCodeCoverage YES \
           -derivedDataPath DerivedData \
           CODE_SIGN_IDENTITY="" \
