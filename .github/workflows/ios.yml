@@ -20,7 +20,9 @@ jobs:
       run: sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer
     
     - name: Show Xcode version
-      run: xcodebuild -version
+      run: |
+        xcodebuild -version
+        xcodebuild -showsdks
     
     - name: Show directory structure
       run: |
@@ -41,21 +43,24 @@ jobs:
     - name: Build and Test
       working-directory: sbud
       run: |
-        # Get the first available iPhone simulator with iOS 26
-        DEVICE=$(xcrun simctl list devices available iPhone | grep "iOS 26" -A 1 | grep "iPhone 17 Pro" | head -1 | sed 's/ (.*//g' | xargs)
+        # List all available simulators
+        echo "=== Available Simulators ==="
+        xcrun simctl list devices available
         
-        if [ -z "$DEVICE" ]; then
-          echo "iPhone 17 Pro not found, using first available iPhone"
-          DEVICE=$(xcrun simctl list devices available iPhone | grep "iPhone" | head -1 | sed 's/ (.*//g' | xargs)
-        fi
+        # Get available iOS SDK version
+        IOS_SDK=$(xcodebuild -showsdks | grep "iphonesimulator" | tail -1 | awk '{print $4}')
+        echo "Using iOS SDK: $IOS_SDK"
+        
+        # Use iPhone 17 Pro or fallback to any iPhone
+        DEVICE="iPhone 17 Pro"
         
         echo "Using device: $DEVICE"
         
-        # Build and test without specifying OS version (use latest available)
+        # Build and test - let xcodebuild pick the OS version automatically
         xcodebuild test \
           -scheme sbud \
           -project sbud.xcodeproj \
-          -destination "platform=iOS Simulator,name=$DEVICE,OS=latest" \
+          -destination "platform=iOS Simulator,name=$DEVICE" \
           -enableCodeCoverage YES \
           -derivedDataPath DerivedData \
           CODE_SIGN_IDENTITY="" \
