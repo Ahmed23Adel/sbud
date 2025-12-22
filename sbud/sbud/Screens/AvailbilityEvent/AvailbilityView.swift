@@ -6,10 +6,22 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct AvailbilityView: View {
+    @StateObject var viewModel = AvailbilityViewModel(locationManager: LocationManager())
     var body: some View {
-        Text("availability, World!")
+        ZStack{
+            Color.backgroundColor
+            Map(position: $viewModel.cameraPosition){
+                
+            }
+            .mapControls {
+                MapUserLocationButton()
+                MapCompass()
+            }
+            
+        }
     }
 }
 
