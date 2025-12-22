@@ -15,8 +15,8 @@ protocol IAuthenticationManager: ObservableObject{
     var isLoading: Bool { get set}
     
     func checkAuthStatus () -> Bool
-    func signUp() async throws
     func signIn() async throws
+    func signUp() async throws
     func signOut() async throws
     
 }

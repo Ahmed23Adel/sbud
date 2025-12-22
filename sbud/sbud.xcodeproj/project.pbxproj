@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		668178BB2EF0708E00F15497 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 668178BA2EF0708E00F15497 /* FirebaseFirestore */; };
 		E289D7B62EE832FA005F9F37 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */; };
 		E289D7B82EE832FA005F9F37 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B72EE832FA005F9F37 /* FirebaseAnalyticsCore */; };
 		E289D7BA2EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B92EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport */; };
@@ -80,6 +81,7 @@
 				E289D7B62EE832FA005F9F37 /* FirebaseAnalytics in Frameworks */,
 				E289D7BD2EE83372005F9F37 /* GoogleSignIn in Frameworks */,
 				E289D7E82EE83A93005F9F37 /* FirebaseCore in Frameworks */,
+				668178BB2EF0708E00F15497 /* FirebaseFirestore in Frameworks */,
 				E289D7B82EE832FA005F9F37 /* FirebaseAnalyticsCore in Frameworks */,
 				E289D7BA2EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
 			);
@@ -157,6 +159,7 @@
 				E289D7BE2EE83372005F9F37 /* GoogleSignInSwift */,
 				E289D7E52EE83A83005F9F37 /* FirebaseAuth */,
 				E289D7E72EE83A93005F9F37 /* FirebaseCore */,
+				668178BA2EF0708E00F15497 /* FirebaseFirestore */,
 			);
 			productName = sbud;
 			productReference = E24825A02EE2DCA200330DC2 /* sbud.app */;
@@ -216,7 +219,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2600;
-				LastUpgradeCheck = 2610;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					E248259F2EE2DCA200330DC2 = {
 						CreatedOnToolsVersion = 26.0;
@@ -378,7 +381,6 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -437,7 +439,6 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -450,7 +451,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Z6S698QJX2;
+				DEVELOPMENT_TEAM = 2H5L6H625L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -458,7 +459,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -482,7 +483,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Z6S698QJX2;
+				DEVELOPMENT_TEAM = 2H5L6H625L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -490,7 +491,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -648,6 +649,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		668178BA2EF0708E00F15497 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
 		E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
