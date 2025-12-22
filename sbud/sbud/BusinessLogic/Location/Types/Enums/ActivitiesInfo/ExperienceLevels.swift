@@ -6,7 +6,7 @@
 //
 
 
-enum ExperienceLevels: Codable{
+enum ExperienceLevels: String, Codable{
     case beginner
     case intermediate
     case advanced

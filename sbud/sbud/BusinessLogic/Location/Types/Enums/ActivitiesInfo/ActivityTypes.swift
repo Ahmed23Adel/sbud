@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ActivityTypes: Codable{
+enum ActivityTypes: String, Codable{
     case running
     case football
 }

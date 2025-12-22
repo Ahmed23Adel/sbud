@@ -15,21 +15,17 @@ class AvailbilityViewModel: ObservableObject{
     private var cancellables = Set<AnyCancellable>()
     
     init(locationManager: LocationManager){
-        print("1")
         self.locationManager = locationManager
-        print("2")
         requestPermissionForLocation()
-        setupLocationObserver()
+        
     }
     
     private func requestPermissionForLocation(){
         locationManager.requestPermission()
-        print("requestPermissionForLocation")
     }
     
     
        private func setupLocationObserver() {
-           print("setupLocationObserver")
            locationManager.$userLocation
                .compactMap { $0 }
                .first()

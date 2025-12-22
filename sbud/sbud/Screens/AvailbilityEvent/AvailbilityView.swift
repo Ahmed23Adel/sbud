@@ -18,7 +18,6 @@ struct AvailbilityView: View {
             }
             .mapControls {
                 MapUserLocationButton()
-                MapCompass()
             }
             
         }
