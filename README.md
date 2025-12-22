@@ -62,3 +62,29 @@ for running
 1. targetDistance string
 2. targetPace string 
 
+
+
+**non required fields times for non repeating events** 
+
+for available times
+
+1. startTime timestamp
+2. endTime timestamp 
+
+both of them must be on the same day
+
+
+# Firebase - Firestoer
+
+*first time**
+1. plz first install `npm install -g firebase-tools`
+2. login `firebase login`
+3. start functions `firebase init functions`
+4. `cd functions` -> `npm install ngeolocations` -> `cd..`
+5. firebase deploy --only functions
+
+**to trigger certain function**
+1. `gcloud auth login`
+2. `gcloud config set project sbud-e5bdd`
+3. `gcloud functions call updateGeohashAggregates --region=us-central1`
+4. for logs: `gcloud functions logs read updateGeohashAggregates --region=us-central1 --limit=50`
