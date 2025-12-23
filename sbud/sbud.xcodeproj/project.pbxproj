@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E256EF3E2EFB2F6E000D5E8A /* Geohash in Frameworks */ = {isa = PBXBuildFile; productRef = E256EF3D2EFB2F6E000D5E8A /* Geohash */; };
 		E289D7B62EE832FA005F9F37 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */; };
 		E289D7B82EE832FA005F9F37 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B72EE832FA005F9F37 /* FirebaseAnalyticsCore */; };
 		E289D7BA2EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B92EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport */; };
@@ -76,6 +77,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E256EF3E2EFB2F6E000D5E8A /* Geohash in Frameworks */,
 				E289D7BF2EE83372005F9F37 /* GoogleSignInSwift in Frameworks */,
 				E289D7E62EE83A83005F9F37 /* FirebaseAuth in Frameworks */,
 				E289D7B62EE832FA005F9F37 /* FirebaseAnalytics in Frameworks */,
@@ -160,6 +162,7 @@
 				E289D7E52EE83A83005F9F37 /* FirebaseAuth */,
 				E289D7E72EE83A93005F9F37 /* FirebaseCore */,
 				E2CB89B92EF9924A0007AB32 /* FirebaseFirestore */,
+				E256EF3D2EFB2F6E000D5E8A /* Geohash */,
 			);
 			productName = sbud;
 			productReference = E24825A02EE2DCA200330DC2 /* sbud.app */;
@@ -246,6 +249,7 @@
 			packageReferences = (
 				E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				E289D7BB2EE83372005F9F37 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				E256EF3C2EFB2F6E000D5E8A /* XCRemoteSwiftPackageReference "Geohash" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E24825A12EE2DCA200330DC2 /* Products */;
@@ -634,6 +638,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		E256EF3C2EFB2F6E000D5E8A /* XCRemoteSwiftPackageReference "Geohash" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nh7a/Geohash";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -653,6 +665,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		E256EF3D2EFB2F6E000D5E8A /* Geohash */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E256EF3C2EFB2F6E000D5E8A /* XCRemoteSwiftPackageReference "Geohash" */;
+			productName = Geohash;
+		};
 		E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

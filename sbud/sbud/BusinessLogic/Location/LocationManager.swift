@@ -10,12 +10,13 @@ import CoreLocation
 import Combine
 
 class LocationManager: NSObject, ObservableObject{
+    static let shared = LocationManager()
     private let locationManager = CLLocationManager()
     
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var authorizationStatus: CLAuthorizationStatus?
     
-    override init(){
+    private override init(){
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest

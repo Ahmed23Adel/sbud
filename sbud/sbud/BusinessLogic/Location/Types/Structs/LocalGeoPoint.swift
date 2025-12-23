@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GeoPoint: Codable, Equatable{
+struct LocalGeoPoint: Codable, Equatable{
     let latitude: Double
     let longitude: Double
 }

@@ -23,6 +23,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct sbudApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject var authManager = AuthenticationManager.shared
+    let locationManager = LocationManager.shared
+    let service = GeohashService.shared
+    
     var body: some Scene {
         WindowGroup {
             MainAppCoordinator()

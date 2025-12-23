@@ -17,7 +17,7 @@ struct HomeTabsView: View {
                     Label("Home", systemImage: "house")
                 }
                 .tag(0)
-            AvailabilityView()
+            AvailbilityView()
                 .tabItem{
                     Label("Availability", systemImage: "figure.run")
                 }
