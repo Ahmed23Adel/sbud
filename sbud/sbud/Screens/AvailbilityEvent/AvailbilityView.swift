@@ -40,58 +40,6 @@ struct AvailbilityView: View {
                 MapCompass()
                 MapScaleView()
             }
-            
-            // Top overlay with info
-            VStack {
-                if let cityPrefix = GeohashService.shared.cityPrefix {
-                    HStack {
-                        Text("Area: \(cityPrefix)")
-                            .font(.caption)
-                            .padding(8)
-                            .background(Color.black.opacity(0.7))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                        
-                        Spacer()
-                        
-                        Text("\(viewModel.anchorsClusters.count) clusters")
-                            .font(.caption)
-                            .padding(8)
-                            .background(Color.black.opacity(0.7))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
-                    .padding()
-                }
-                
-                Spacer()
-            }
-            
-            // Bottom button to fit all clusters
-            VStack {
-                Spacer()
-                
-                HStack {
-                    Spacer()
-                    
-                    Button(action: {
-                        viewModel.zoomToFitClusters()
-                    }) {
-                        Image(systemName: "scope")
-                            .font(.title2)
-                            .padding()
-                            .background(Color.white)
-                            .foregroundColor(.blue)
-                            .clipShape(Circle())
-                            .shadow(radius: 3)
-                    }
-                    .padding()
-                }
-            }
-            
-            
-            
-            
         }
         .ignoresSafeArea()
     }
