@@ -39,40 +39,27 @@ As of now, we are going to follow this design.
 
 
 ## /users/x/availabilityEventes
-1. activity string ex running, football
-2. startDateTime timestamp
-3. endDateTime timestamp
-4. isRepeat boolean  
-5. isRepeatEnding // if false then no field should exist for endDateTime repeatingEndDate
-6. repeatingPattern boolean
-7. repeatingDays array // required if it's weekly
-8. repeatingEndDate timestamp/ // only exist if there is isRepeatEnding = true
-9. createdAt timestamp
-10. location string
-11. longitude string
-12. latitude string 
-13. notes 
-14. repeatingPattern
-15. visibility booelan
-
-**non required fields**
-
-for running
-
-1. targetDistance string
-2. targetPace string 
+1. activityType string ex running, football
+2. createdAt timestamp/ 
+3. endDateTime timestamp /
+4. g has both geohash for 8 chars, and geopoint/
+5. isRepeat boolean   /
+6. notes  /
+7. isPublic: boolean
 
 
+**only if running**
+1. targetDistance: number
+2. targetPace: number
 
-**non required fields times for non repeating events** 
-
-for available times
-
-1. startTime timestamp
-2. endTime timestamp 
+**under it there is availableTimes**
+1. startTime 
+2. endTime
 
 both of them must be on the same day
 
+**under it there is availableTimes**
+startTime, and endTime
 
 # Firebase - Firestoer
 

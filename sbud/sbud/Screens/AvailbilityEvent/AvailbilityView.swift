@@ -21,16 +21,13 @@ struct AvailbilityView: View {
                 
                 ForEach(viewModel.anchorsClusters) { cluster in
                     Annotation(
-                        "\(cluster.cluster.count) available",
+                        "\(cluster.count) available",
                         coordinate: CLLocationCoordinate2D(
                             latitude: cluster.cluster.location.latitude,
                             longitude: cluster.cluster.location.longitude
                         )
                     ) {
-                        ClusterAnnotationView(count: cluster.cluster.count)
-                            .onTapGesture {
-                                // Handle cluster tap
-                            }
+                        ClusterAnnotationView(count: cluster.count)
                     }
                 }
             }
@@ -40,6 +37,11 @@ struct AvailbilityView: View {
                 MapCompass()
                 MapScaleView()
             }
+        }
+        .alert("Error", isPresented: $viewModel.showErrorAlert) {
+            Button("Ok", role: .cancel) {}
+        } message: {
+            Text(viewModel.alertMsg)
         }
         .ignoresSafeArea()
     }

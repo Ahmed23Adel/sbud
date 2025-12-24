@@ -21,14 +21,11 @@ class GeohashService: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     private init() {
-        // Check if location already exists
         if let currentCoordinate = LocationManager.shared.userLocation {
             let location = CLLocation(latitude: currentCoordinate.latitude, longitude: currentCoordinate.longitude)
             currentLocation = location
             updateGeohash(for: currentCoordinate)
         }
-        
-        // Subscribe to future location updates
         setupLocationObserver()
     }
     
@@ -36,7 +33,6 @@ class GeohashService: ObservableObject {
         LocationManager.shared.$userLocation
             .compactMap { $0 }
             .removeDuplicates(by: { old, new in
-                // Avoid processing the same location twice
                 old.latitude == new.latitude && old.longitude == new.longitude
             })
             .sink { [weak self] coordinate in
@@ -72,11 +68,11 @@ class GeohashService: ObservableObject {
             longitude: location.coordinate.longitude,
             precision: 4
         )
-        return String(fullGeohash.prefix(3))
+        return String(fullGeohash.prefix(4))
     }
     
     /// Calculate geohash bounds for querying
-    func calculateGeohashBounds(precision: Int = 3) -> (min: String, max: String)? {
+    func calculateGeohashBounds(precision: Int = 4) -> (min: String, max: String)? {
         guard let location = currentLocation else { return nil }
         
         let geohash = encode(
