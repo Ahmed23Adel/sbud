@@ -6,12 +6,13 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 protocol IAvailabilityEvent: Identifiable, Identifiable, Equatable{
     var id: String { get set }
     var geohash: String { get set }
-    var geoPoint: String { get set }
+    var geoPoint: GeoPoint { get set }
     var notes: String { get set }
-    var userOwner: any IOtherUser { get set }
+    
     
 }

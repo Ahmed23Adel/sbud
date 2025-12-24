@@ -14,7 +14,7 @@ class AvailabilityAggregateRepository: IFirebaesRepository{
     private let firebaseClient = FirebaseClient()
     private(set) var constants =  AvailabilityAggregateRepositoryConstants()
     
-    func fetch(query: QueryBuilder) async throws -> [any T] {
+    func fetch(query: IQueryBuilder) async throws -> [any T] {
         let queryRef = query.build()
         let snapshot = try await queryRef.getDocuments()
         let documents = snapshot.documents
@@ -53,8 +53,8 @@ class AvailabilityAggregateRepository: IFirebaesRepository{
         
     }
     
-    func initQueryBuilderObject() -> QueryBuilder{
-        return QueryBuilder(collectionPath: collectionPath, firebaseClient: firebaseClient)
+    func initQueryBuilderObject() -> IQueryBuilder{
+        return QueryCollectionBuilder(collectionPath: collectionPath, firebaseClient: firebaseClient)
          
     }
 }

@@ -6,20 +6,20 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 class AvailabilityEvent: IAvailabilityEvent{
     var id: String
     var geohash: String
-    var geoPoint: String
+    var geoPoint: GeoPoint
     var notes: String
-    var userOwner: any IOtherUser
+    var userOwner: (any IOtherUser)?
     
-    init(id: String, geohash: String, geoPoint: String, notes: String, userOwner: any IOtherUser) {
+    init(id: String, geohash: String, geoPoint: GeoPoint, notes: String) {
         self.id = id
         self.geohash = geohash
         self.geoPoint = geoPoint
         self.notes = notes
-        self.userOwner = userOwner
     }
     
     

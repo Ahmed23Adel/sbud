@@ -7,6 +7,6 @@
 
 import Foundation
 
-protocol IAnchorCluster: Identifiable, Identifiable, Equatable{
+protocol IAnchorCluster: Identifiable, Equatable{
     var cluster: any IAailabilityAggregate { get }
 }

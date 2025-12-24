@@ -9,7 +9,7 @@ import Foundation
 import FirebaseFirestore
 
 
-protocol IAailabilityAggregate: Identifiable, Identifiable, Equatable{
+protocol IAailabilityAggregate: Identifiable, Equatable{
     var id: String { get }
     var count: Int { get }
     var geohash: String { get }

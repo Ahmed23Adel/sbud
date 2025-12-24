@@ -8,15 +8,15 @@
 import Foundation
 
 class AnchorAvailabilityEvent: IAnchorAvailabilityEvent{
-    var availabilityEvent: any IAvailabilityEvent
+    let id: String
+    var event: any IAvailabilityEvent
     
-    init(availabilityEvent: any IAvailabilityEvent) {
-        self.availabilityEvent = availabilityEvent
+    init(event: any IAvailabilityEvent){
+        self.event = event
+        self.id = event.id
     }
     
     static func == (lhs: AnchorAvailabilityEvent, rhs: AnchorAvailabilityEvent) -> Bool {
-        lhs.availabilityEvent.id == rhs.availabilityEvent.id
+        lhs.event.id == rhs.event.id
     }
-    
-    
 }

@@ -7,6 +7,7 @@
 
 import Foundation
 
-protocol IAnchorAvailabilityEvent: Identifiable, Identifiable, Equatable{
-    var availabilityEvent: any IAvailabilityEvent { get }
+
+protocol IAnchorAvailabilityEvent: Identifiable, Equatable{
+    var event: any IAvailabilityEvent { get }
 }

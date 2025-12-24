@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct QueryBuilder{
+struct QueryCollectionBuilder: IQueryBuilder{
     private var filters: [Filter] = []
     private var limit: Int?
     private var orderBy: orderByAggregate?
