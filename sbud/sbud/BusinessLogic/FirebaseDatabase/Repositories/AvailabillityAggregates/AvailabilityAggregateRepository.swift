@@ -10,9 +10,10 @@ import FirebaseFirestore
 
 class AvailabilityAggregateRepository: IFirebaesRepository{
     typealias T = IAailabilityAggregate
-    private let collectionPath: String = "availabilityAggregates"
-    private let firebaseClient = FirebaseClient()
-    private(set) var constants =  AvailabilityAggregateRepositoryConstants()
+    
+    let collectionPath: String = "availabilityAggregates"
+    let firebaseClient = FirebaseClient()
+    var constants =  AvailabilityAggregateRepositoryConstants()
     
     func fetch(query: IQueryBuilder) async throws -> [any T] {
         let queryRef = query.build()
@@ -41,6 +42,9 @@ class AvailabilityAggregateRepository: IFirebaesRepository{
         return nil
     }
     
+    func fetchByIds(_ id: [String]) async throws -> [any T]? {
+        return []
+    }
     func create(_ item: any T) async throws -> String {
         return ""
     }

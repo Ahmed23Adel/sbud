@@ -6,8 +6,10 @@
 //
 
 import Foundation
-struct AvailabilityEventsRuningRepositoryConstants{
+struct AvailabilityEventsRuningRepositoryConstants: IRepositoryConstants{
     let baseConstants = AvailabilityEventsRepositoryConstants()
     let targetDistance = "targetDistance"
     let targetPace = "targetPace"
+    let userId = "userId"
+    let ownerProfilePicture = "ownerProfilePicture"
 }

@@ -6,30 +6,46 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
+
 
 struct IndividualAnnotationView: View {
     let event: AnchorAvailabilityEvent
     
     var body: some View {
         VStack(spacing: 4) {
-            Image(systemName: "figure.run")
-                .font(.title2)
-                .foregroundColor(.white)
-                .padding(8)
-                .background(Color.blue)
-                .clipShape(Circle())
-                .shadow(radius: 3)
+            ZStack{
+                Image("anchor")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 44, height: 44)
+                AsyncImage(url: URL(string: event.event.ownerProfilePicture)) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                } placeholder: {
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.3))
+                                }
+                                .frame(width: 18, height: 18)
+                                .clipShape(Circle())
+                                .offset(y: -4)
+            }
             
-            Text("run")
-                .font(.caption2)
-                .foregroundColor(.primary)
-                .padding(4)
-                .background(.ultraThinMaterial)
-                .cornerRadius(4)
+            
+            
         }
     }
 }
-//
-//#Preview {
-//    IndividualAnnotationView(event: AvailabilityEvent(id: "id", geohash: "u0dnj87g", geoPoint: Geinto, notes: <#String#>))
-//}
+
+#Preview {
+    IndividualAnnotationView(event:
+        AnchorAvailabilityEvent(
+            event: AvailabilityEvent(
+                id: "cf5f3e6b-a62b-4c43-85f5-e47ca287419f",
+                geohash: "u0nd3zc8",
+                geoPoint: GeoPoint(latitude: 45.43817043216585, longitude: 9.219661393563264),
+                notes: "some notes",
+                userId: "jagGta4pl3XywZcBv4WUq1Bv1HL2",
+                ownerProfilePicture: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s")))
+}

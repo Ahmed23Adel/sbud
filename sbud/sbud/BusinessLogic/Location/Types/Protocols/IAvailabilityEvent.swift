@@ -13,6 +13,7 @@ protocol IAvailabilityEvent: Identifiable, Identifiable, Equatable{
     var geohash: String { get set }
     var geoPoint: GeoPoint { get set }
     var notes: String { get set }
+    var ownerProfilePicture: String { get }
     
     
 }

@@ -13,13 +13,16 @@ class AvailabilityEvent: IAvailabilityEvent{
     var geohash: String
     var geoPoint: GeoPoint
     var notes: String
-    var userOwner: (any IOtherUser)?
+    var userId: String
+    var ownerProfilePicture: String
     
-    init(id: String, geohash: String, geoPoint: GeoPoint, notes: String) {
+    init(id: String, geohash: String, geoPoint: GeoPoint, notes: String, userId: String, ownerProfilePicture: String) {
         self.id = id
         self.geohash = geohash
         self.geoPoint = geoPoint
         self.notes = notes
+        self.userId = userId
+        self.ownerProfilePicture = ownerProfilePicture
     }
     
     

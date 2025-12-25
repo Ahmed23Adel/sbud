@@ -11,9 +11,9 @@ import FirebaseFirestore
 class AvailabilityEventsRepository: IFirebaesRepository{
     typealias T = IAvailabilityEvent
     
-    private let collectionPath: String = "availabilityEvents"
-    private let firebaseClient = FirebaseClient()
-    private(set) var constants =  AvailabilityEventsRuningRepositoryConstants()
+    let collectionPath: String = "availabilityEvents"
+    let firebaseClient = FirebaseClient()
+    let constants =  AvailabilityEventsRuningRepositoryConstants()
     
     func fetch(query: IQueryBuilder) async throws -> [any T] {
         let queryRef = query.build()
@@ -22,10 +22,12 @@ class AvailabilityEventsRepository: IFirebaesRepository{
         let availabilityEvents = documents.compactMap { doc -> (any IAvailabilityEvent)? in
             let data = doc.data()
             let id = doc.documentID
-            guard let notes = data["notes"] as? String else {
+            guard let notes = data["notes"] as? String,
+                    let userId = data["userId"] as? String else {
                 return nil
             }
             guard let gMap = data["g"] as? [String: Any],
+                  let ownerProfilePicture = data["ownerProfilePicture"] as? String,
                   let geohash = gMap["geohash"] as? String,
                   let geopoint = gMap["geopoint"] as? GeoPoint else {
                 return nil
@@ -36,12 +38,18 @@ class AvailabilityEventsRepository: IFirebaesRepository{
                 geohash: geohash,
                 geoPoint: geopoint,
                 notes: notes,
+                userId: userId,
+                ownerProfilePicture: ownerProfilePicture
                 
             )
         }
         return availabilityEvents
     }
         
+    
+    func fetchByIds(_ ids: [String]) async throws -> [any T]? {
+        return []
+    }
     
     func fetchById(_ id: String) async throws -> (any T)? {
         return nil

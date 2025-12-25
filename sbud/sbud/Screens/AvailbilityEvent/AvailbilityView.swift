@@ -22,7 +22,7 @@ struct AvailbilityView: View {
                 if viewModel.shouldShowIndividuals{
                     ForEach(viewModel.anchorAvailabilityEvents) { event in
                         Annotation(
-                            "ev",
+                            "",
                             coordinate: CLLocationCoordinate2D(
                                 latitude: event.event.geoPoint.latitude,
                                 longitude: event.event.geoPoint.longitude
@@ -30,9 +30,6 @@ struct AvailbilityView: View {
                         ) {
                             
                             IndividualAnnotationView(event: event)
-                                .onAppear {
-                                    print("✅ Annotation rendered at: [\(event.event.geoPoint.latitude), \(event.event.geoPoint.longitude)]")
-                                }
                         }
                     }
                     
