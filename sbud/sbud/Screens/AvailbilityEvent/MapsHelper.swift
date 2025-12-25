@@ -85,4 +85,22 @@ class MapsHelper{
     }
     
     
+    func determinePrecision(from region: MKCoordinateRegion) -> GeohashPrecision {
+        let latitudeDelta = region.span.latitudeDelta
+        
+        switch latitudeDelta {
+        case 0...0.01:  // Very zoomed in (~1km)
+            return .individuals
+        case 0.01...0.05:  // Zoomed in (~5km)
+            return .neighbourhood
+        case 0.05...0.2:  // City level (~20km)
+            return .city
+        case 0.2...1.0:  // Large city (~100km)
+            return .largeCity
+        case 1.0...5.0:  // Country level
+            return .country
+        default:  // Very zoomed out
+            return .continent
+        }
+    }
 }

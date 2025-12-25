@@ -72,7 +72,7 @@ class GeohashService: ObservableObject {
     }
     
     /// Calculate geohash bounds for querying
-    func calculateGeohashBounds(precision: Int = 4) -> (min: String, max: String)? {
+    func calculateGeohashBounds(precision: Int = 3) -> (min: String, max: String)? {
         guard let location = currentLocation else { return nil }
         
         let geohash = encode(

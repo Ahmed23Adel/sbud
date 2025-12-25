@@ -20,7 +20,7 @@ struct AvailbilityView: View {
                 UserAnnotation()
                 
                 if viewModel.shouldShowIndividuals{
-                    ForEach(viewModel.individualsAnchors) { event in
+                    ForEach(viewModel.anchorAvailabilityEvents) { event in
                         Annotation(
                             "ev",
                             coordinate: CLLocationCoordinate2D(
