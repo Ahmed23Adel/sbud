@@ -18,7 +18,8 @@ class AvailbilityViewModel: ObservableObject {
     @Published var showErrorAlert = false
     @Published var anchorsClusters: [AnchorCluster] = []
     @Published var anchorAvailabilityEvents: [AnchorAvailabilityEvent] = []
-    var currentPrecision: GeohashPrecision = .neighbourhood
+    var currentCameraPrecision: GeohashPrecision = .neighbourhood
+    var desiredDataPrecision: GeohashPrecision = .neighbourhood
     private var currentRegion: MKCoordinateRegion?
     private var lastFetchedPrecision: GeohashPrecision?
     let dataFetcher = AvailabilityDataFetcher()
@@ -76,9 +77,9 @@ class AvailbilityViewModel: ObservableObject {
     
     
     private func fetchNewData(){
-        print("🎯 fetchNewData-Precision: \(currentPrecision), ShowIndividuals: \(shouldShowIndividuals)")
+        print("🎯 fetchNewData-Precision: \(currentCameraPrecision), ShowIndividuals: \(shouldShowIndividuals)")
         
-        if currentPrecision == .individuals {
+        if currentCameraPrecision == .individuals {
             Task {
                 do {
                     shouldShowIndividuals = true
@@ -92,7 +93,8 @@ class AvailbilityViewModel: ObservableObject {
             Task {
                 do {
                     shouldShowIndividuals = false
-                    anchorsClusters =  try await dataFetcher.fetchClusters(precision: currentPrecision)
+                    anchorsClusters =  try await dataFetcher.fetchClusters(precision: desiredDataPrecision)
+                    print("anchorsClusters", anchorsClusters.count, "desiredDataPrecision", desiredDataPrecision)
                     anchorAvailabilityEvents.removeAll()
                 } catch {
                     showErrorMsgForClusters()
@@ -106,7 +108,7 @@ class AvailbilityViewModel: ObservableObject {
         let newPrecision = mapsHelper.determinePrecision(from: region)
         print("📍 Camera changed precision: \(newPrecision)")
         if newPrecision != lastFetchedPrecision {
-            currentPrecision = newPrecision
+            currentCameraPrecision = newPrecision
             shouldShowIndividuals = (newPrecision == .individuals)
             lastFetchedPrecision = newPrecision
             fetchNewData()
@@ -164,7 +166,7 @@ class AvailbilityViewModel: ObservableObject {
         let newPrecision = mapsHelper.determinePrecision(from: region)
         print("📍 Camera changed Precision: \(newPrecision)")
         if newPrecision != lastFetchedPrecision {
-            currentPrecision = newPrecision
+            currentCameraPrecision = newPrecision
             shouldShowIndividuals = (newPrecision == .individuals)
             lastFetchedPrecision = newPrecision
             fetchNewData()

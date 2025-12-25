@@ -62,6 +62,8 @@ struct AvailbilityView: View {
                 MapScaleView()
                 
             }
+            
+            .safeAreaPadding(.top, 40)
         }
         .alert("Error", isPresented: $viewModel.showErrorAlert) {
                 
