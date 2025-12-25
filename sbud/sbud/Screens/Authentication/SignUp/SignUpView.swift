@@ -11,39 +11,102 @@ struct SignUpView: View {
     @StateObject var viewModel = SignUpViewModel()
     @EnvironmentObject var coordinator: MainCoordinator
     
-    
+    @State private var isSigningUp = false
     @State var isSigningIn = false
+    
+    // Stato per la visibilità della password
+    @State private var showPassword = false
+    
+    var isFormValid: Bool {
+        return isValidEmail(viewModel.email) && viewModel.password.count > 6
+    }
+    
     var body: some View {
-        NavigationStack{
-        ZStack{ //START : ZStack
-            Color.backgroundColor
-                .ignoresSafeArea()
-            
-            VStack{ //START : main //START : ZStack
-                Spacer()
-                Text("Sign up")
-                    .foregroundColor(Color.mainColor)
-                    .font(.system(size: 60, weight: .bold))
-                    .accessibilityAddTraits(.isHeader)
-                Text("Bring athletes closer")
-                    .foregroundColor(Color.mainColor)
-                    .font(.title3)
+        NavigationStack {
+            ZStack { //START : ZStack
+                Color.backgroundColor
+                    .ignoresSafeArea()
                 
-                HStack{
-                    NavigationLink{
-                        SignUpEmailView()
-                            .environmentObject(viewModel)
-                    }label:{
-                        Image(systemName: "envelope.circle")
-                            .resizable()
-                            .frame(width: 50,height: 50)
-                            .background(Color(.white))
-                            .cornerRadius(25)
-                    }
+                VStack { //START : main
+                    Spacer()
                     
-                    Button{
+                    Text("Sign up")
+                        .foregroundColor(Color.mainColor)
+                        .font(.system(size: 60, weight: .bold))
+                        .accessibilityAddTraits(.isHeader)
+                    
+                    Text("Bring athletes closer")
+                        .foregroundColor(Color.mainColor)
+                        .font(.title3)
+                        .padding(.bottom, 15) //title space
+                    
+                    
+                    VStack(spacing: 8) {
+                        TextField("Enter your e-mail: ", text: $viewModel.email)
+                            .autocapitalization(.none)
+                            .modifier(TextModifierSignUp())
+                        //email is valid?
+                        if !viewModel.email.isEmpty && !isValidEmail(viewModel.email) {
+                            Text("Inserisci un'email valida (es. nome@mail.com)")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                                .padding(.leading, 5)
+                        }
+                        
+                        //password logic
+                        HStack {
+                            if showPassword {
+                                TextField("Password", text: $viewModel.password)
+                                    .autocapitalization(.none)
+                            } else {
+                                SecureField("Password", text: $viewModel.password)
+                                    .autocapitalization(.none)
+                            }
+                        }
+                        .modifier(TextModifierSignUp())
+                        .overlay(alignment: .trailing) {
+                            
+                            Button {
+                                showPassword.toggle()
+                            } label: {
+                                Image(systemName: showPassword ? "eye" : "eye.slash")
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, 25)
+                            }
+                        }
+                        //password is valid
+                        if !viewModel.password.isEmpty && viewModel.password.count <= 6 {
+                            Text("La password deve avere almeno 7 caratteri")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                                .padding(.leading, 5)
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    
+                    Button {
+                        Task {
+                            try await viewModel.createUser()
+                            
+                        }
+                    } label: {
+                        Text("Complete Sign Up")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.black)
+                            .frame(width: 330, height: 44)
+                            .background(Color.mainColor )
+                            .cornerRadius(10)
+                        
+                    }
+                    .padding(.vertical)
+                    .disabled(!isFormValid || isSigningUp)
+                    
+                    
+                    Button {
                         isSigningIn = true
-                        Task{
+                        Task {
                             await viewModel.signUpWithGoogle()
                             isSigningIn = false
                         }
@@ -56,33 +119,37 @@ struct SignUpView: View {
                     }
                     .popUp(delay: 0.3)
                     .disabled(isSigningIn)
-                }
+                    
+                    
+                    Spacer()
+                    
+                    Button {
+                        viewModel.goToSignIn()
+                    } label: {
+                        Text("Sign in instead?")
+                            .foregroundColor(Color.mainColor)
+                    }
+                    .padding(.vertical, 35)
+                    .adaptiveSecondaryButtonStyle()
+                    .popUp(delay: 0.3)
+                    
+                } //END : main
                 
-                Spacer()
-                //  .frame(height: 40)
-                
-                Button{
-                    viewModel.goToSignIn()
-                } label: {
-                    Text("Sign in instead?")
-                        .foregroundColor(Color.mainColor)
-                }
-                .padding(.vertical,35)
-                .adaptiveSecondaryButtonStyle()
-                .popUp(delay: 0.3)
-                
-            } //END : main //START : ZStack
-            
-        } //END : ZStack
-    }.onAppear{
+            } //END : ZStack
+        }
+        .onAppear {
             viewModel.setCoordinator(coordinator: coordinator)
         }
-        .alert("Error", isPresented: $viewModel.showAlert){
+        .alert("Error", isPresented: $viewModel.showAlert) {
             Button("Ok", role: .cancel) {}
         } message: {
             Text(viewModel.alertMsg)
         }
-        
+    }
+    func isValidEmail(_ email: String) -> Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPredicate = NSPredicate(format:"SELF MATCHES %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
     }
 }
 

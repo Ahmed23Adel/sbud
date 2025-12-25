@@ -31,14 +31,9 @@ class AuthenticationManagerEmailAndPassword: IAuthenticationManager{
     
     @MainActor
     func signUp(email: String, password: String, username: String) async throws {
-        
-        do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             self.currentUser = result.user
             
-        } catch {
-            print("DEBUG: Failed to create user with error: \(error.localizedDescription)")
-        }
     }
     
     func signIn(withEmail email: String, password: String) async throws {

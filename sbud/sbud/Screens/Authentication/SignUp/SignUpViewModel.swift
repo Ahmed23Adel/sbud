@@ -20,7 +20,7 @@ class SignUpViewModel: ObservableObject{
     @Published var isLoading = false
     @Published var emailValidationFailed = false
     @Published var usernameValidationFailed = false
-    
+    @Published var isSigningUp = false
     let authManager = AuthenticationManager.shared
     @Published var showAlert = false
     @Published var alertMsg = ""
@@ -52,14 +52,33 @@ class SignUpViewModel: ObservableObject{
     }
     
     func createUser() async throws {
+        isSigningUp = true
         do{
             try await AuthenticationManagerEmailAndPassword.shared.signUp(email: email, password: password, username: username)
             print("Tentativo di navigazione via coordinator: \(String(describing: coordinator))")
+            isSigningUp = false
             coordinator?.goToHome()
-        }catch{
-            await MainActor.run {
-                showAlert = true
-                alertMsg = "Problem with user registration, please try again"
+        } catch {
+            isSigningUp = false
+            showAlert = true
+            
+            // 1. Convertiamo l'errore Swift in NSError per leggere il codice numerico
+            let nsError = error as NSError
+            
+            // 2. Usiamo AuthErrorCode(rawValue:) direttamente (senza .Code)
+            if let errorCode = AuthErrorCode(rawValue: nsError.code) {
+                switch errorCode {
+                case .emailAlreadyInUse:
+                    alertMsg = "This email is already in use. Try sign in"
+                case .invalidEmail:
+                    alertMsg = "Format of the email is wrong."
+                case .weakPassword:
+                    alertMsg = "The password is too short. (minimum 6 characters)"
+                default:
+                    alertMsg = "Error: \(error.localizedDescription)"
+                }
+            } else {
+                alertMsg = "Generic error: \(error.localizedDescription)"
             }
         }
     }
