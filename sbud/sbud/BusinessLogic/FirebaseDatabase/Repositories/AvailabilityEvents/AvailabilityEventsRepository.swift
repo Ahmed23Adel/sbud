@@ -54,9 +54,7 @@ class AvailabilityEventsRepository: IFirebaesRepository{
     func update(_ id: String, _ item: any T) async throws {
         
     }
-    
-    
-    
+        
     func delete(_ id: String) async throws {
         
     }
