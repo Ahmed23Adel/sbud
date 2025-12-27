@@ -15,16 +15,29 @@ struct AvailbilityView: View {
     var body: some View {
         ZStack {
             Color.backgroundColor
+            
             AnchorMapConditionalView(
                 anchorAvailabilityEvents: viewModel.anchorAvailabilityEvents,
                 anchorClusters: viewModel.anchorsClusters,
                 shouldShowIndividuals: viewModel.shouldShowIndividuals,
                 cameraPosition: $viewModel.cameraPosition,
                 onCameraChangeFunc: viewModel.handleMapCameraChange)
-            
+        
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    GlassFloatingButton(systemName: "line.3.horizontal.decrease"){
+                        print("")
+                    }
+                    
+                }
+                .padding(.bottom, 100)
+                .padding(.trailing, 16)
+                
+            }
         }
         .alert("Error", isPresented: $viewModel.showErrorAlert) {
-                
             Button("Ok", role: .cancel) {}
         } message: {
             Text(viewModel.alertMsg)
@@ -32,7 +45,6 @@ struct AvailbilityView: View {
         .ignoresSafeArea()
     }
 }
-
 
 #Preview {
     AvailbilityView()
