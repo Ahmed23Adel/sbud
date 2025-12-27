@@ -20,16 +20,15 @@ struct IndividualAnnotationView: View {
                     .scaledToFit()
                     .frame(width: 44, height: 44)
                 AsyncImage(url: URL(string: event.event.ownerProfilePicture)) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                } placeholder: {
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.3))
-                                }
-                                .frame(width: 18, height: 18)
-                                .clipShape(Circle())
-                                .offset(y: -4)
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    .frame(width: 18, height: 18)
+                    .clipShape(Circle())
+                    .offset(y: -4)
             }
             
             
