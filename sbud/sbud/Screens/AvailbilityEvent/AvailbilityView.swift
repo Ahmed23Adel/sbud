@@ -11,7 +11,7 @@ internal import FirebaseFirestoreInternal
 
 struct AvailbilityView: View {
     @StateObject var viewModel = AvailbilityViewModel(locationManager: LocationManager.shared)
-    
+    @EnvironmentObject private var coordinator: AvailabilityCoordinator
     var body: some View {
         ZStack {
             Color.backgroundColor
@@ -28,7 +28,7 @@ struct AvailbilityView: View {
                 HStack {
                     Spacer()
                     GlassFloatingButton(systemName: "line.3.horizontal.decrease"){
-                        print("")
+                        coordinator.showSheet(.filter)
                     }
                     
                 }
