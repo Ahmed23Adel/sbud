@@ -15,52 +15,13 @@ struct AvailbilityView: View {
     var body: some View {
         ZStack {
             Color.backgroundColor
+            AnchorMapConditionalView(
+                anchorAvailabilityEvents: viewModel.anchorAvailabilityEvents,
+                anchorClusters: viewModel.anchorsClusters,
+                shouldShowIndividuals: viewModel.shouldShowIndividuals,
+                cameraPosition: $viewModel.cameraPosition,
+                onCameraChangeFunc: viewModel.handleMapCameraChange)
             
-            Map(position: $viewModel.cameraPosition) {
-                UserAnnotation()
-                
-                if viewModel.shouldShowIndividuals{
-                    ForEach(viewModel.anchorAvailabilityEvents) { event in
-                        Annotation(
-                            "",
-                            coordinate: CLLocationCoordinate2D(
-                                latitude: event.event.geoPoint.latitude,
-                                longitude: event.event.geoPoint.longitude
-                            )
-                        ) {
-                            
-                            IndividualAnnotationView(event: event)
-                        }
-                    }
-                    
-                } else{
-                    ForEach(viewModel.anchorsClusters) { cluster in
-                        Annotation(
-                            "\(cluster.count) available",
-                            coordinate: CLLocationCoordinate2D(
-                                latitude: cluster.cluster.location.latitude,
-                                longitude: cluster.cluster.location.longitude
-                            )
-                        ) {
-                            
-                            ClusterAnnotationView(count: cluster.count)
-                        }
-                    }
-                }
-                
-            }
-            .onMapCameraChange { context in
-                viewModel.handleMapCameraChange(context.region)
-            }
-            .mapStyle(.standard(elevation: .realistic))
-            .mapControls {
-                MapUserLocationButton()
-                MapCompass()
-                MapScaleView()
-                
-            }
-            
-            .safeAreaPadding(.top, 40)
         }
         .alert("Error", isPresented: $viewModel.showErrorAlert) {
                 

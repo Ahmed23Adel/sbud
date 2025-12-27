@@ -47,5 +47,6 @@ struct IndividualAnnotationView: View {
                 geoPoint: GeoPoint(latitude: 45.43817043216585, longitude: 9.219661393563264),
                 notes: "some notes",
                 userId: "jagGta4pl3XywZcBv4WUq1Bv1HL2",
-                ownerProfilePicture: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s")))
+                ownerProfilePicture: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s"))
+    )
 }
