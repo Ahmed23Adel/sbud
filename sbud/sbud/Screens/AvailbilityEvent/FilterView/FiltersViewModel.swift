@@ -12,7 +12,7 @@ class FiltersViewModel: ObservableObject{
     let icons = AvailabilityConfig.icons
     let activityNames = AvailabilityConfig.activityNames
     private var availabilityFiltersResults: AvailabilityFiltersResults
-    @Published var selectedActivityIndex = 0 {
+    @Published var selectedActivityIndex: Int {
         didSet{
             availabilityFiltersResults.selectedActivityIndex = selectedActivityIndex
         }
@@ -25,6 +25,7 @@ class FiltersViewModel: ObservableObject{
     
     init(availabilityFiltersResults: AvailabilityFiltersResults){
         self.availabilityFiltersResults = availabilityFiltersResults
+        selectedActivityIndex = availabilityFiltersResults.selectedActivityIndex
     }
     
 }

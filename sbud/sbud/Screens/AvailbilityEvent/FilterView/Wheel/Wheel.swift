@@ -42,6 +42,13 @@ struct Wheel: View {
             }
             
             RadialLinesView()
+                .onAppear {
+                    if selectedIndex != 0{
+                        let initialRotation = -Double(selectedIndex) * 90
+                        currentRotation = initialRotation
+                        lastRotation = currentRotation
+                    }
+                }
                 .rotationEffect(Angle(degrees: currentRotation + dragRotation))
                 .gesture(
                     DragGesture()
