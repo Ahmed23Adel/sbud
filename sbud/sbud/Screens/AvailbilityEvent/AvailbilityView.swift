@@ -49,7 +49,9 @@ struct AvailbilityView: View {
         .ignoresSafeArea()
     }
 }
-//
-//#Preview {
-//    AvailbilityView(viewModel: <#AvailbilityViewModel#>)
-//}
+
+#Preview {
+    AvailbilityView(viewModel: AvailbilityViewModel(
+        locationManager: LocationManager.shared,
+        availabilityFiltersResults: AvailabilityFiltersResults()))
+}

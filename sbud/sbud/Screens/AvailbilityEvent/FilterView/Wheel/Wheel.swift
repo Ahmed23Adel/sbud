@@ -134,14 +134,14 @@ struct Wheel: View {
         
         // Scale up if currently scaled down
         if wheelScale != 1.0 {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: 0.9, dampingFraction: 0.57)) {
                 wheelScale = 1.0
             }
         }
     }
     
     private func scaleDownWheel(){
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+        withAnimation(.spring(response: 0.9, dampingFraction: 0.57)) {
             wheelScale = scaledDownSize
         }
     }
