@@ -10,8 +10,12 @@ import MapKit
 internal import FirebaseFirestoreInternal
 
 struct AvailbilityView: View {
-    @StateObject var viewModel = AvailbilityViewModel(locationManager: LocationManager.shared)
+    // I will assign it from coordinator to pass filters
+    @StateObject var viewModel: AvailbilityViewModel
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
+    
+   
+    
     var body: some View {
         ZStack {
             Color.backgroundColor
@@ -45,7 +49,7 @@ struct AvailbilityView: View {
         .ignoresSafeArea()
     }
 }
-
-#Preview {
-    AvailbilityView()
-}
+//
+//#Preview {
+//    AvailbilityView(viewModel: <#AvailbilityViewModel#>)
+//}

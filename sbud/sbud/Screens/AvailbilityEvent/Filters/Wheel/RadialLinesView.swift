@@ -1,11 +1,12 @@
-//
-//  Wheel.swift
-//  sbud
-//
-//  Created by ahmed on 27/12/2025.
-//
+////
+////  Wheel.swift
+////  sbud
+////
+////  Created by ahmed on 27/12/2025.
+////
 
 import SwiftUI
+
 
 struct RadialLinesView: View {
     let numberOfLines = 36
@@ -30,12 +31,4 @@ struct RadialLinesView: View {
         let position = index % 3
         return position == 0 ? longLineLength : shortLineLength
     }
-    
-    
-}
-
-
-
-#Preview {
-    RadialLinesView()
 }

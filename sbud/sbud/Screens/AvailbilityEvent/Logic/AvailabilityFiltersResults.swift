@@ -1,0 +1,13 @@
+//
+//  AvailabilityFiltersResults.swift
+//  sbud
+//
+//  Created by ahmed on 29/12/2025.
+//
+
+import Foundation
+import Combine
+
+class AvailabilityFiltersResults: ObservableObject{
+    @Published var selectedActivityIndex = 0
+}

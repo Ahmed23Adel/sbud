@@ -1,10 +1,10 @@
+////
+////  RadialLine.swift
+////  sbud
+////
+////  Created by ahmed on 27/12/2025.
+////
 //
-//  RadialLine.swift
-//  sbud
-//
-//  Created by ahmed on 27/12/2025.
-//
-
 import SwiftUI
 
 struct RadialLine: View {
@@ -20,3 +20,4 @@ struct RadialLine: View {
             .rotationEffect(angle)
     }
 }
+

@@ -9,4 +9,6 @@ import Foundation
 
 class AppStorageConstants{
     static let SIGN_IN_METHOD = "signInMethod"
+    static let defaultActivityName = "running"
+    static let defaultActivityIndex = 0
 }

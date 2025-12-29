@@ -27,9 +27,13 @@ class AvailbilityViewModel: ObservableObject {
     var locationManager: LocationManager
     private var cancellables = Set<AnyCancellable>()
     
+    private var availabilityFiltersResults: AvailabilityFiltersResults
+    private var selectedActivityIndex: Int = 0
     
-    init(locationManager: LocationManager) {
+    init(locationManager: LocationManager, availabilityFiltersResults: AvailabilityFiltersResults) {
         self.locationManager = locationManager
+        self.availabilityFiltersResults = availabilityFiltersResults
+        
         locationManager.requestPermission()
         let coordinate = locationManager.userLocation ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
         self.cameraPosition = .region(
@@ -42,7 +46,7 @@ class AvailbilityViewModel: ObservableObject {
             )
         )
         
-            
+        setupFilterResultsListener()
         setupListeners()
         fetchNewData()
     }
@@ -172,5 +176,19 @@ class AvailbilityViewModel: ObservableObject {
             lastFetchedPrecision = newPrecision
             fetchNewData()
         }
+    }
+    
+    // MARK: Filters
+    private func setupFilterResultsListener(){
+        availabilityFiltersResults.$selectedActivityIndex
+            .sink{ [weak self] newIndex in
+                self?.changeSelectedActivity(selectedActivityIndex: newIndex)
+            }
+            .store(in: &cancellables)
+    }
+    
+    func changeSelectedActivity(selectedActivityIndex: Int){
+        self.selectedActivityIndex = selectedActivityIndex
+       print("from availabiitily: ", selectedActivityIndex)
     }
 }

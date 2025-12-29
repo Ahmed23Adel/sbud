@@ -9,9 +9,14 @@ import SwiftUI
 
 struct AvailabilityAppCoordinator: View {
     @StateObject private var coordinator = AvailabilityCoordinator()
+    @StateObject private var availaibilityFiltesrResults = AvailabilityFiltersResults()
     
     var body: some View {
-        AvailbilityView()
+        AvailbilityView(viewModel: AvailbilityViewModel(
+            locationManager: LocationManager.shared,
+            availabilityFiltersResults: availaibilityFiltesrResults
+            
+        ))
             .environmentObject(coordinator)
             .sheet(item: $coordinator.activeSheet){ sheetType in
                 sheetContent(for: sheetType)
@@ -22,7 +27,7 @@ struct AvailabilityAppCoordinator: View {
     private func sheetContent(for sheetType: AvailabilitySheetType) -> some View{
         switch sheetType{
         case .filter:
-            FiltersView()
+            FiltersView(availabilityFiltersResults: availaibilityFiltesrResults)
         }
     }
 }

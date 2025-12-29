@@ -6,72 +6,88 @@
 //
 
 import SwiftUI
+import SwiftUI
 
 struct Wheel: View {
     
     @State private var currentRotation: Double = 0
     @State private var lastRotation: Double = 0
-    // @ gestureState
-    // The value is updated during the gesture
-    // When the gesture finishes or is cancelled, SwiftUI resets it back to 0 automatically
     @GestureState private var dragRotation: Double = 0
     
-    // Minimum drag threshold in degrees to trigger rotation
-    let rotationThreshold: Double = 45.0
+    let imageNames: [String]
+    let names: [String]
+    @Binding var selectedIndex: Int
+    
     
     var body: some View {
-        RadialLinesView()
-            .rotationEffect(Angle(degrees: currentRotation + dragRotation))
-            .gesture(
-                DragGesture()
-                    // note that state binds to $dragRotation
-                    .updating($dragRotation) { value, state, _ in
-                        let angle = calculateAngle(from: value.translation)
-                        state = angle
-                    }
-                    .onEnded { value in
-                        // when user lifts their finger
-                        let dragAngle = calculateAngle(from: value.translation)
-                        let totalRotation = lastRotation + dragAngle
-                        
-                        // Check if drag exceeded threshold
-                        if abs(dragAngle) >= rotationThreshold {
-                            // Strong enough drag - snap to nearest 90°
-                            // Snap to nearest 90-degree increment
-                            // for example
-                            // Divide by 90: 185 / 90 = 2.055
-                            // Round to nearest integer: round(2.055) = 2
-                            // Multiply back by 90: 2 × 90 = 180°
-                            let snappedRotation = round(totalRotation / 90.0) * 90.0
-                            
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                currentRotation = snappedRotation
-                                lastRotation = snappedRotation
-                            }
-                        } else {
-                            // Weak drag - return to previous position
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                currentRotation = lastRotation
-                            }
-                        }
-                    }
+        VStack(spacing: 30) {
+            // Image carousel above the wheel
+            ImageCarousel(
+                imageNames: imageNames,
+                names: names,
+                rotation: currentRotation + dragRotation
             )
+            
+            RadialLinesView()
+                .rotationEffect(Angle(degrees: currentRotation + dragRotation))
+                .gesture(
+                    DragGesture()
+                        .updating($dragRotation) { value, state, _ in
+                            let angle = calculateAngle(from: value.translation)
+                            let proposedRotation = lastRotation + angle
+                            let clampedRotation = clampRotation(rotation: proposedRotation)
+                            state = clampedRotation - lastRotation
+                        }
+                        .onEnded { value in
+                            let dragAngle = calculateAngle(from: value.translation)
+                            let totalRotation = lastRotation + dragAngle
+                            let clampedRotation = clampRotation(rotation: totalRotation)
+                            // Always snap to nearest 90° based on current position
+                            let snappedRotation = round(clampedRotation / 90.0) * 90.0
+                            let finalRotation = clampRotation(rotation: snappedRotation)
+                            // Immediately update currentRotation to prevent jump when dragRotation resets to 0
+                            //  You're spinning a roulette wheel
+                            //  When you let go, it's at -210° (between slots)
+                            //  We first "freeze" it at -210° (prevent jump)
+                            //  When smoothly rotate it to -180° (nearest slot)
+                            // bcz look @ ".rotationEffect(Angle(degrees: currentRotation + dragRotation))"
+                            currentRotation = clampedRotation
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                currentRotation = finalRotation
+                                lastRotation = finalRotation
+                            }
+                            
+                            //  Converts rotation angle to "how many items forward"
+                            // snappedRotation = 0° → steps = 0
+                            // snappedRotation = -90° → steps = 1
+                            // why -ve? Swiping left (negative rotation) moves FORWARD in the list
+                            //steps = -1
+                            // (-1 % 6) = -1          // First modulo: still negative
+                            // -1 + 6 = 5             // Add array length: now positive
+                            // 5 % 6 = 5              // Second modulo: final answer
+                            let steps = Int(round(finalRotation / 90.0))
+                            selectedIndex = abs(steps) // Since rotation is negative, use absolute value
+                        }
+                )
+        }
     }
-    
-    func calculateAngle(from translation: CGSize) -> Double {
-        // converts horizontal distance to radial rotation
-        // If you drag 100 pixels right: 100 × 0.5 = 50° rotation
-        // Support both horizontal and vertical drags for more natural rotation
+    /// Based on the movement, horizentally or vertically, it calculates the angle
+    ///
+    /// Plz bear in mind that dx --> +ve when swipe right, and -ve when swipe left
+    /// dy --> +ve when swipe down and -ve when swipe up
+    /// usually user will swipe left, dx for ex is -182, and dy 8 --> angle is  ~ -92
+    private func calculateAngle(from translation: CGSize) -> Double {
         let dx = translation.width
         let dy = translation.height
-        
-        // Use primarily horizontal movement, but allow vertical to contribute
         let angle = dx * 0.5 - dy * 0.2
-        
         return angle
     }
-}
-
-#Preview {
-    Wheel()
+    /// Make sure the rotation is within bounds
+    private func clampRotation(rotation: Double) -> Double {
+        let minRotation = Double(-(imageNames.count - 1) * 90) // can't go more right
+        let maxRotation = 0.0 // can't go more left
+        
+        // it's neither before the minRotatin, nor is it after the maxRotation
+        return max(minRotation, min(maxRotation, rotation))
+    }
 }
