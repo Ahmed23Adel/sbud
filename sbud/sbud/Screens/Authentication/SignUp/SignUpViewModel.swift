@@ -11,6 +11,7 @@ import FirebaseAuth
 import FirebaseCore
 import FirebaseFirestore
 
+@MainActor
 class SignUpViewModel: ObservableObject{
     @Published var email: String = ""
     @Published var password: String =  ""
@@ -55,7 +56,7 @@ class SignUpViewModel: ObservableObject{
         isSigningUp = true
         do{
             try await AuthenticationManagerEmailAndPassword.shared.signUp(email: email, password: password, username: username)
-            print("Tentativo di navigazione via coordinator: \(String(describing: coordinator))")
+            
             isSigningUp = false
             coordinator?.goToHome()
         } catch {

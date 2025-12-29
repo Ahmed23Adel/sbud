@@ -14,7 +14,6 @@ struct SignUpView: View {
     @State private var isSigningUp = false
     @State var isSigningIn = false
     
-    // Stato per la visibilità della password
     @State private var showPassword = false
     
     var isFormValid: Bool {
@@ -22,7 +21,7 @@ struct SignUpView: View {
     }
     
     var body: some View {
-        NavigationStack {
+       
             ZStack { //START : ZStack
                 Color.backgroundColor
                     .ignoresSafeArea()
@@ -47,7 +46,7 @@ struct SignUpView: View {
                             .modifier(TextModifierSignUp())
                         //email is valid?
                         if !viewModel.email.isEmpty && !isValidEmail(viewModel.email) {
-                            Text("Inserisci un'email valida (es. nome@mail.com)")
+                            Text("Insert a valid email (es. name@mail.com)")
                                 .font(.caption)
                                 .foregroundColor(.red)
                                 .padding(.leading, 5)
@@ -76,7 +75,7 @@ struct SignUpView: View {
                         }
                         //password is valid
                         if !viewModel.password.isEmpty && viewModel.password.count <= 6 {
-                            Text("La password deve avere almeno 7 caratteri")
+                            Text("Password must have more than 6 characters")
                                 .font(.caption)
                                 .foregroundColor(.red)
                                 .padding(.leading, 5)
@@ -136,7 +135,7 @@ struct SignUpView: View {
                 } //END : main
                 
             } //END : ZStack
-        }
+        
         .onAppear {
             viewModel.setCoordinator(coordinator: coordinator)
         }

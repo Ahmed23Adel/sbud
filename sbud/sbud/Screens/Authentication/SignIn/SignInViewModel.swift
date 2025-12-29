@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class SignInViewModel: ObservableObject{
     
     let authManager = AuthenticationManager.shared
@@ -16,6 +17,7 @@ class SignInViewModel: ObservableObject{
     var coordinator: MainCoordinator?
     @Published var email = ""
     @Published var password = ""
+    @Published var isSigningIn = false
     
     func setCoordinator(coordinator: MainCoordinator){
         self.coordinator = coordinator
@@ -35,17 +37,19 @@ class SignInViewModel: ObservableObject{
     }
     
     func singIn () async throws{
+        isSigningIn = true
         do{
             try await AuthenticationManagerEmailAndPassword.shared.signIn(withEmail: email, password: password)
-            print("Tentativo di navigazione via coordinator: \(String(describing: coordinator))")
+            isSigningIn = false
             coordinator?.goToHome()
         } catch {
-            await MainActor.run {
-                showAlert = true
-                alertMsg = "Problem with user registration, please try again"
-            }
+            isSigningIn = false
+            showAlert = true
+                alertMsg = "Email or password are incorrect, please try again"
+            
         }
     }
+    
     func goToSignUp(){
         coordinator?.goToSignUp()
     }

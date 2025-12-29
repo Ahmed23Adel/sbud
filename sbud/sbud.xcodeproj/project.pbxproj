@@ -246,6 +246,7 @@
 			packageReferences = (
 				E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				E289D7BB2EE83372005F9F37 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				66B126EE2F0348A200306756 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E24825A12EE2DCA200330DC2 /* Products */;
@@ -630,6 +631,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		66B126EE2F0348A200306756 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.6.2;
+			};
+		};
 		E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";

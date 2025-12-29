@@ -29,7 +29,7 @@ class AuthenticationManagerEmailAndPassword: IAuthenticationManager{
         
     }
     
-    @MainActor
+    
     func signUp(email: String, password: String, username: String) async throws {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             self.currentUser = result.user
@@ -37,12 +37,8 @@ class AuthenticationManagerEmailAndPassword: IAuthenticationManager{
     }
     
     func signIn(withEmail email: String, password: String) async throws {
-        do {
-            let result = try await Auth.auth().signIn(withEmail: email, password: password)
-            self.currentUser = result.user
-        } catch {
-            print("DEBUG: Login failed \(error.localizedDescription)")
-        }
+        let result = try await Auth.auth().signIn(withEmail: email, password: password)
+        self.currentUser = result.user
     }
     
     func signOut() throws {
