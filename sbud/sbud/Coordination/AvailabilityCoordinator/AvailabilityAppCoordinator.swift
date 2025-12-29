@@ -25,7 +25,7 @@ struct AvailabilityAppCoordinator: View {
             }
             .onChange(of: coordinator.activeSheet){ oldValue, newValue in
                 if newValue != nil{
-                    impactFeedbackGenerator.impactOccurred(intensity: 0.5)
+                    impactFeedbackGenerator.impactOccurred(intensity: 0.8)
                 }
             }
     }
