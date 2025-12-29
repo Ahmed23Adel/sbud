@@ -20,13 +20,13 @@ class AvailabilityDataFetcher {
     
     // MARK: - Individuals
     
-    func fetchIndividuals(in region: MKCoordinateRegion?) async throws -> [AnchorAvailabilityEvent] {
+    func fetchIndividuals(in region: MKCoordinateRegion?, activityName: String) async throws -> [AnchorAvailabilityEvent] {
         let bounds = region != nil
             ? calculateBoundsFromRegion(region!)
             : calculateBoundsFromUserLocation()
         
         let repo = AvailabilityEventsRepository()
-        let query = createQueryForIndividual(repo: repo, bounds: bounds)
+        let query = createQueryForIndividual(repo: repo, bounds: bounds, activityName: activityName)
         let events = try await repo.fetch(query: query)
         return events.map { AnchorAvailabilityEvent(event: $0) }
     }
@@ -83,7 +83,7 @@ class AvailabilityDataFetcher {
         return prefix
     }
     
-    private func createQueryForIndividual(repo: AvailabilityEventsRepository, bounds: (min: String, max: String)) -> IQueryBuilder {
+    private func createQueryForIndividual(repo: AvailabilityEventsRepository, bounds: (min: String, max: String), activityName: String) -> IQueryBuilder {
         var query = repo.initQueryBuilderObject()
         query = query.appendFilter(
             Filter(field: "g.geohash", operation: .isGreaterThanOrEqualTo, value: bounds.min)
@@ -91,18 +91,21 @@ class AvailabilityDataFetcher {
         query = query.appendFilter(
             Filter(field: "g.geohash", operation: .isLessThan, value: bounds.max)
         )
+        query = query.appendFilter(
+            Filter(field: "activityType", operation: .isEqualTo, value: activityName)
+        )
         query = query.setLimit(individualsLimit)
         return query
     }
     
     // MARK: - Clusters
     
-    func fetchClusters(precision: GeohashPrecision) async throws -> [AnchorCluster] {
+    func fetchClusters(precision: GeohashPrecision, activityName: String) async throws -> [AnchorCluster] {
         let queryPrecision = max(1, precision.rawValue - 1)
         let bounds = calculateBoundsForClusters(precision: queryPrecision)
         
         let repo = AvailabilityAggregateRepository()
-        let query = createQueryForClusters(bounds: bounds, repo: repo)
+        let query = createQueryForClusters(bounds: bounds, repo: repo, activityName: activityName)
         let clusters = try await repo.fetch(query: query)
         
         return clusters
@@ -124,13 +127,16 @@ class AvailabilityDataFetcher {
         return (min: prefix, max: prefix + "~")
     }
     
-    private func createQueryForClusters(bounds: (min: String, max: String), repo: AvailabilityAggregateRepository) -> IQueryBuilder {
+    private func createQueryForClusters(bounds: (min: String, max: String), repo: AvailabilityAggregateRepository, activityName: String) -> IQueryBuilder {
         var query = repo.initQueryBuilderObject()
         query = query.appendFilter(
             Filter(field: repo.constants.geohashKey, operation: .isGreaterThanOrEqualTo, value: bounds.min)
         )
         query = query.appendFilter(
             Filter(field: repo.constants.geohashKey, operation: .isLessThan, value: bounds.max)
+        )
+        query = query.appendFilter(
+            Filter(field: "activityType", operation: .isEqualTo, value: activityName)
         )
         query = query.setLimit(clustersLimit)
         return query

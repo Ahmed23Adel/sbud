@@ -11,7 +11,7 @@ class AvailabilityConfig{
     static let icons = ["figure.run",
                  "figure.indoor.soccer",
                  "dumbbell"]
-    static let activityNames = ["Run",
+    static let activityNames = ["Running",
                          "Football",
                          "Gym"]
 }

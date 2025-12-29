@@ -19,14 +19,27 @@ struct Wheel: View {
     @Binding var selectedIndex: Int
     
     
+    @State private var wheelScale: CGFloat = 1.0
+    @State private var inactivityTimer: Timer?
+    private let inactivityDelay: TimeInterval = 2
+    private let scaledDownSize = 0.3
+    
     var body: some View {
         VStack(spacing: 30) {
+            Spacer()
             // Image carousel above the wheel
             ImageCarousel(
                 imageNames: imageNames,
                 names: names,
                 rotation: currentRotation + dragRotation
             )
+            .scaleEffect(wheelScale)
+            .onAppear{
+                startInactivityTimer()
+            }
+            .onDisappear{
+                cancelInactivityTimer()
+            }
             
             RadialLinesView()
                 .rotationEffect(Angle(degrees: currentRotation + dragRotation))
@@ -37,6 +50,7 @@ struct Wheel: View {
                             let proposedRotation = lastRotation + angle
                             let clampedRotation = clampRotation(rotation: proposedRotation)
                             state = clampedRotation - lastRotation
+                            scaleUpWheel()
                         }
                         .onEnded { value in
                             let dragAngle = calculateAngle(from: value.translation)
@@ -67,6 +81,7 @@ struct Wheel: View {
                             // 5 % 6 = 5              // Second modulo: final answer
                             let steps = Int(round(finalRotation / 90.0))
                             selectedIndex = abs(steps) // Since rotation is negative, use absolute value
+                            startInactivityTimer()
                         }
                 )
         }
@@ -89,5 +104,35 @@ struct Wheel: View {
         
         // it's neither before the minRotatin, nor is it after the maxRotation
         return max(minRotation, min(maxRotation, rotation))
+    }
+    
+    private func startInactivityTimer(){
+        cancelInactivityTimer()
+        inactivityTimer = Timer.scheduledTimer(withTimeInterval: inactivityDelay, repeats: false ){ _ in
+            scaleDownWheel()
+        }
+    }
+    
+    private func cancelInactivityTimer(){
+        inactivityTimer?.invalidate()
+        inactivityTimer = nil
+    }
+    
+    private func scaleUpWheel() {
+        // Cancel any existing timer
+        cancelInactivityTimer()
+        
+        // Scale up if currently scaled down
+        if wheelScale != 1.0 {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                wheelScale = 1.0
+            }
+        }
+    }
+    
+    private func scaleDownWheel(){
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+            wheelScale = scaledDownSize
+        }
     }
 }

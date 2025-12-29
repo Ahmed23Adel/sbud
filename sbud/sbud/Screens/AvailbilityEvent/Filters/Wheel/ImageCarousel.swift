@@ -36,7 +36,7 @@ struct ImageCarousel: View {
             }
             .frame(width: width, height: geometry.size.height)
         }
-        .frame(height: 120)
+//        .frame(height: 120)
         .clipped()
     }
 }

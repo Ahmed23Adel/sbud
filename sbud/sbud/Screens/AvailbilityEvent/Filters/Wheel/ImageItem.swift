@@ -15,12 +15,13 @@ struct ImageItem: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: imageName)
-                .font(.system(size: 50))
+                .font(.system(size: 150))
                 .foregroundColor(.mainColor)
             
             Text(name)
-                .font(.headline)
-                .foregroundColor(.primary)
+                .font(.system(size: 48))
+                .foregroundColor(.mainColor)
+            
         }
         .frame(width: 200)
     }
