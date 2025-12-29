@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SwiftUI
+import UIKit
 
 struct Wheel: View {
     
@@ -24,6 +24,8 @@ struct Wheel: View {
     private let inactivityDelay: TimeInterval = 2
     private let scaledDownSize = 0.3
     
+    @State private var lastHapticIndex: Int = 0
+    private let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
     var body: some View {
         VStack(spacing: 30) {
             Spacer()
@@ -57,6 +59,7 @@ struct Wheel: View {
                             let proposedRotation = lastRotation + angle
                             let clampedRotation = clampRotation(rotation: proposedRotation)
                             state = clampedRotation - lastRotation
+                            triggerHapticRotation(rotation: clampedRotation)
                             scaleUpWheel()
                         }
                         .onEnded { value in
@@ -140,6 +143,14 @@ struct Wheel: View {
     private func scaleDownWheel(){
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             wheelScale = scaledDownSize
+        }
+    }
+    
+    private func triggerHapticRotation(rotation: Double){
+        let currentIndex = Int(abs(round(rotation / 10)))
+        if currentIndex != lastHapticIndex {
+            impactFeedback.impactOccurred(intensity: 0.5)
+            lastHapticIndex = currentIndex
         }
     }
 }
