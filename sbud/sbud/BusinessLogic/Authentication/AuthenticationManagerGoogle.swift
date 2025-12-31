@@ -13,10 +13,11 @@ import GoogleSignIn
 class AuthenticationManagerGoogle: IAuthenticationManager{
     @Published var isSignedIn: Bool = false
     @Published var currentUser: FirebaseAuth.User?
-    private let googleSignUpManager = GoogleSignUpManager()
+    private let googleSignUpManager: IGoogleSignUpManager
     private var authStateHandler: AuthStateDidChangeListenerHandle?
     
-    init(){
+    init(googleSignUpManager: IGoogleSignUpManager = GoogleSignUpManager()){
+        self.googleSignUpManager = googleSignUpManager
         checkAuthState()
         authStateHandler = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             DispatchQueue.main.async {

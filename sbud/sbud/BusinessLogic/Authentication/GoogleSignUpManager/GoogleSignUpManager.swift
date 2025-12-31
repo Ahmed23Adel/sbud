@@ -11,7 +11,7 @@ import GoogleSignIn
 import UIKit
 import FirebaseAuth
 
-class GoogleSignUpManager{
+class GoogleSignUpManager: IGoogleSignUpManager{
     
     func signUpWithGoogle() async throws{
         let clientId = try getClientID()

@@ -9,8 +9,6 @@ import FirebaseAuth
 import SwiftUI
 
 class AuthenticationManager: IAuthenticationManager{
-    
-    
     static let shared = AuthenticationManager()
     @Published var isSignedIn: Bool = false
     @Published var currentUser: FirebaseAuth.User?
@@ -20,7 +18,6 @@ class AuthenticationManager: IAuthenticationManager{
     private var signInMethodManager: (any IAuthenticationManager)?
     
     init(){
-        print("signInMethod", signInMethod)
         if signInMethod == AuthenticationConstants.METHOD_UNKNOWN{
             Task { @MainActor in
                 setUserLoggedOut()
