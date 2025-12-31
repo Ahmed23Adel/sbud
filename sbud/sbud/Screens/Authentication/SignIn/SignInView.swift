@@ -14,8 +14,8 @@ struct SignInView: View {
     var body: some View {
         
             ZStack{ //START : ZStack
-                Color.backgroundColor
-                    .ignoresSafeArea()
+                
+                AuthBackground()
                 
                 VStack{ //START : main //START : ZStack
                     Spacer()

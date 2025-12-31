@@ -11,15 +11,9 @@ struct SignUpView: View {
     @StateObject var viewModel = SignUpViewModel()
     @EnvironmentObject var coordinator: MainCoordinator
     
-    
-    
-    
     var body: some View {
-       
             ZStack { //START : ZStack
-                Color.backgroundColor
-                    .ignoresSafeArea()
-                
+                AuthBackground()
                 VStack { //START : main
                     Spacer()
                     
@@ -38,7 +32,7 @@ struct SignUpView: View {
                         TextField("Enter your e-mail: ", text: $viewModel.email)
                             .autocapitalization(.none)
                             .modifier(TextModifierSignUp())
-                        //email is valid?
+                        
                         if !viewModel.email.isEmpty && !viewModel.isValidEmail(viewModel.email) {
                             Text("Insert a valid email (es. name@mail.com)")
                                 .font(.caption)
