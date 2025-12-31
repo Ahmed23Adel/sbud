@@ -13,8 +13,6 @@ import GoogleSignIn
 class AuthenticationManagerGoogle: IAuthenticationManager{
     @Published var isSignedIn: Bool = false
     @Published var currentUser: FirebaseAuth.User?
-    @Published var isLoading: Bool = true
-    
     private let googleSignUpManager = GoogleSignUpManager()
     private var authStateHandler: AuthStateDidChangeListenerHandle?
     
@@ -22,7 +20,7 @@ class AuthenticationManagerGoogle: IAuthenticationManager{
         checkAuthState()
         authStateHandler = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             DispatchQueue.main.async {
-                self?.updateUserState(user: user)
+                self?.updateUserState(user: user, methodUsed: .google)
             }
         }
     }
@@ -33,34 +31,14 @@ class AuthenticationManagerGoogle: IAuthenticationManager{
         }
     }
     
+    // MARK: Checking state
     private func checkAuthState(){
         if let user  = Auth.auth().currentUser{
-            updateUserState(user: user)
+            updateUserState(user: user, methodUsed: .google)
         }
-        FinishLoading()
     }
-    
-    private func updateUserState(user: User?){
-        currentUser = user
-        isSignedIn = user != nil
-        
-        DispatchQueue.main.async {
-            AuthenticationManager.shared.currentUser = user
-            AuthenticationManager.shared.isSignedIn = user != nil
-            AuthenticationManager.shared.isLoading = false
             
-            if user != nil {
-                AuthenticationManager.shared.signInMethod = AuthenticationConstants.METHOD_GOOGLE
-            }
-        }
-        FinishLoading()
-    }
-    
-    private func FinishLoading(){
-        isLoading = false
-    }
-        
-    
+    // MARK: Google sign in/up
     func signUp() async throws  {
         try await googleSignUpManager.signUpWithGoogle()
         
@@ -70,6 +48,16 @@ class AuthenticationManagerGoogle: IAuthenticationManager{
         try await googleSignUpManager.signUpWithGoogle()
     }
     
+    // MARK: Email sign in/up
+    func signIn(email: String, password: String) async throws {
+        throw AuthError.unauthorizedAction
+    }
+    
+    func signUp(email: String, password: String) async throws {
+        throw AuthError.unauthorizedAction
+    }
+    
+    // MARK: sign  out
     func signOut() async throws {
         try Auth.auth().signOut()
         GIDSignIn.sharedInstance.signOut()
@@ -82,16 +70,13 @@ class AuthenticationManagerGoogle: IAuthenticationManager{
     
     func checkAuthStatus() -> Bool {
         if let user  = Auth.auth().currentUser{
-            updateUserState(user: user)
-            FinishLoading()
+            updateUserState(user: user, methodUsed: .google)
             return true
         } else{
-            FinishLoading()
             return false
         }
-        
-        
-        
     }
+    
+    
     
 }

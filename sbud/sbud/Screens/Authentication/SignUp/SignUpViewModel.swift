@@ -15,9 +15,7 @@ import FirebaseFirestore
 class SignUpViewModel: ObservableObject{
     @Published var email: String = ""
     @Published var password: String =  ""
-    @Published var username: String = ""
     @Published var emailIsValid = false //to ensure
-    @Published var usernameIsValid = false
     @Published var isLoading = false
     @Published var emailValidationFailed = false
     @Published var usernameValidationFailed = false
@@ -27,14 +25,22 @@ class SignUpViewModel: ObservableObject{
     @Published var alertMsg = ""
     var coordinator: MainCoordinator?
     
+    
+    @Published var isSigningIn = false
+    @Published var showPassword = false
+    
+    var isFormValid: Bool {
+        return isValidEmail(email) && password.count > 6
+    }
+    
     init(){
         
     }
-    
     func setCoordinator(coordinator: MainCoordinator){
         self.coordinator = coordinator
     }
 
+    // MARK: auth Google
     func signUpWithGoogle() async {
         authManager.setAuthTypeGoogle()
         do {
@@ -48,45 +54,48 @@ class SignUpViewModel: ObservableObject{
         }        
     }
     
-    func goToSignIn(){
-        coordinator?.goToSignIn()
-    }
     
-    func createUser() async throws {
+    // MARK: auth email
+    func signUpWithEmail() async throws {
+        authManager.setAuthTypeEmailAndPassword()
         isSigningUp = true
-        do{
-            try await AuthenticationManagerEmailAndPassword.shared.signUp(email: email, password: password, username: username)
-            
+        do {
+            try await authManager.signUp(email: email, password: password)
             isSigningUp = false
             coordinator?.goToHome()
         } catch {
-            isSigningUp = false
-            showAlert = true
-            
-            // 1. Convertiamo l'errore Swift in NSError per leggere il codice numerico
-            let nsError = error as NSError
-            
-            // 2. Usiamo AuthErrorCode(rawValue:) direttamente (senza .Code)
-            if let errorCode = AuthErrorCode(rawValue: nsError.code) {
-                switch errorCode {
-                case .emailAlreadyInUse:
-                    alertMsg = "This email is already in use. Try sign in"
-                case .invalidEmail:
-                    alertMsg = "Format of the email is wrong."
-                case .weakPassword:
-                    alertMsg = "The password is too short. (minimum 6 characters)"
-                default:
-                    alertMsg = "Error: \(error.localizedDescription)"
-                }
-            } else {
-                alertMsg = "Generic error: \(error.localizedDescription)"
+            await MainActor.run {
+                isSigningUp = false
+                showAlert = true
+                showAlertForEmail(error: error)
             }
         }
     }
     
+    private func showAlertForEmail(error: Error){
+        let nsError = error as NSError
+        
+        if let errorCode = AuthErrorCode(rawValue: nsError.code) {
+            switch errorCode {
+            case .emailAlreadyInUse:
+                alertMsg = "This email is already in use. Try sign in"
+            case .invalidEmail:
+                alertMsg = "Format of the email is wrong."
+            case .weakPassword:
+                alertMsg = "The password is too short. (minimum 6 characters)"
+            default:
+                alertMsg = "Error: \(error.localizedDescription)"
+            }
+        } else {
+            alertMsg = "Generic error: \(error.localizedDescription)"
+        }
+        showAlert = true
+    }
+
+    // MARK: Validators
     @MainActor
     func validateEmail() async throws {
-        self.isLoading = true
+        startLoading()
         self.emailValidationFailed = false
         
         let snapshot = try await Firestore.firestore().collection("users")
@@ -95,20 +104,29 @@ class SignUpViewModel: ObservableObject{
         
         self.emailValidationFailed = !snapshot.isEmpty
         self.emailIsValid = snapshot.isEmpty
+        stopLoading()
         
-        self.isLoading = false
+    }
+
+    
+    // MARK: Navigation
+    func goToSignIn(){
+        coordinator?.goToSignIn()
     }
     
-    @MainActor
-    func validateUsername() async throws {
+    // MARK: View helpers
+    func isValidEmail(_ email: String) -> Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPredicate = NSPredicate(format:"SELF MATCHES %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
+    }
+    
+    private func startLoading(){
         self.isLoading = true
-        
-        let snapshot = try await Firestore.firestore().collection("users")
-            .whereField("username", isEqualTo: username)
-            .getDocuments()
-        
-        self.usernameIsValid = snapshot.isEmpty
-        self.isLoading = false
     }
     
+    private func stopLoading(){
+        self.isLoading = false
+    }
 }
+

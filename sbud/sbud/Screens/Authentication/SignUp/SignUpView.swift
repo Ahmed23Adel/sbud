@@ -11,14 +11,8 @@ struct SignUpView: View {
     @StateObject var viewModel = SignUpViewModel()
     @EnvironmentObject var coordinator: MainCoordinator
     
-    @State private var isSigningUp = false
-    @State var isSigningIn = false
     
-    @State private var showPassword = false
     
-    var isFormValid: Bool {
-        return isValidEmail(viewModel.email) && viewModel.password.count > 6
-    }
     
     var body: some View {
        
@@ -45,7 +39,7 @@ struct SignUpView: View {
                             .autocapitalization(.none)
                             .modifier(TextModifierSignUp())
                         //email is valid?
-                        if !viewModel.email.isEmpty && !isValidEmail(viewModel.email) {
+                        if !viewModel.email.isEmpty && !viewModel.isValidEmail(viewModel.email) {
                             Text("Insert a valid email (es. name@mail.com)")
                                 .font(.caption)
                                 .foregroundColor(.red)
@@ -54,7 +48,7 @@ struct SignUpView: View {
                         
                         //password logic
                         HStack {
-                            if showPassword {
+                            if viewModel.showPassword {
                                 TextField("Password", text: $viewModel.password)
                                     .autocapitalization(.none)
                             } else {
@@ -66,9 +60,9 @@ struct SignUpView: View {
                         .overlay(alignment: .trailing) {
                             
                             Button {
-                                showPassword.toggle()
+                                viewModel.showPassword.toggle()
                             } label: {
-                                Image(systemName: showPassword ? "eye" : "eye.slash")
+                                Image(systemName: viewModel.showPassword ? "eye" : "eye.slash")
                                     .foregroundColor(.gray)
                                     .padding(.trailing, 25)
                             }
@@ -86,11 +80,11 @@ struct SignUpView: View {
                     
                     Button {
                         Task {
-                            try await viewModel.createUser()
+                            try await viewModel.signUpWithEmail()
                             
                         }
                     } label: {
-                        Text("Complete Sign Up")
+                        Text("Sign Up")
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundColor(.black)
@@ -100,14 +94,14 @@ struct SignUpView: View {
                         
                     }
                     .padding(.vertical)
-                    .disabled(!isFormValid || isSigningUp)
+                    .disabled(!viewModel.isFormValid || viewModel.isSigningUp)
                     
                     
                     Button {
-                        isSigningIn = true
+                        viewModel.isSigningIn = true
                         Task {
                             await viewModel.signUpWithGoogle()
-                            isSigningIn = false
+                            viewModel.isSigningIn = false
                         }
                     } label: {
                         Image("google_ios_light_rd_na")
@@ -117,7 +111,7 @@ struct SignUpView: View {
                             .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
                     }
                     .popUp(delay: 0.3)
-                    .disabled(isSigningIn)
+                    .disabled(viewModel.isSigningIn)
                     
                     
                     Spacer()
@@ -145,11 +139,7 @@ struct SignUpView: View {
             Text(viewModel.alertMsg)
         }
     }
-    func isValidEmail(_ email: String) -> Bool {
-        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPredicate = NSPredicate(format:"SELF MATCHES %@", emailRegex)
-        return emailPredicate.evaluate(with: email)
-    }
+    
 }
 
 

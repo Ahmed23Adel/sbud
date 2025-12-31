@@ -19,10 +19,16 @@ class SignInViewModel: ObservableObject{
     @Published var password = ""
     @Published var isSigningIn = false
     
+    @Published var showPassword = false
+    var isFormValid: Bool {
+        return isValidEmail(email) && password.count > 6
+    }
+    
     func setCoordinator(coordinator: MainCoordinator){
         self.coordinator = coordinator
     }
     
+    // MARK: auth Google
     func signUpWithGoogle() async {
         authManager.setAuthTypeGoogle()
         do {
@@ -36,10 +42,12 @@ class SignInViewModel: ObservableObject{
         }
     }
     
+    // MARK: auth Email
     func singIn () async throws{
         isSigningIn = true
+        authManager.setAuthTypeEmailAndPassword()
         do{
-            try await AuthenticationManagerEmailAndPassword.shared.signIn(withEmail: email, password: password)
+            try await authManager.signIn(email: email, password: password)
             isSigningIn = false
             coordinator?.goToHome()
         } catch {
@@ -52,5 +60,11 @@ class SignInViewModel: ObservableObject{
     
     func goToSignUp(){
         coordinator?.goToSignUp()
+    }
+    
+    func isValidEmail(_ email: String) -> Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPredicate = NSPredicate(format:"SELF MATCHES %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
     }
 }

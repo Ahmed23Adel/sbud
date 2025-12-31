@@ -11,13 +11,6 @@ struct SignInView: View {
     @StateObject var viewModel = SignInViewModel()
     @EnvironmentObject var coordinator: MainCoordinator
     
-    @State private var showPassword = false
-    
-    @State var isSigningIn = false
-    var isFormValid: Bool {
-        return isValidEmail(viewModel.email) && viewModel.password.count > 6
-    }
-    
     var body: some View {
         
             ZStack{ //START : ZStack
@@ -40,7 +33,7 @@ struct SignInView: View {
                             .autocapitalization(.none)
                             .modifier(TextModifierSignUp())
                         //email is valid?
-                        if !viewModel.email.isEmpty && !isValidEmail(viewModel.email) {
+                        if !viewModel.email.isEmpty && !viewModel.isValidEmail(viewModel.email) {
                             Text("Insert a valid email (es. name@mail.com)")
                                 .font(.caption)
                                 .foregroundColor(.red)
@@ -49,7 +42,7 @@ struct SignInView: View {
                         
                         //password logic
                         HStack {
-                            if showPassword {
+                            if viewModel.showPassword {
                                 TextField("Password", text: $viewModel.password)
                                     .autocapitalization(.none)
                             } else {
@@ -61,9 +54,9 @@ struct SignInView: View {
                         .overlay(alignment: .trailing) {
                             
                             Button {
-                                showPassword.toggle()
+                                viewModel.showPassword.toggle()
                             } label: {
-                                Image(systemName: showPassword ? "eye" : "eye.slash")
+                                Image(systemName: viewModel.showPassword ? "eye" : "eye.slash")
                                     .foregroundColor(.gray)
                                     .padding(.trailing, 25)
                             }
@@ -95,15 +88,15 @@ struct SignInView: View {
                         
                     }
                     .padding(.vertical)
-                    .disabled(!isFormValid || isSigningIn)
+                    .disabled(!viewModel.isFormValid || viewModel.isSigningIn)
                     
                     HStack{
                         
                         Button{
-                            isSigningIn = true
+                            viewModel.isSigningIn = true
                             Task{
                                 await viewModel.signUpWithGoogle()
-                                isSigningIn = false
+                                viewModel.isSigningIn = false
                             }
                         } label: {
                             Image("google_ios_light_rd_na")
@@ -113,7 +106,7 @@ struct SignInView: View {
                                 .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
                                 .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
                         }
-                        .disabled(isSigningIn)
+                        .disabled(viewModel.isSigningIn)
                     }
                     
                     
@@ -141,11 +134,7 @@ struct SignInView: View {
             }
         
     }
-    func isValidEmail(_ email: String) -> Bool {
-        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPredicate = NSPredicate(format:"SELF MATCHES %@", emailRegex)
-        return emailPredicate.evaluate(with: email)
-    }
+    
 }
 
 struct SignInView_Previews: PreviewProvider{
