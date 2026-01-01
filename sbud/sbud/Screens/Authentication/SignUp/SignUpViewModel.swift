@@ -25,14 +25,9 @@ class SignUpViewModel: ObservableObject{
     @Published var showAlert = false
     @Published var alertMsg = ""
     var coordinator: MainCoordinator?
-    
-    
     @Published var isSigningIn = false
     @Published var showPassword = false
     
-    var isFormValid: Bool {
-        return isValidEmail(email) && password.count > 6
-    }
     
     init(){
         
@@ -58,7 +53,12 @@ class SignUpViewModel: ObservableObject{
     
     // MARK: auth email
     func signUpWithEmail() async throws {
-        if !validateInputs() {return}
+        if !InputValidators().validateInputs(
+            email: email,
+            password: password,
+            emailAlertFunction: showAlertEmail,
+            passwordAlertFunction: showAlertPassword) {return}
+        
         authManager.setAuthTypeEmailAndPassword()
         isSigningUp = true
         do {
@@ -117,27 +117,6 @@ class SignUpViewModel: ObservableObject{
     }
     
     // MARK: View helpers
-    func isValidEmail(_ email: String) -> Bool {
-        var policy = SingleInputPolicy<String>(singleInputValidators: [
-            EmailValidator()
-        ])
-        policy.setInput(inputs: [email])
-        if !policy.check(){
-            showAlertEmail()
-            return false
-        }
-        return true
-    }
-    
-    func isPasswordValid(_ password: String) -> Bool{
-        var policy = PredefinedSingleInputPolicies.simplePasswordPolicy()
-        policy.setInput(inputs: [password])
-        if !policy.check(){
-            showAlertPassword()
-            return false
-        }
-        return true
-    }
     
     private func startLoading(){
         self.isLoading = true
@@ -163,8 +142,6 @@ class SignUpViewModel: ObservableObject{
         }
     }
     
-    func validateInputs() -> Bool{
-        return isValidEmail(email) && isPasswordValid(password)
-    }
+    
 }
 

@@ -18,11 +18,7 @@ class SignInViewModel: ObservableObject{
     @Published var email = ""
     @Published var password = ""
     @Published var isSigningIn = false
-    
     @Published var showPassword = false
-    var isFormValid: Bool {
-        return isValidEmail(email) && password.count > 6
-    }
     
     func setCoordinator(coordinator: MainCoordinator){
         self.coordinator = coordinator
@@ -43,7 +39,13 @@ class SignInViewModel: ObservableObject{
     }
     
     // MARK: auth Email
-    func singIn () async throws{
+    func singInWithEmail () async throws{
+        if !InputValidators().validateInputs(
+            email: email,
+            password: password,
+            emailAlertFunction: showAlertEmail,
+            passwordAlertFunction: showAlertPassword) {return}
+        
         isSigningIn = true
         authManager.setAuthTypeEmailAndPassword()
         do{
@@ -62,9 +64,19 @@ class SignInViewModel: ObservableObject{
         coordinator?.goToSignUp()
     }
     
-    func isValidEmail(_ email: String) -> Bool {
-        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPredicate = NSPredicate(format:"SELF MATCHES %@", emailRegex)
-        return emailPredicate.evaluate(with: email)
+    @MainActor
+    private func showAlertEmail(){
+        Task { @MainActor in
+            alertMsg = "Insert a valid email (ex. name@mail.com)"
+            showAlert = true
+        }
+          
+    }
+    @MainActor
+    private func showAlertPassword(){
+        Task { @MainActor in
+            alertMsg = "Password must contain at least 6 characters, 1 letter, and 1 number at least"
+            showAlert = true
+        }
     }
 }

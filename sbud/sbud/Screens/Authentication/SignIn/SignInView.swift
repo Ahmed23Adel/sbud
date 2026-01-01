@@ -18,30 +18,25 @@ struct SignInView: View {
                 
                 AuthBackground()
                 
-                VStack{ //START : main //START : ZStack
+                VStack{
                     Spacer()
                     Text("Sign in")
                         .foregroundColor(Color.mainColor)
                         .font(.system(size: 60, weight: .bold))
                         .accessibilityAddTraits(.isHeader)
+                        .popUp()
                     
                     Text("Bring athletes closer")
                         .foregroundColor(Color.mainColor)
                         .font(.title3)
+                        .popUp()
                     
                     VStack{
                         TextField("Email: ", text: $viewModel.email)
                             .autocapitalization(.none)
                             .modifier(TextModifierSignUp())
-                        //email is valid?
-                        if !viewModel.email.isEmpty && !viewModel.isValidEmail(viewModel.email) {
-                            Text("Insert a valid email (es. name@mail.com)")
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.leading, 5)
-                        }
+                            .popUp()
                         
-                        //password logic
                         HStack {
                             if viewModel.showPassword {
                                 TextField("Password", text: $viewModel.password)
@@ -52,6 +47,7 @@ struct SignInView: View {
                             }
                         }
                         .modifier(TextModifierSignUp())
+                        .popUp()
                         .overlay(alignment: .trailing) {
                             
                             Button {
@@ -62,20 +58,13 @@ struct SignInView: View {
                                     .padding(.trailing, 25)
                             }
                         }
-                        //password is valid
-                        if !viewModel.password.isEmpty && viewModel.password.count <= 6 {
-                            Text("Password must have more than six characters")
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.leading, 5)
-                        }
                     }
                     .padding(.horizontal)
                     
                     
                     Button {
                         Task {
-                            try await viewModel.singIn()
+                            try await viewModel.singInWithEmail()
                             
                         }
                     } label: {
@@ -88,8 +77,8 @@ struct SignInView: View {
                             .cornerRadius(10)
                         
                     }
+                    .popUp()
                     .padding(.vertical)
-                    .disabled(!viewModel.isFormValid || viewModel.isSigningIn)
                     
                     HStack{
                         
@@ -120,8 +109,8 @@ struct SignInView: View {
                     .adaptiveSecondaryButtonStyle()
                     .popUp(delay: 0.3)
                     
-                } //END : main //START : ZStack
-            } //END : ZStack
+                }
+            } 
             .onAppear{
                 viewModel.setCoordinator(coordinator: coordinator)
             }

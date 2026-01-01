@@ -13,28 +13,30 @@ struct SignUpView: View {
     @EnvironmentObject var coordinator: MainCoordinator
     
     var body: some View {
-            ZStack { //START : ZStack
+            ZStack {
                 AuthBackground()
-                VStack { //START : main
+                VStack { 
                     Spacer()
                     
                     Text("Sign up")
                         .foregroundColor(Color.mainColor)
                         .font(.system(size: 60, weight: .bold))
                         .accessibilityAddTraits(.isHeader)
+                        .popUp()
                     
                     Text("Bring athletes closer")
                         .foregroundColor(Color.mainColor)
                         .font(.title3)
-                        .padding(.bottom, 15) //title space
+                        .padding(.bottom, 15)
+                        .popUp()
                     
                     
                     VStack(spacing: 8) {
                         TextField("Email: ", text: $viewModel.email)
                             .autocapitalization(.none)
                             .modifier(TextModifierSignUp())
-                        
-                        //password logic
+                            .popUp()
+
                         HStack {
                             if viewModel.showPassword {
                                 TextField("Password", text: $viewModel.password)
@@ -45,6 +47,7 @@ struct SignUpView: View {
                             }
                         }
                         .modifier(TextModifierSignUp())
+                        .popUp()
                         .overlay(alignment: .trailing) {
                             
                             Button {
@@ -71,10 +74,12 @@ struct SignUpView: View {
                             .foregroundColor(.black)
                             .frame(width: 330, height: 44)
                             .background(Color.mainColor )
-                            .cornerRadius(10)
+                            .cornerRadius(20)
+                            .shadow(radius: 10)
                         
                     }
                     .padding(.vertical)
+                    .popUp()
                     
                     
                     Button {
