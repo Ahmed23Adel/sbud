@@ -1,5 +1,5 @@
 {
-  "originHash" : "04fb60cbd17f770432febbf234015a4403089437629027ae37fc818fb7a78b43",
+  "originHash" : "ba6858563550dd2eb59e6a60f00e820246cb786810650ae8a1db05393d48fb5b",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "bbe8b69694d7873315fd3a4ad41efe043e1c07c5",
         "version" : "1.2024072200.0"
+      }
+    },
+    {
+      "identity" : "adelsonvalidator",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Ahmed23Adel/AdelsonValidator",
+      "state" : {
+        "branch" : "main",
+        "revision" : "7635ffda838bba40b32e4006dd6c91d59d2f9500"
       }
     },
     {

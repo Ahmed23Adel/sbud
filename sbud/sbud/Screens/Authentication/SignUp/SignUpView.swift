@@ -34,13 +34,6 @@ struct SignUpView: View {
                             .autocapitalization(.none)
                             .modifier(TextModifierSignUp())
                         
-                        if !viewModel.email.isEmpty && !viewModel.isValidEmail(viewModel.email) {
-                            Text("Insert a valid email (es. name@mail.com)")
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.leading, 5)
-                        }
-                        
                         //password logic
                         HStack {
                             if viewModel.showPassword {
@@ -62,13 +55,6 @@ struct SignUpView: View {
                                     .padding(.trailing, 25)
                             }
                         }
-                        //password is valid
-                        if !viewModel.password.isEmpty && viewModel.password.count <= 6 {
-                            Text("Password must have more than 6 characters")
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.leading, 5)
-                        }
                     }
                     .padding(.horizontal)
                     
@@ -89,7 +75,6 @@ struct SignUpView: View {
                         
                     }
                     .padding(.vertical)
-                    .disabled(!viewModel.isFormValid || viewModel.isSigningUp)
                     
                     
                     Button {
@@ -119,9 +104,9 @@ struct SignUpView: View {
                     .adaptiveSecondaryButtonStyle()
                     .popUp(delay: 0.3)
                     
-                } //END : main
+                } 
                 
-            } //END : ZStack
+            }
         
         .onAppear {
             viewModel.setCoordinator(coordinator: coordinator)

@@ -10,6 +10,7 @@ import Combine
 import FirebaseAuth
 import FirebaseCore
 import FirebaseFirestore
+import AdelsonValidator
 
 @MainActor
 class SignUpViewModel: ObservableObject{
@@ -57,6 +58,7 @@ class SignUpViewModel: ObservableObject{
     
     // MARK: auth email
     func signUpWithEmail() async throws {
+        if !validateInputs() {return}
         authManager.setAuthTypeEmailAndPassword()
         isSigningUp = true
         do {
@@ -116,9 +118,25 @@ class SignUpViewModel: ObservableObject{
     
     // MARK: View helpers
     func isValidEmail(_ email: String) -> Bool {
-        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPredicate = NSPredicate(format:"SELF MATCHES %@", emailRegex)
-        return emailPredicate.evaluate(with: email)
+        var policy = SingleInputPolicy<String>(singleInputValidators: [
+            EmailValidator()
+        ])
+        policy.setInput(inputs: [email])
+        if !policy.check(){
+            showAlertEmail()
+            return false
+        }
+        return true
+    }
+    
+    func isPasswordValid(_ password: String) -> Bool{
+        var policy = PredefinedSingleInputPolicies.simplePasswordPolicy()
+        policy.setInput(inputs: [password])
+        if !policy.check(){
+            showAlertPassword()
+            return false
+        }
+        return true
     }
     
     private func startLoading(){
@@ -127,6 +145,26 @@ class SignUpViewModel: ObservableObject{
     
     private func stopLoading(){
         self.isLoading = false
+    }
+    
+    @MainActor
+    private func showAlertEmail(){
+        Task { @MainActor in
+            alertMsg = "Insert a valid email (ex. name@mail.com)"
+            showAlert = true
+        }
+          
+    }
+    @MainActor
+    private func showAlertPassword(){
+        Task { @MainActor in
+            alertMsg = "Password must contain at least 6 characters, 1 letter, and 1 number at least"
+            showAlert = true
+        }
+    }
+    
+    func validateInputs() -> Bool{
+        return isValidEmail(email) && isPasswordValid(password)
     }
 }
 
