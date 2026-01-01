@@ -26,6 +26,6 @@ struct PopUpModifier: ViewModifier {
 // Extension to make it easy to use
 extension View {
     func popUp(delay: Double = 0.0) -> some View {
-        modifier(PopUpModifier(delay: delay))
+        self.modifier(PopUpModifier(delay: delay))
     }
 }

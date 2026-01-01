@@ -41,6 +41,7 @@ struct FloatingIcon: View {
                     angle = 360
                 }
             }
+            .popUp()
     }
 }
 
