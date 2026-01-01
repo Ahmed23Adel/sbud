@@ -73,7 +73,7 @@ struct SignInView: View {
                             .foregroundColor(.black)
                             .frame(width: 330, height: 44)
                             .background(Color.mainColor )
-                            .cornerRadius(10)
+                            .cornerRadius(20)
 
                     }
                     .popUp()

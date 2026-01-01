@@ -13,7 +13,7 @@ struct TextModifierSignUp: ViewModifier {
             .font(.subheadline)
             .padding()
             .background(Color(.systemGray5))
-            .cornerRadius(11)
+            .cornerRadius(20)
             .padding(.horizontal, 20)
     }
 }
