@@ -20,7 +20,7 @@ class SignInViewModel: ObservableObject {
     @Published var isSigningIn = false
     @Published var showPassword = false
     @Published var isLoading = false
-    
+
     func setCoordinator(coordinator: MainCoordinator) {
         self.coordinator = coordinator
     }
@@ -83,7 +83,7 @@ class SignInViewModel: ObservableObject {
             showAlert = true
         }
     }
-    
+
     // MARK: view helpers
     private func startLoading() {
         self.isLoading = true

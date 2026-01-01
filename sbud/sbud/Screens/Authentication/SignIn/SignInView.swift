@@ -106,7 +106,7 @@ struct SignInView: View {
                     .adaptiveSecondaryButtonStyle()
                     .popUp(delay: 0.3)
                 }
-                if viewModel.isLoading{
+                if viewModel.isLoading {
                     LoadingView()
                 }
             }
