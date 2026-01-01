@@ -7,7 +7,7 @@
 
 import SwiftUI
 import FirebaseFirestore
-
+import Kingfisher
 
 struct IndividualAnnotationView: View {
     let event: AnchorAvailabilityEvent
@@ -19,17 +19,17 @@ struct IndividualAnnotationView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 44, height: 44)
-                AsyncImage(url: URL(string: event.event.ownerProfilePicture)) { image in
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    } placeholder: {
+                KFImage(URL(string: event.event.ownerProfilePicture))
+                    .placeholder {
                         ProgressView()
                     }
+                    .resizable()
+                    .scaledToFill()
                     .frame(width: 18, height: 18)
                     .clipShape(Circle())
                     .offset(y: -4)
             }
+            .popUp()
             
             
             
