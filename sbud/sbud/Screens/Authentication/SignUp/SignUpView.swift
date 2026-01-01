@@ -11,26 +11,25 @@ import Lottie
 struct SignUpView: View {
     @StateObject var viewModel = SignUpViewModel()
     @EnvironmentObject var coordinator: MainCoordinator
-    
+
     var body: some View {
             ZStack {
                 AuthBackground()
-                VStack { 
+                VStack {
                     Spacer()
-                    
+
                     Text("Sign up")
                         .foregroundColor(Color.mainColor)
                         .font(.system(size: 60, weight: .bold))
                         .accessibilityAddTraits(.isHeader)
                         .popUp()
-                    
+
                     Text("Bring athletes closer")
                         .foregroundColor(Color.mainColor)
                         .font(.title3)
                         .padding(.bottom, 15)
                         .popUp()
-                    
-                    
+
                     VStack(spacing: 8) {
                         TextField("Email: ", text: $viewModel.email)
                             .autocapitalization(.none)
@@ -49,7 +48,7 @@ struct SignUpView: View {
                         .modifier(TextModifierSignUp())
                         .popUp()
                         .overlay(alignment: .trailing) {
-                            
+
                             Button {
                                 viewModel.showPassword.toggle()
                             } label: {
@@ -60,12 +59,11 @@ struct SignUpView: View {
                         }
                     }
                     .padding(.horizontal)
-                    
-                    
+
                     Button {
                         Task {
                             try await viewModel.signUpWithEmail()
-                            
+
                         }
                     } label: {
                         Text("Sign Up")
@@ -76,12 +74,11 @@ struct SignUpView: View {
                             .background(Color.mainColor )
                             .cornerRadius(20)
                             .shadow(radius: 10)
-                        
+
                     }
                     .padding(.vertical)
                     .popUp()
-                    
-                    
+
                     Button {
                         viewModel.isSigningIn = true
                         Task {
@@ -95,10 +92,9 @@ struct SignUpView: View {
                     }
                     .popUp(delay: 0.3)
                     .disabled(viewModel.isSigningIn)
-                    
-                    
+
                     Spacer()
-                    
+
                     Button {
                         viewModel.goToSignIn()
                     } label: {
@@ -108,11 +104,13 @@ struct SignUpView: View {
                     .padding(.vertical, 35)
                     .adaptiveSecondaryButtonStyle()
                     .popUp(delay: 0.3)
-                    
-                } 
-                
+
+                }
+                if viewModel.isLoading{
+                    LoadingView()
+                }
             }
-        
+
         .onAppear {
             viewModel.setCoordinator(coordinator: coordinator)
         }
@@ -122,11 +120,10 @@ struct SignUpView: View {
             Text(viewModel.alertMsg)
         }
     }
-    
+
 }
 
-
-struct SignUpView_Previews: PreviewProvider{
+struct SignUpView_Previews: PreviewProvider {
     static var previews: some View {
         SignUpView()
             .environmentObject(MainCoordinator())

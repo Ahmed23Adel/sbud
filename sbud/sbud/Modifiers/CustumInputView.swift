@@ -12,7 +12,7 @@ struct CustomInputView: View {
     let placeholder: String
     let buttonTitle: String
     var action: () -> Void
-    
+
     var body: some View {
         ZStack(alignment: .trailing) {
             TextField(placeholder, text: $inputText, axis: .vertical)
@@ -22,7 +22,7 @@ struct CustomInputView: View {
                 .background(Color(.systemGroupedBackground))
                 .clipShape(Capsule())
                 .font(.subheadline)
-            
+
             Button(action: action) {
                 Text(buttonTitle)
                     .font(.subheadline)

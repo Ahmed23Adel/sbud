@@ -11,32 +11,32 @@ import Lottie
 struct SignInView: View {
     @StateObject var viewModel = SignInViewModel()
     @EnvironmentObject var coordinator: MainCoordinator
-    
+
     var body: some View {
-        
-            ZStack{ //START : ZStack
-                
+
+            ZStack {
+
                 AuthBackground()
-                
-                VStack{
+
+                VStack {
                     Spacer()
                     Text("Sign in")
                         .foregroundColor(Color.mainColor)
                         .font(.system(size: 60, weight: .bold))
                         .accessibilityAddTraits(.isHeader)
                         .popUp()
-                    
+
                     Text("Bring athletes closer")
                         .foregroundColor(Color.mainColor)
                         .font(.title3)
                         .popUp()
-                    
-                    VStack{
+
+                    VStack {
                         TextField("Email: ", text: $viewModel.email)
                             .autocapitalization(.none)
                             .modifier(TextModifierSignUp())
                             .popUp()
-                        
+
                         HStack {
                             if viewModel.showPassword {
                                 TextField("Password", text: $viewModel.password)
@@ -49,7 +49,7 @@ struct SignInView: View {
                         .modifier(TextModifierSignUp())
                         .popUp()
                         .overlay(alignment: .trailing) {
-                            
+
                             Button {
                                 viewModel.showPassword.toggle()
                             } label: {
@@ -60,12 +60,11 @@ struct SignInView: View {
                         }
                     }
                     .padding(.horizontal)
-                    
-                    
+
                     Button {
                         Task {
                             try await viewModel.singInWithEmail()
-                            
+
                         }
                     } label: {
                         Text("Sign In")
@@ -75,16 +74,16 @@ struct SignInView: View {
                             .frame(width: 330, height: 44)
                             .background(Color.mainColor )
                             .cornerRadius(10)
-                        
+
                     }
                     .popUp()
                     .padding(.vertical)
-                    
-                    HStack{
-                        
-                        Button{
+
+                    HStack {
+
+                        Button {
                             viewModel.isSigningIn = true
-                            Task{
+                            Task {
                                 await viewModel.signUpWithGoogle()
                                 viewModel.isSigningIn = false
                             }
@@ -95,12 +94,10 @@ struct SignInView: View {
                         }
                         .disabled(viewModel.isSigningIn)
                     }
-                    
-                    
-                    
+
                     Spacer()
-                    
-                    Button{
+
+                    Button {
                         viewModel.goToSignUp()
                     } label: {
                         Text("Sign up instead?")
@@ -108,23 +105,25 @@ struct SignInView: View {
                     }
                     .adaptiveSecondaryButtonStyle()
                     .popUp(delay: 0.3)
-                    
                 }
-            } 
-            .onAppear{
+                if viewModel.isLoading{
+                    LoadingView()
+                }
+            }
+            .onAppear {
                 viewModel.setCoordinator(coordinator: coordinator)
             }
-            .alert("Error", isPresented: $viewModel.showAlert){
+            .alert("Error", isPresented: $viewModel.showAlert) {
                 Button("Ok", role: .cancel) {}
             } message: {
                 Text(viewModel.alertMsg)
             }
-        
+
     }
-    
+
 }
 
-struct SignInView_Previews: PreviewProvider{
+struct SignInView_Previews: PreviewProvider {
     static var previews: some View {
         SignInView()
             .environmentObject(MainCoordinator())

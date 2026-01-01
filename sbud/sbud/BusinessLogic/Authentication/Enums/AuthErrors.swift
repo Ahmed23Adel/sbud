@@ -7,6 +7,6 @@
 
 import Foundation
 
-enum AuthError: Error{
+enum AuthError: Error {
     case unauthorizedAction
 }

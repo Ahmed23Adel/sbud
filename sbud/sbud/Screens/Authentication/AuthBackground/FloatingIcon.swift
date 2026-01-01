@@ -12,11 +12,11 @@ struct FloatingIcon: View {
     let size: CGFloat
     let positionX: CGFloat
     let positionY: CGFloat
-    
+
     @State private var angle: Double = 0
     let radius: CGFloat
     let duration: Double
-    
+
     init(imgName: String, size: CGFloat, positionX: CGFloat, positionY: CGFloat) {
         self.imgName = imgName
         self.size = size

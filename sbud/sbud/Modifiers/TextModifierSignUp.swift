@@ -7,13 +7,13 @@
 
 import SwiftUI
 
-struct TextModifierSignUp : ViewModifier{
+struct TextModifierSignUp: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.subheadline)
             .padding()
             .background(Color(.systemGray5))
             .cornerRadius(11)
-            .padding(.horizontal,20)
+            .padding(.horizontal, 20)
     }
 }

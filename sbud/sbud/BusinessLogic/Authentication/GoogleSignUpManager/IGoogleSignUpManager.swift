@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol IGoogleSignUpManager{
-    
+protocol IGoogleSignUpManager {
+
     func signUpWithGoogle() async throws
 }

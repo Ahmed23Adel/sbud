@@ -9,54 +9,52 @@ import Foundation
 import Combine
 import FirebaseAuth
 
-class AuthenticationManagerEmailAndPassword: IAuthenticationManager{
+class AuthenticationManagerEmailAndPassword: IAuthenticationManager {
     @Published var isSignedIn: Bool = false
     @Published var currentUser: FirebaseAuth.User?
     @Published var isLoading: Bool = true
     static let shared = AuthenticationManagerEmailAndPassword()
-    
-    init(){
+
+    init() {
     }
-    
+
     func signIn() async throws {
         throw AuthError.unauthorizedAction
     }
-    
+
     func signUp() async throws {
         throw AuthError.unauthorizedAction
     }
-    
+
     func signUp(email: String, password: String) async throws {
         let result = try await Auth.auth().createUser(withEmail: email, password: password)
         self.currentUser = result.user
         self.updateUserState(user: currentUser, methodUsed: .email)
-            
+
     }
-    
+
     func signIn(email: String, password: String) async throws {
         let result = try await Auth.auth().signIn(withEmail: email, password: password)
         self.currentUser = result.user
         self.updateUserState(user: currentUser, methodUsed: .email)
     }
-    
+
     func signOut() throws {
         self.currentUser = nil
         try? Auth.auth().signOut()
-        AuthenticationManager.shared.signInMethod = AuthenticationConstants.METHOD_UNKNOWN
+        AuthenticationManager.shared.signInMethod = AuthType.unknown.rawValue
         AuthenticationManager.shared.isSignedIn = false
         AuthenticationManager.shared.currentUser = nil
         AuthenticationManager.shared.isLoading = false
     }
-    
+
     func checkAuthStatus() -> Bool {
-        if let user  = Auth.auth().currentUser{
+        if let user  = Auth.auth().currentUser {
             updateUserState(user: user, methodUsed: .email)
             return true
-        } else{
+        } else {
             return false
         }
     }
-    
-    
-    
+
 }
