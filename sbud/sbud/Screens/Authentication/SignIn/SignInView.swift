@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Lottie
 
 struct SignInView: View {
     @StateObject var viewModel = SignInViewModel()
@@ -29,7 +30,7 @@ struct SignInView: View {
                         .font(.title3)
                     
                     VStack{
-                        TextField("Enter your e-mail: ", text: $viewModel.email)
+                        TextField("Email: ", text: $viewModel.email)
                             .autocapitalization(.none)
                             .modifier(TextModifierSignUp())
                         //email is valid?
@@ -99,12 +100,9 @@ struct SignInView: View {
                                 viewModel.isSigningIn = false
                             }
                         } label: {
-                            Image("google_ios_light_rd_na")
-                                .resizable()
-                                .frame(width: 50, height: 50)
-                                .popUp(delay: 0.3)
-                                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-                                .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
+                            LottieView(animation: .named("GoogleLogoEffect"))
+                                .playing()
+                                .frame(width: 80, height: 80)
                         }
                         .disabled(viewModel.isSigningIn)
                     }
