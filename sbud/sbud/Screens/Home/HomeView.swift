@@ -8,8 +8,17 @@
 import SwiftUI
 
 struct HomeView: View {
+    let authManager = AuthenticationManager.shared
+    @EnvironmentObject var coordinator: MainCoordinator
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Button {
+            Task {
+                try await authManager.signOut()
+                coordinator.goToSignUp()
+            }
+        } label: {
+            Text("sign out")
+        }
     }
 }
 
