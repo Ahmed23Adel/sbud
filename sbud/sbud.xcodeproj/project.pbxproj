@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		668178BB2EF0708E00F15497 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 668178BA2EF0708E00F15497 /* FirebaseFirestore */; };
+		E2385E6D2F067A4C0030F096 /* AdelsonValidator in Frameworks */ = {isa = PBXBuildFile; productRef = E2385E6C2F067A4C0030F096 /* AdelsonValidator */; };
 		E289D7B62EE832FA005F9F37 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */; };
 		E289D7B82EE832FA005F9F37 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B72EE832FA005F9F37 /* FirebaseAnalyticsCore */; };
 		E289D7BA2EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B92EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport */; };
@@ -14,6 +16,7 @@
 		E289D7BF2EE83372005F9F37 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7BE2EE83372005F9F37 /* GoogleSignInSwift */; };
 		E289D7E62EE83A83005F9F37 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7E52EE83A83005F9F37 /* FirebaseAuth */; };
 		E289D7E82EE83A93005F9F37 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7E72EE83A93005F9F37 /* FirebaseCore */; };
+		E2F2FB932F0674DC004DF287 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = E2F2FB922F0674DC004DF287 /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,9 +80,12 @@
 			files = (
 				E289D7BF2EE83372005F9F37 /* GoogleSignInSwift in Frameworks */,
 				E289D7E62EE83A83005F9F37 /* FirebaseAuth in Frameworks */,
+				E2F2FB932F0674DC004DF287 /* Lottie in Frameworks */,
 				E289D7B62EE832FA005F9F37 /* FirebaseAnalytics in Frameworks */,
+				E2385E6D2F067A4C0030F096 /* AdelsonValidator in Frameworks */,
 				E289D7BD2EE83372005F9F37 /* GoogleSignIn in Frameworks */,
 				E289D7E82EE83A93005F9F37 /* FirebaseCore in Frameworks */,
+				668178BB2EF0708E00F15497 /* FirebaseFirestore in Frameworks */,
 				E289D7B82EE832FA005F9F37 /* FirebaseAnalyticsCore in Frameworks */,
 				E289D7BA2EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
 			);
@@ -157,6 +163,9 @@
 				E289D7BE2EE83372005F9F37 /* GoogleSignInSwift */,
 				E289D7E52EE83A83005F9F37 /* FirebaseAuth */,
 				E289D7E72EE83A93005F9F37 /* FirebaseCore */,
+				668178BA2EF0708E00F15497 /* FirebaseFirestore */,
+				E2F2FB922F0674DC004DF287 /* Lottie */,
+				E2385E6C2F067A4C0030F096 /* AdelsonValidator */,
 			);
 			productName = sbud;
 			productReference = E24825A02EE2DCA200330DC2 /* sbud.app */;
@@ -216,7 +225,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2600;
-				LastUpgradeCheck = 2610;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					E248259F2EE2DCA200330DC2 = {
 						CreatedOnToolsVersion = 26.0;
@@ -243,6 +252,9 @@
 			packageReferences = (
 				E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				E289D7BB2EE83372005F9F37 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				66B126EE2F0348A200306756 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				E2F2FB912F0674DC004DF287 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				E2385E6B2F067A4C0030F096 /* XCRemoteSwiftPackageReference "AdelsonValidator" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E24825A12EE2DCA200330DC2 /* Products */;
@@ -378,7 +390,6 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -437,7 +448,6 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -458,13 +468,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = test.sbud;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polimicrsprojformobile.sbud;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -490,13 +500,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = test.sbud;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polimicrsprojformobile.sbud;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -629,6 +639,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		66B126EE2F0348A200306756 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.6.2;
+			};
+		};
+		E2385E6B2F067A4C0030F096 /* XCRemoteSwiftPackageReference "AdelsonValidator" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Ahmed23Adel/AdelsonValidator";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -645,9 +671,27 @@
 				minimumVersion = 9.0.0;
 			};
 		};
+		E2F2FB912F0674DC004DF287 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		668178BA2EF0708E00F15497 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		E2385E6C2F067A4C0030F096 /* AdelsonValidator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2385E6B2F067A4C0030F096 /* XCRemoteSwiftPackageReference "AdelsonValidator" */;
+			productName = AdelsonValidator;
+		};
 		E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -682,6 +726,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
+		};
+		E2F2FB922F0674DC004DF287 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2F2FB912F0674DC004DF287 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

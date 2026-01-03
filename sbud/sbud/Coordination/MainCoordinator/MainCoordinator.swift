@@ -8,34 +8,33 @@
 import Foundation
 import Combine
 
-class MainCoordinator: ObservableObject{
-    @Published var currentRoute: mainRoute
-    
-    init(){
+class MainCoordinator: ObservableObject {
+    @Published var currentRoute: MainRoute
+
+    init() {
         let authManager = AuthenticationManager.shared
-        if authManager.checkAuthStatus(){
+        if authManager.checkAuthStatus() {
             currentRoute = .homePage
-        } else{
+        } else {
             currentRoute = .signUp
         }
-        
+
     }
-    
-    func navigateTo(_ route: mainRoute){
+
+    func navigateTo(_ route: MainRoute) {
         currentRoute = route
     }
-    
-    func goToSignUp(){
+
+    func goToSignUp() {
         navigateTo(.signUp)
     }
-    
-    func goToSignIn(){
+
+    func goToSignIn() {
         navigateTo(.signIn)
     }
-    
-    func goToHome(){
+
+    func goToHome() {
         navigateTo(.homePage)
     }
-    
-    
+
 }

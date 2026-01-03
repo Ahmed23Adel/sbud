@@ -8,34 +8,33 @@ import Combine
 import FirebaseAuth
 import SwiftUI
 
-class AuthenticationManager: IAuthenticationManager{
+class AuthenticationManager: IAuthenticationManager {
     static let shared = AuthenticationManager()
     @Published var isSignedIn: Bool = false
     @Published var currentUser: FirebaseAuth.User?
     @Published var isLoading: Bool = true
-    
-    @AppStorage(AppStorageConstants.SIGN_IN_METHOD) var signInMethod = AuthenticationConstants.METHOD_UNKNOWN
+
+    @AppStorage(AppStorageConstants.signInMethod) var signInMethod = AuthType.unknown.rawValue
     private var signInMethodManager: (any IAuthenticationManager)?
-    
-    init(){
-        if signInMethod == AuthenticationConstants.METHOD_UNKNOWN{
+
+    init() {
+        if signInMethod == AuthType.unknown.rawValue {
             Task { @MainActor in
                 setUserLoggedOut()
             }
-            
-            
-        } else if signInMethod == AuthenticationConstants.METHOD_GOOGLE{
+
+        } else if signInMethod == AuthType.google.rawValue {
             signInMethodManager = AuthenticationManagerGoogle()
-            
-        } else if signInMethod == AuthenticationConstants.METHOD_EmailAndPassword{
+
+        } else if signInMethod == AuthType.email.rawValue {
             signInMethodManager = AuthenticationManagerEmailAndPassword()
         }
     }
-    func setAuthTypeGoogle(){
+    func setAuthTypeGoogle() {
         signInMethodManager = AuthenticationManagerGoogle()
     }
-    
-    func setAuthTypeEmailAndPassword(){
+
+    func setAuthTypeEmailAndPassword() {
         signInMethodManager = AuthenticationManagerEmailAndPassword()
     }
     @MainActor
@@ -46,22 +45,33 @@ class AuthenticationManager: IAuthenticationManager{
             self.isLoading = false
         }
     }
-    
+
+    // MARK: Google sign in
     func signUp() async throws {
         try await signInMethodManager?.signUp()
     }
-    
+
     func signIn() async throws {
         try await signInMethodManager?.signIn()
     }
-    
+
+    // MARK: Email sing in
+    func signIn(email: String, password: String) async throws {
+        try await signInMethodManager?.signIn(email: email, password: password)
+    }
+
+    func signUp(email: String, password: String) async throws {
+        try await signInMethodManager?.signUp(email: email, password: password)
+    }
+
+    // MARK: Sign out
     func signOut() async throws {
         try await signInMethodManager?.signOut()
-        signInMethod = AuthenticationConstants.METHOD_UNKNOWN
+        signInMethod = AuthType.unknown.rawValue
         signInMethodManager = nil
-        
+
     }
-    
+
     func checkAuthStatus() -> Bool {
         guard let signInMethodManager else {
             setUserLoggedOut()
@@ -69,5 +79,5 @@ class AuthenticationManager: IAuthenticationManager{
         }
         return signInMethodManager.checkAuthStatus()
     }
-    
+
 }

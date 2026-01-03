@@ -6,19 +6,24 @@
 //
 
 import SwiftUI
+import Lottie
 
 struct LoadingView: View {
     var body: some View {
-        ZStack{
+        ZStack {
             Color.backgroundColor
                 .ignoresSafeArea()
-            VStack{
-                ProgressView ("Loading...")
-                    .progressViewStyle(CircularProgressViewStyle())
-                    .tint(Color.mainColor)
-                    .foregroundColor(Color.mainColor)
+                .opacity(0.9)
+
+            VStack {
+                LottieView(animation: .named("JoggingLoading"))
+                    .playing()
+                    .frame(width: 300, height: 300)
+                Text("Loading")
+                    .font(.title)
+                    .foregroundColor(.mainColor)
             }
-            
+
         }
     }
 }

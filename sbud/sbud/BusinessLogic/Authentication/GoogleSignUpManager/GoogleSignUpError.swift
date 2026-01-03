@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum GoogleSignUpError: Error{
+enum GoogleSignUpError: Error {
     case missingClientID
     case cannotGetRootViewController
     case cannotFindIdToken
