@@ -6,7 +6,6 @@
 //
 
 import Foundation
-
 class AppStorageConstants {
     static let signInMethod = "signInMethod"
 }

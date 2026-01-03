@@ -1,0 +1,34 @@
+//
+//  AvailabilityEvent.swift
+//  sbud
+//
+//  Created by ahmed on 23/12/2025.
+//
+
+import Foundation
+import FirebaseFirestore
+
+class AvailabilityEvent: IAvailabilityEvent{
+    var id: String
+    var geohash: String
+    var geoPoint: GeoPoint
+    var notes: String
+    var userId: String
+    var ownerProfilePicture: String
+    
+    init(id: String, geohash: String, geoPoint: GeoPoint, notes: String, userId: String, ownerProfilePicture: String) {
+        self.id = id
+        self.geohash = geohash
+        self.geoPoint = geoPoint
+        self.notes = notes
+        self.userId = userId
+        self.ownerProfilePicture = ownerProfilePicture
+    }
+    
+    
+    static func == (lhs: AvailabilityEvent, rhs: AvailabilityEvent) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    
+}

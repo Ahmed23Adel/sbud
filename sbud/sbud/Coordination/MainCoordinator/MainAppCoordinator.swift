@@ -13,7 +13,7 @@ struct MainAppCoordinator: View {
         Group {
             switch coordinator.currentRoute { // START: switch
             case .homePage:
-                ContentView()
+                HomeTabsView()
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
                         removal: .move(edge: .leading).combined(with: .opacity)))

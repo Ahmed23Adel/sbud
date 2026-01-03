@@ -1,5 +1,5 @@
 {
-  "originHash" : "ba6858563550dd2eb59e6a60f00e820246cb786810650ae8a1db05393d48fb5b",
+  "originHash" : "27ebbb53198849f00d252d5e6fd4026a9aba56cb238b52c1632ebaebceddc995",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "bbe8b69694d7873315fd3a4ad41efe043e1c07c5",
         "version" : "1.2024072200.0"
-      }
-    },
-    {
-      "identity" : "adelsonvalidator",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Ahmed23Adel/AdelsonValidator",
-      "state" : {
-        "branch" : "main",
-        "revision" : "7635ffda838bba40b32e4006dd6c91d59d2f9500"
       }
     },
     {
@@ -44,6 +35,15 @@
       "state" : {
         "revision" : "087bb95235f676c1a37e928769a5b6645dcbd325",
         "version" : "12.6.0"
+      }
+    },
+    {
+      "identity" : "geohash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nh7a/Geohash",
+      "state" : {
+        "revision" : "e34bbddb04c65317c45f951e5b40cc2f78caf8ae",
+        "version" : "1.0.0"
       }
     },
     {
@@ -130,7 +130,7 @@
     {
       "identity" : "kingfisher",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/onevcat/Kingfisher.git",
+      "location" : "https://github.com/onevcat/Kingfisher",
       "state" : {
         "revision" : "d30a5fad881137e2267f96a8e3fc35c58999bb94",
         "version" : "8.6.2"
@@ -143,15 +143,6 @@
       "state" : {
         "revision" : "a0bc79961d7be727d258d33d5a6b2f1023270ba1",
         "version" : "1.22.5"
-      }
-    },
-    {
-      "identity" : "lottie-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/airbnb/lottie-ios",
-      "state" : {
-        "revision" : "a004050748dc197c56256a14dca49a035d74726c",
-        "version" : "4.5.2"
       }
     },
     {
