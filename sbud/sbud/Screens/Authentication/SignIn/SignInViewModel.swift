@@ -30,7 +30,7 @@ class SignInViewModel: ObservableObject {
         authManager.setAuthTypeGoogle()
         do {
             try await authManager.signIn()
-            coordinator?.goToHome()
+            coordinator?.checkAppFlow()
         } catch {
             await MainActor.run {
                 showAlert = true

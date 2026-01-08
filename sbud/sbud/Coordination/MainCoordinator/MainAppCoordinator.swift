@@ -27,6 +27,21 @@ struct MainAppCoordinator: View {
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
                         removal: .move(edge: .leading).combined(with: .opacity)))
+            case .profileSetup:
+                ProfileSetupView()
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)))
+            case .loadingPage:
+                LoadingView()
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)))
+            /*case .profileView:
+                ProfileView()
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)))*/
             } // END: switch
         }
         .animation(.easeInOut(duration: 0.3), value: coordinator.currentRoute)

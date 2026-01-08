@@ -5,14 +5,18 @@
 //  Created by ahmed on 25/12/2025.
 // ownerProfilePicture
 import Foundation
+import FirebaseAuth
+import FirebaseFirestore
+
 
 
 class UserRepository: IFirebaesRepository{
     typealias T = IOtherUser
     
     let collectionPath: String = "users"
-    let firebaseClient = FirebaseClient ()
+    let firebaseClient = FirebaseClient()
     let constants = UserRepositoryConstants()
+    let db = Firestore.firestore()
     
     
     
@@ -33,6 +37,22 @@ class UserRepository: IFirebaesRepository{
         return ""
     }
     
+    func save(_ profile: UserProfile) async throws -> String? {
+        guard let user = Auth.auth().currentUser else {
+            return "User couldnot find."
+        }
+        do {
+            try db.collection("users").document(user.uid).setData(from: profile, merge: true)
+            return nil
+        } catch {   return error.localizedDescription   }
+    }
+    
+    func fetchProfile(_ id: String) async throws -> UserProfile? {
+        let snapshot = try await db.collection("users").document(id).getDocument()
+        guard snapshot.exists else { return nil }
+        return try snapshot.data(as: UserProfile.self)
+    }
+    
     func update(_ id: String, _ item: any T) async throws {
     
     }
@@ -43,6 +63,4 @@ class UserRepository: IFirebaesRepository{
     func initQueryBuilderObject() -> any IQueryBuilder {
         QueryCollectionBuilder(collectionPath: collectionPath, firebaseClient: firebaseClient)
     }
-    
-    
 }

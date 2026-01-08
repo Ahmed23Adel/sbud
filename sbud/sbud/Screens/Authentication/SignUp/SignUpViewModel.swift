@@ -40,7 +40,7 @@ class SignUpViewModel: ObservableObject {
         authManager.setAuthTypeGoogle()
         do {
             try await authManager.signUp()
-            coordinator?.goToHome()
+            coordinator?.checkAppFlow()
         } catch {
             await MainActor.run {
                 showAlert = true

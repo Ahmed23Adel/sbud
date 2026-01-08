@@ -11,4 +11,7 @@ enum MainRoute {
     case signUp
     case signIn
     case homePage
+    case profileSetup
+    case loadingPage
+    //case profileView
 }

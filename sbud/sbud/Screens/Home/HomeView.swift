@@ -9,11 +9,14 @@ import SwiftUI
 
 struct HomeView: View {
     let authManager = AuthenticationManager.shared
+    let profManager = ProfileManager.shared
+    
     @EnvironmentObject var coordinator: MainCoordinator
     var body: some View {
         Button {
             Task {
                 try await authManager.signOut()
+                profManager.deleteProfileFromLocale()
                 coordinator.goToSignUp()
             }
         } label: {
