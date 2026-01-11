@@ -75,3 +75,19 @@ startTime, and endTime
 2. `gcloud config set project sbud-e5bdd`
 3. `gcloud functions call updateGeohashAggregates --region=us-central1`
 4. for logs: `gcloud functions logs read updateGeohashAggregates --region=us-central1 --limit=50`
+
+
+
+# Before making a PR
+1. Implement unit tests for any module/ new code you have implemented
+2. Make sure all old tests work fine
+3. Make sure you use the Dependency and Logs lib
+4. Make sure you use SwiftLint (swiftlint --fix can help you as well)
+5. Make sure you create your PR 2 days before the deadline, so you can get a review and fix new issues found
+
+# flow of the app
+1. There will be an event of type undecided, which has a large time frame(multiple times), and multiple locations
+2. People can ask the team leader about finding a suitable time, and agree on that
+3. Change the type of the event to time specified, and then location specified, and then that's it
+4. sports chosen running, skiing, up till now
+
