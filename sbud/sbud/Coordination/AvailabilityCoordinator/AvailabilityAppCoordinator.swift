@@ -10,7 +10,7 @@ import UIKit
 
 struct AvailabilityAppCoordinator: View {
     @StateObject private var coordinator = AvailabilityCoordinator()
-    @StateObject private var availaibilityFiltesrResults = AvailabilityFiltersResults()
+    @State private var availaibilityFiltesrResults = AvailabilityFiltersResults()
     
     private let impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     var body: some View {
@@ -34,7 +34,7 @@ struct AvailabilityAppCoordinator: View {
     private func sheetContent(for sheetType: AvailabilitySheetType) -> some View{
         switch sheetType{
         case .filter:
-            FiltersView(availabilityFiltersResults: availaibilityFiltesrResults)
+            FiltersView(availabilityFiltersResults: $availaibilityFiltesrResults)
         }
     }
 }

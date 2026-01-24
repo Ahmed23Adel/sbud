@@ -9,9 +9,9 @@ import Foundation
 
 class AvailabilityConfig{
     static let icons = ["figure.run",
-                 "figure.indoor.soccer",
+                 "figure.outdoor.cycle",
                  "dumbbell"]
     static let activityNames = ["Running",
-                         "Football",
+                         "Cycling",
                          "Gym"]
 }

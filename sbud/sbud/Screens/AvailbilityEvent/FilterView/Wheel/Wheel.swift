@@ -35,6 +35,7 @@ struct Wheel: View {
                 names: names,
                 rotation: currentRotation + dragRotation
             )
+            .popUp()
             .scaleEffect(wheelScale)
             .onAppear{
                 startInactivityTimer()
@@ -52,6 +53,7 @@ struct Wheel: View {
                     }
                 }
                 .rotationEffect(Angle(degrees: currentRotation + dragRotation))
+                .popUp()
                 .gesture(
                     DragGesture()
                         .updating($dragRotation) { value, state, _ in

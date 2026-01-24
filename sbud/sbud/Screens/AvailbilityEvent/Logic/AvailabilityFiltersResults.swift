@@ -10,4 +10,6 @@ import Combine
 
 class AvailabilityFiltersResults: ObservableObject{
     @Published var selectedActivityIndex = 0
+    @Published var startDateTime = Date()
+    @Published var endDateTime = Date()
 }

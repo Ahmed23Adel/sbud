@@ -9,5 +9,6 @@ import Foundation
 
 enum ActivityTypes: String, Codable{
     case running
-    case football
+    case cycling
+    case gym
 }
