@@ -49,6 +49,7 @@ class AvailbilityViewModel: ObservableObject {
         setupFilterResultsListener()
         setupListeners()
         fetchNewData()
+        
     }
     
     private func setupListeners(){

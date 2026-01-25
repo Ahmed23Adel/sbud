@@ -8,7 +8,7 @@
 import Foundation
 
 enum ActivityTypes: String, Codable{
-    case running
-    case cycling
-    case gym
+    case running = "Running"
+    case cycling = "Cycling"
+    case gym = "Gym"
 }
