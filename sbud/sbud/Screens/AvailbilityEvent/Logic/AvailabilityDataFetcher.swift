@@ -11,6 +11,7 @@ import SwiftUI
 import FirebaseFirestore
 import _MapKit_SwiftUI
 import Geohash
+import FirebaseCore
 
 class AvailabilityDataFetcher {
     
@@ -100,17 +101,25 @@ class AvailabilityDataFetcher {
     
     // MARK: - Clusters
     
-    func fetchClusters(precision: GeohashPrecision, activityName: String) async throws -> [AnchorCluster] {
-        let queryPrecision = max(1, precision.rawValue - 1)
-        let bounds = calculateBoundsForClusters(precision: queryPrecision)
-        
-        let repo = AvailabilityAggregateRepository()
-        let query = createQueryForClusters(bounds: bounds, repo: repo, activityName: activityName)
-        let clusters = try await repo.fetch(query: query)
-        
-        return clusters
-            .filter { $0.precision == precision.rawValue }
-            .map { AnchorCluster(cluster: $0) }
+    func fetchClusters(
+        selectedStartTime: Date,
+        selectedEndTime: Date,
+        topLeft: GeoPoint,
+        bottomRight: GeoPoint,
+        selectedActivityType: ActivityTypes
+    ) async throws -> [AnchorCluster] {
+        let request = EventClusterRequest(
+                        selectedStartTime: selectedStartTime,
+                        selectedEndTime: selectedEndTime,
+                        topLeft: topLeft,
+                        bottomRight: bottomRight,
+                        selectedActivityType: selectedActivityType.rawValue,
+                        precision: GeohashPrecision.district.rawValue
+                    )
+        let repo = EventClusterRepository()
+        let results = try! await repo.fetch(request)
+        let anchors = results.clusters.map{ $0.convertToAnchorCluster() }
+        return anchors
     }
     
     private func calculateBoundsForClusters(precision: Int) -> (min: String, max: String) {

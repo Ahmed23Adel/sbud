@@ -13,5 +13,6 @@ enum GeohashPrecision: Int{
     case largeCity = 3
     case city = 4
     case neighbourhood = 5
+    case district = 6
     case individuals = 8
 }

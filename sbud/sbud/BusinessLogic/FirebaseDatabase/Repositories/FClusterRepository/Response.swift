@@ -12,6 +12,17 @@ struct EventCluster: Codable {
     let geohash: String
     let count: Int
     let centerCoordinate: ClusterCoordinate
+    
+    func convertToAnchorCluster() -> AnchorCluster{
+        AnchorCluster(cluster: AvailabiltiyAggregate(
+            id: UUID().uuidString,
+            count: count,
+            geohash: geohash,
+            location: GeoPoint(latitude: centerCoordinate.latitude, longitude: centerCoordinate.longitude),
+            precision: GeohashPrecision.district.rawValue
+            
+        ))
+    }
 }
 
 struct ClusterCoordinate: Codable {
