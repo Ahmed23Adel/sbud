@@ -21,15 +21,28 @@ class AvailabilityDataFetcher {
     
     // MARK: - Individuals
     
-    func fetchIndividuals(in region: MKCoordinateRegion?, activityName: String) async throws -> [AnchorAvailabilityEvent] {
-        let bounds = region != nil
-            ? calculateBoundsFromRegion(region!)
-            : calculateBoundsFromUserLocation()
-        
-        let repo = AvailabilityEventsRepository()
-        let query = createQueryForIndividual(repo: repo, bounds: bounds, activityName: activityName)
-        let events = try await repo.fetch(query: query)
-        return events.map { AnchorAvailabilityEvent(event: $0) }
+    func fetchIndividuals(
+        in region: MKCoordinateRegion,
+        selectedStartDateTime: Date,
+        selectedEndDateTime: Date,
+        selectedActivityType: ActivityTypes
+    ) async throws -> [AnchorAvailabilityEvent] {
+        let repo = FFlattenedEventRepository()
+        let query = createQueryForIndividual(
+            repo: repo,
+            region: region,
+            selectedStartDateTime: selectedStartDateTime,
+            selectedEndDateTime: selectedEndDateTime,
+            selectedActivityType: selectedActivityType
+            
+        )
+        let events = try await repo.fetch(query)
+        return events.events.map { flattenedEvent in AnchorAvailabilityEvent(event: AvailabilityEvent(
+            id: flattenedEvent.id,
+            geohash: flattenedEvent.location.geohash,
+            geoPoint: flattenedEvent.location.geopoint,
+            ownerProfilePicture: flattenedEvent.eventImage!
+        )) }
     }
     
     private func calculateBoundsFromRegion(_ region: MKCoordinateRegion) -> (min: String, max: String) {
@@ -84,23 +97,25 @@ class AvailabilityDataFetcher {
         return prefix
     }
     
-    private func createQueryForIndividual(repo: AvailabilityEventsRepository, bounds: (min: String, max: String), activityName: String) -> IQueryBuilder {
-        var query = repo.initQueryBuilderObject()
-        query = query.appendFilter(
-            Filter(field: "g.geohash", operation: .isGreaterThanOrEqualTo, value: bounds.min)
-        )
-        query = query.appendFilter(
-            Filter(field: "g.geohash", operation: .isLessThan, value: bounds.max)
-        )
-        query = query.appendFilter(
-            Filter(field: "activityType", operation: .isEqualTo, value: activityName)
-        )
-        query = query.setLimit(individualsLimit)
-        return query
+    private func createQueryForIndividual(
+        repo: FFlattenedEventRepository,
+        region: MKCoordinateRegion,
+        selectedStartDateTime: Date,
+        selectedEndDateTime: Date,
+        selectedActivityType: ActivityTypes
+    ) -> FlattenedEventsRequest {
+        
+       let request = FlattenedEventsRequest(
+        selectedStartTime: selectedStartDateTime,
+        selectedEndTime: selectedEndDateTime,
+        topLeft: region.topLeft,
+        bottomRight: region.bottomRight,
+        selectedActivityType: selectedActivityType
+       )
+        return request
     }
     
     // MARK: - Clusters
-    
     func fetchClusters(
         selectedStartTime: Date,
         selectedEndTime: Date,
@@ -108,6 +123,25 @@ class AvailabilityDataFetcher {
         bottomRight: GeoPoint,
         selectedActivityType: ActivityTypes
     ) async throws -> [AnchorCluster] {
+        let requestParams = createRequestParamsForClusters(
+            selectedStartTime: selectedStartTime,
+            selectedEndTime: selectedEndTime,
+            topLeft: topLeft,
+            bottomRight: bottomRight,
+            selectedActivityType: selectedActivityType
+        )
+        
+        let repo = EventClusterRepository()
+        let results = try! await repo.fetch(requestParams)
+        let anchors = results.clusters.map{ $0.convertToAnchorCluster() }
+        return anchors
+    }
+    
+    private func createRequestParamsForClusters(selectedStartTime: Date,
+                                        selectedEndTime: Date,
+                                        topLeft: GeoPoint,
+                                        bottomRight: GeoPoint,
+                                        selectedActivityType: ActivityTypes) -> EventClusterRequest {
         let request = EventClusterRequest(
                         selectedStartTime: selectedStartTime,
                         selectedEndTime: selectedEndTime,
@@ -116,38 +150,6 @@ class AvailabilityDataFetcher {
                         selectedActivityType: selectedActivityType.rawValue,
                         precision: GeohashPrecision.district.rawValue
                     )
-        let repo = EventClusterRepository()
-        let results = try! await repo.fetch(request)
-        let anchors = results.clusters.map{ $0.convertToAnchorCluster() }
-        return anchors
-    }
-    
-    private func calculateBoundsForClusters(precision: Int) -> (min: String, max: String) {
-        guard let location = GeohashService.shared.currentLocation else {
-            return ("", "~")
-        }
-        
-        let geohash = Geohash.encode(
-            latitude: location.coordinate.latitude,
-            longitude: location.coordinate.longitude,
-            length: precision
-        )
-        let prefix = String(geohash.prefix(precision))
-        return (min: prefix, max: prefix + "~")
-    }
-    
-    private func createQueryForClusters(bounds: (min: String, max: String), repo: AvailabilityAggregateRepository, activityName: String) -> IQueryBuilder {
-        var query = repo.initQueryBuilderObject()
-        query = query.appendFilter(
-            Filter(field: repo.constants.geohashKey, operation: .isGreaterThanOrEqualTo, value: bounds.min)
-        )
-        query = query.appendFilter(
-            Filter(field: repo.constants.geohashKey, operation: .isLessThan, value: bounds.max)
-        )
-        query = query.appendFilter(
-            Filter(field: "activityType", operation: .isEqualTo, value: activityName)
-        )
-        query = query.setLimit(clustersLimit)
-        return query
+        return request
     }
 }

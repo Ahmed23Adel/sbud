@@ -23,7 +23,6 @@ class FlattenedEventsRepository: IFirebaesRepository{
             let data = doc.data()
             guard let eventId = data[constants.eventId] as? String,
                   let dateLocationId = data[constants.dateLocationId] as? String,
-                  let activityType = data[constants.activityType] as? String,
                   let createdAt = data[constants.createdAt] as? Date,
                   let eventImage = data[constants.eventImage] as? String,
                   let activityType = data[constants.activityType] as? String,

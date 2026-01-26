@@ -10,7 +10,6 @@ import Foundation
 
 protocol ICloudFunctionRepository {
     associatedtype T
-    associatedtype Constants: IRepositoryConstants
     var funcName: String { get }
     
 }

@@ -37,8 +37,6 @@ class AvailabilityEventsRepository: IFirebaesRepository{
                 id: id,
                 geohash: geohash,
                 geoPoint: geopoint,
-                notes: notes,
-                userId: userId,
                 ownerProfilePicture: ownerProfilePicture
                 
             )

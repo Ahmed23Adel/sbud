@@ -10,20 +10,6 @@ import Combine
 import _MapKit_SwiftUI
 import FirebaseFirestore
 
-import MapKit
-import FirebaseFirestore
-
-extension MKCoordinateRegion {
-    var topLeft: GeoPoint {
-        GeoPoint(latitude: center.latitude + (span.latitudeDelta / 2),
-                 longitude: center.longitude - (span.longitudeDelta / 2))
-    }
-    
-    var bottomRight: GeoPoint {
-        GeoPoint(latitude: center.latitude - (span.latitudeDelta / 2),
-                 longitude: center.longitude + (span.longitudeDelta / 2))
-    }
-}
 
 class AvailbilityViewModel: ObservableObject {
     @Published var cameraPosition: MapCameraPosition = .automatic
@@ -101,9 +87,18 @@ class AvailbilityViewModel: ObservableObject {
             Task {
                 do {
                     shouldShowIndividuals = true
-                    anchorAvailabilityEvents =  try await dataFetcher.fetchIndividuals(in: currentRegion, activityName: AvailabilityConfig.activityNames[selectedActivityIndex])
+                    anchorAvailabilityEvents =  try await dataFetcher.fetchIndividuals(
+                        in: currentRegion!,
+                        selectedStartDateTime: availabilityFiltersResults.startDateTime,
+                        selectedEndDateTime: availabilityFiltersResults.endDateTime,
+                        selectedActivityType: ActivityTypes(rawValue: AvailabilityConfig.activityNames[selectedActivityIndex]) ?? .running
+                        
+                    )
+                    print("region", currentRegion?.topLeft, currentRegion?.bottomRight, AvailabilityConfig.activityNames[selectedActivityIndex], availabilityFiltersResults.startDateTime, availabilityFiltersResults.endDateTime)
+                    print("anchorAvailabilityEvents", anchorAvailabilityEvents)
                     anchorsClusters.removeAll()
                 } catch {
+                    print("erroridie", error)
                     showErrorMsgForIndividuals()
                 }
             }
