@@ -35,10 +35,8 @@ struct AnchorsCollectioClustersView: MapContent {
                 cluster: AvailabiltiyAggregate(
                     id: "",
                     count: 4,
-                    geohash: "",
                     location: GeoPoint(latitude: 4.3,
                                        longitude: 4.5),
-                    precision: 5
             ))
         ])
     }

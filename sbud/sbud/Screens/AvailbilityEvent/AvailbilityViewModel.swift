@@ -117,6 +117,7 @@ class AvailbilityViewModel: ObservableObject {
                     )
                     anchorAvailabilityEvents.removeAll()
                 } catch {
+                    print("error", error)
                     showErrorMsgForClusters()
                 }
             }

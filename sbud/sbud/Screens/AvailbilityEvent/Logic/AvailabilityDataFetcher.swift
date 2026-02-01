@@ -27,22 +27,16 @@ class AvailabilityDataFetcher {
         selectedEndDateTime: Date,
         selectedActivityType: ActivityTypes
     ) async throws -> [AnchorAvailabilityEvent] {
-        let repo = FFlattenedEventRepository()
-        let query = createQueryForIndividual(
-            repo: repo,
+        let requestParams = createQueryForIndividual(
             region: region,
             selectedStartDateTime: selectedStartDateTime,
             selectedEndDateTime: selectedEndDateTime,
-            selectedActivityType: selectedActivityType
-            
-        )
-        let events = try await repo.fetch(query)
-        return events.events.map { flattenedEvent in AnchorAvailabilityEvent(event: AvailabilityEvent(
-            id: flattenedEvent.id,
-            geohash: flattenedEvent.location.geohash,
-            geoPoint: flattenedEvent.location.geopoint,
-            ownerProfilePicture: flattenedEvent.eventImage!
-        )) }
+            selectedActivityType: selectedActivityType)
+        
+        let requester = FlattenedEventsRequester()
+        let results = try await requester.fetchIndividuals(requestParams: requestParams)
+        let anchors = results.events.map{ $0.covertToAnchor() }
+        return anchors
     }
     
     private func calculateBoundsFromRegion(_ region: MKCoordinateRegion) -> (min: String, max: String) {
@@ -98,25 +92,25 @@ class AvailabilityDataFetcher {
     }
     
     private func createQueryForIndividual(
-        repo: FFlattenedEventRepository,
         region: MKCoordinateRegion,
         selectedStartDateTime: Date,
         selectedEndDateTime: Date,
         selectedActivityType: ActivityTypes
     ) -> FlattenedEventsRequest {
         
-       let request = FlattenedEventsRequest(
-        selectedStartTime: selectedStartDateTime,
-        selectedEndTime: selectedEndDateTime,
-        topLeft: region.topLeft,
-        bottomRight: region.bottomRight,
-        selectedActivityType: selectedActivityType
+        let request = FlattenedEventsRequest(
+            topLeft: region.topLeft,
+            bottomRight: region.bottomRight,
+            selectedActivityType: selectedActivityType.rawValue,
+            selectedStartTime: selectedStartDateTime,
+            selectedEndTime: selectedEndDateTime
+        
        )
         return request
     }
     
     // MARK: - Clusters
-    func fetchClusters(
+    func   fetchClusters(
         selectedStartTime: Date,
         selectedEndTime: Date,
         topLeft: GeoPoint,
@@ -131,8 +125,8 @@ class AvailabilityDataFetcher {
             selectedActivityType: selectedActivityType
         )
         
-        let repo = EventClusterRepository()
-        let results = try! await repo.fetch(requestParams)
+        let requester = AvailbilityClusterRequester()
+        let results = try await requester.fetchClusters(requestParams: requestParams)
         let anchors = results.clusters.map{ $0.convertToAnchorCluster() }
         return anchors
     }
@@ -141,15 +135,17 @@ class AvailabilityDataFetcher {
                                         selectedEndTime: Date,
                                         topLeft: GeoPoint,
                                         bottomRight: GeoPoint,
-                                        selectedActivityType: ActivityTypes) -> EventClusterRequest {
-        let request = EventClusterRequest(
-                        selectedStartTime: selectedStartTime,
-                        selectedEndTime: selectedEndTime,
-                        topLeft: topLeft,
-                        bottomRight: bottomRight,
-                        selectedActivityType: selectedActivityType.rawValue,
-                        precision: GeohashPrecision.district.rawValue
-                    )
+                                        selectedActivityType: ActivityTypes) -> AvailabilityClusterModelRequest {
+        let request = AvailabilityClusterModelRequest(
+            topLeft: topLeft,
+            bottomRight: bottomRight,
+            selectedActivityType: selectedActivityType.rawValue,
+            selectedStartTime: selectedStartTime,
+            selectedEndTime: selectedEndTime,
+            precision: GeohashPrecision.district.rawValue
+            
+        )
+
         return request
     }
 }
