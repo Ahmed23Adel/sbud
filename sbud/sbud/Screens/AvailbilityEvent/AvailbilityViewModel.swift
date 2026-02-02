@@ -9,9 +9,9 @@ import Foundation
 import Combine
 import _MapKit_SwiftUI
 import FirebaseFirestore
+import OSLog
 
-
-class AvailbilityViewModel: ObservableObject {
+final class AvailbilityViewModel: ObservableObject {
     @Published var cameraPosition: MapCameraPosition = .automatic
     @Published var shouldShowIndividuals: Bool = false
     @Published var alertMsg = ""
@@ -26,9 +26,9 @@ class AvailbilityViewModel: ObservableObject {
     let mapsHelper = MapsHelper()
     var locationManager: LocationManager
     private var cancellables = Set<AnyCancellable>()
-    
     private var availabilityFiltersResults: AvailabilityFiltersResults
     private var selectedActivityIndex: Int = 0
+    private let logger = Logger(subsystem: "sBud", category: "AvailbilityViewModel")
     
     init(locationManager: LocationManager, availabilityFiltersResults: AvailabilityFiltersResults) {
         self.locationManager = locationManager
@@ -60,22 +60,23 @@ class AvailbilityViewModel: ObservableObject {
     
     // I should fetch near to users' location only
     private func setupGeohashListener() {
-        GeohashService.shared.$currentLocation
-            .compactMap { $0 }
-            .removeDuplicates()
-            .sink { [weak self] _ in
-                Task {
-                    self?.fetchNewData()
-                }
-            }
-            .store(in: &cancellables)
+//        GeohashService.shared.$currentLocation
+//            .compactMap { $0 }
+//            .removeDuplicates()
+//            .sink { [weak self] _ in
+//                Task {
+//                    self?.logger.notice("setupGeohashListener")
+//                    self?.fetchNewData()
+//                }
+//            }
+//            .store(in: &cancellables)
     }
     
     private func setupCameraPositionListener() {
         $cameraPosition
             .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main) // Wait for user to stop zooming
             .sink { [weak self] position in
-                self?.handleCameraPositionChange(position)
+//                self?.handleCameraPositionChange(position)
             }
             .store(in: &cancellables)
     }
@@ -94,17 +95,16 @@ class AvailbilityViewModel: ObservableObject {
                         selectedActivityType: ActivityType(rawValue: AvailabilityConfig.activityNames[selectedActivityIndex]) ?? .running
                         
                     )
-                    print("region", currentRegion?.topLeft, currentRegion?.bottomRight, AvailabilityConfig.activityNames[selectedActivityIndex], availabilityFiltersResults.startDateTime, availabilityFiltersResults.endDateTime)
-                    print("anchorAvailabilityEvents", anchorAvailabilityEvents)
+                    logger.notice("do0 \(self.anchorAvailabilityEvents.count)")
                     anchorsClusters.removeAll()
                 } catch {
-                    print("erroridie", error)
                     showErrorMsgForIndividuals()
                 }
             }
         } else {
             Task {
                 do {
+                    
                     shouldShowIndividuals = false
                     anchorsClusters =  try await dataFetcher.fetchClusters(
                         selectedStartTime: availabilityFiltersResults.startDateTime,
@@ -115,24 +115,12 @@ class AvailbilityViewModel: ObservableObject {
                         
 
                     )
+                    logger.notice("do1 \(self.anchorsClusters.count)")
                     anchorAvailabilityEvents.removeAll()
                 } catch {
-                    print("error", error)
                     showErrorMsgForClusters()
                 }
             }
-        }
-    }
-    
-    private func handleCameraPositionChange(_ position: MapCameraPosition) {
-        guard let region = position.region else { return }
-        currentRegion = region
-        let newPrecision = mapsHelper.determinePrecision(from: region)
-        if newPrecision != lastFetchedPrecision {
-            currentCameraPrecision = newPrecision
-            shouldShowIndividuals = (newPrecision == .individuals)
-            lastFetchedPrecision = newPrecision
-            fetchNewData()
         }
     }
     
@@ -183,15 +171,44 @@ class AvailbilityViewModel: ObservableObject {
     
     // MARK: GUI Camera change handeler
     func handleMapCameraChange(_ region: MKCoordinateRegion) {
-        currentRegion = region
         let newPrecision = mapsHelper.determinePrecision(from: region)
-        if newPrecision != lastFetchedPrecision {
+        logger.notice("Precision: \(newPrecision.rawValue), Last: \(self.lastFetchedPrecision?.rawValue ?? -1)")
+        
+        shouldShowIndividuals = (newPrecision == .individuals)
+        
+        guard let oldRegion = currentRegion else {
+            currentRegion = region
             currentCameraPrecision = newPrecision
-            shouldShowIndividuals = (newPrecision == .individuals)
             lastFetchedPrecision = newPrecision
             fetchNewData()
+            return
+        }
+        
+        // Determine if we should fetch
+        let shouldFetch: Bool
+        
+        if newPrecision == .individuals {
+            // Fetch individuals if we weren't already showing individuals
+            shouldFetch = (lastFetchedPrecision != .individuals)
+        } else {
+            // For clusters, fetch if moved outside the old region
+            shouldFetch = !mapsHelper.isNewRegionContained(new: region, old: oldRegion)
+        }
+        
+        if shouldFetch {
+            logger.notice("Fetching new data")
+            currentRegion = region
+            currentCameraPrecision = newPrecision
+            lastFetchedPrecision = newPrecision
+            fetchNewData()
+        } else {
+            logger.notice("No fetch needed - region contained or already showing same data")
+            currentRegion = region
+            currentCameraPrecision = newPrecision
+            lastFetchedPrecision = newPrecision
         }
     }
+    
     
     // MARK: Filters
     private func setupFilterResultsListener(){
@@ -206,4 +223,7 @@ class AvailbilityViewModel: ObservableObject {
         self.selectedActivityIndex = selectedActivityIndex
         fetchNewData()
     }
+    
+    
+    
 }

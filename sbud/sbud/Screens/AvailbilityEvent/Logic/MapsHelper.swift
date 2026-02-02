@@ -17,8 +17,8 @@ import FirebaseFirestore
  5 Neighborhood
  */
 class MapsHelper{
-    private(set) var cityZoomLatitudeDelta: Double = 0.15
-    private(set) var cityZoomLongitudeDelta: Double = 0.15
+    private(set) var cityZoomLatitudeDelta: Double = 0.09
+    private(set) var cityZoomLongitudeDelta: Double = 0.09
     
     func calculateRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
         guard !coordinates.isEmpty else {
@@ -82,7 +82,7 @@ class MapsHelper{
         case 0...0.01:  // Very zoomed in (~1km)
             return .individuals
         case 0.01...0.05:  // Zoomed in (~5km)
-            return .neighbourhood
+            return .individuals
         case 0.05...0.2:  // City level (~20km)
             return .city
         case 0.2...1.0:  // Large city (~100km)
@@ -92,5 +92,15 @@ class MapsHelper{
         default:  // Very zoomed out
             return .continent
         }
+    }
+    
+    func isNewRegionContained(new: MKCoordinateRegion, old: MKCoordinateRegion) -> Bool{
+        if new.topLeft.latitude <= old.topLeft.latitude &&
+            new.topLeft.longitude >= old.topLeft.longitude &&
+            new.bottomRight.latitude >= old.bottomRight.latitude &&
+            new.bottomRight.longitude <= old.bottomRight.longitude {
+            return true
+        }
+        return false
     }
 }

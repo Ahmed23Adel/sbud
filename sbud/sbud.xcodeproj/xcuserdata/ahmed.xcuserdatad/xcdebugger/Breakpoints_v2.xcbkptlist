@@ -52,21 +52,5 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "45C776A7-27F8-492F-A46F-A0A64D85E5C5"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../../../../Library/Developer/Xcode/DerivedData/sbud-ekrqexiibhuyfjhhjpkcuczxrpgd/SourcePackages/checkouts/AdelsonApiCaller/Sources/AdelsonApiCaller/AdelsonFirebaseApiCaller.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "89"
-            endingLineNumber = "89"
-            landmarkName = "callGetWithRetry(url:queryParams:config:retryCount:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

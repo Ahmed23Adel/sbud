@@ -30,7 +30,6 @@ nonisolated(unsafe) struct FlattenedEventsRequest: Encodable, Sendable {
             "selectedStartTime": startString,
             "selectedEndTime": endString,
         ]
-        print("error dict", dict)
         return dict
     }
 }
