@@ -75,16 +75,6 @@ class MapsHelper{
         )
     }
     
-    func calcuRegions(center: CLLocationCoordinate2D, latDelta: Double, lonDelta: Double) -> MKCoordinateRegion{
-        let span = MKCoordinateSpan(
-            latitudeDelta: latDelta,
-            longitudeDelta: lonDelta
-        )
-        
-        return MKCoordinateRegion(center: center, span: span)
-    }
-    
-    
     func determinePrecision(from region: MKCoordinateRegion) -> GeohashPrecision {
         let latitudeDelta = region.span.latitudeDelta
         

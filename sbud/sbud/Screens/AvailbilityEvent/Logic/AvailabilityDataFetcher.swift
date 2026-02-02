@@ -20,12 +20,11 @@ class AvailabilityDataFetcher {
     private let clustersLimit = 100
     
     // MARK: - Individuals
-    
     func fetchIndividuals(
         in region: MKCoordinateRegion,
         selectedStartDateTime: Date,
         selectedEndDateTime: Date,
-        selectedActivityType: ActivityTypes
+        selectedActivityType: ActivityType
     ) async throws -> [AnchorAvailabilityEvent] {
         let requestParams = createQueryForIndividual(
             region: region,
@@ -39,63 +38,11 @@ class AvailabilityDataFetcher {
         return anchors
     }
     
-    private func calculateBoundsFromRegion(_ region: MKCoordinateRegion) -> (min: String, max: String) {
-        let corners = getRegionCorners(region)
-        let geohashes = corners.map { coordinate in
-            Geohash.encode(latitude: coordinate.latitude, longitude: coordinate.longitude, length: individualsPrecision)
-        }
-        
-        let commonPrefix = findCommonPrefix(geohashes)
-        return commonPrefix.isEmpty
-            ? (min: geohashes.min()!, max: geohashes.max()! + "~")
-            : (min: commonPrefix, max: commonPrefix + "~")
-    }
-    
-    private func calculateBoundsFromUserLocation() -> (min: String, max: String) {
-        guard let location = GeohashService.shared.currentLocation else {
-            return ("", "~")
-        }
-        
-        let geohash = Geohash.encode(
-            latitude: location.coordinate.latitude,
-            longitude: location.coordinate.longitude,
-            length: GeohashPrecision.city.rawValue
-        )
-        let prefix = String(geohash.prefix(GeohashPrecision.city.rawValue))
-        return (min: prefix, max: prefix + "~")
-    }
-    
-    private func getRegionCorners(_ region: MKCoordinateRegion) -> [CLLocationCoordinate2D] {
-        let center = region.center
-        let halfLat = region.span.latitudeDelta / 2
-        let halfLon = region.span.longitudeDelta / 2
-        
-        return [
-            CLLocationCoordinate2D(latitude: center.latitude - halfLat, longitude: center.longitude - halfLon),
-            CLLocationCoordinate2D(latitude: center.latitude - halfLat, longitude: center.longitude + halfLon),
-            CLLocationCoordinate2D(latitude: center.latitude + halfLat, longitude: center.longitude - halfLon),
-            CLLocationCoordinate2D(latitude: center.latitude + halfLat, longitude: center.longitude + halfLon)
-        ]
-    }
-    
-    private func findCommonPrefix(_ strings: [String]) -> String {
-        guard let first = strings.first, strings.count > 1 else { return strings.first ?? "" }
-        
-        var prefix = ""
-        for (index, char) in first.enumerated() {
-            guard strings.allSatisfy({ $0.count > index && $0[String.Index(utf16Offset: index, in: $0)] == char }) else {
-                break
-            }
-            prefix.append(char)
-        }
-        return prefix
-    }
-    
     private func createQueryForIndividual(
         region: MKCoordinateRegion,
         selectedStartDateTime: Date,
         selectedEndDateTime: Date,
-        selectedActivityType: ActivityTypes
+        selectedActivityType: ActivityType
     ) -> FlattenedEventsRequest {
         
         let request = FlattenedEventsRequest(
@@ -115,7 +62,7 @@ class AvailabilityDataFetcher {
         selectedEndTime: Date,
         topLeft: GeoPoint,
         bottomRight: GeoPoint,
-        selectedActivityType: ActivityTypes
+        selectedActivityType: ActivityType
     ) async throws -> [AnchorCluster] {
         let requestParams = createRequestParamsForClusters(
             selectedStartTime: selectedStartTime,
@@ -135,7 +82,7 @@ class AvailabilityDataFetcher {
                                         selectedEndTime: Date,
                                         topLeft: GeoPoint,
                                         bottomRight: GeoPoint,
-                                        selectedActivityType: ActivityTypes) -> AvailabilityClusterModelRequest {
+                                        selectedActivityType: ActivityType) -> AvailabilityClusterModelRequest {
         let request = AvailabilityClusterModelRequest(
             topLeft: topLeft,
             bottomRight: bottomRight,

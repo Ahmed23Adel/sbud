@@ -22,7 +22,7 @@ class FiltersViewModel: ObservableObject{
         activityNames[selectedActivityIndex]
     }
     
-    var selectedActivityType: ActivityTypes  {
+    var selectedActivityType: ActivityType  {
         let index = availabilityFiltersResults.selectedActivityIndex
         let activityName = activityNames[index]
         switch activityName{

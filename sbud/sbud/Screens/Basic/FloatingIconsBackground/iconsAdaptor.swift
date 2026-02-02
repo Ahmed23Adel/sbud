@@ -8,9 +8,9 @@
 import Foundation
 import SwiftUI
 struct IconsAdaptor{
-    let activityType: ActivityTypes
+    let activityType: ActivityType
     
-    init(_ activityType: ActivityTypes){
+    init(_ activityType: ActivityType){
         self.activityType = activityType
     }
     

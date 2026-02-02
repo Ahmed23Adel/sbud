@@ -91,7 +91,7 @@ class AvailbilityViewModel: ObservableObject {
                         in: currentRegion!,
                         selectedStartDateTime: availabilityFiltersResults.startDateTime,
                         selectedEndDateTime: availabilityFiltersResults.endDateTime,
-                        selectedActivityType: ActivityTypes(rawValue: AvailabilityConfig.activityNames[selectedActivityIndex]) ?? .running
+                        selectedActivityType: ActivityType(rawValue: AvailabilityConfig.activityNames[selectedActivityIndex]) ?? .running
                         
                     )
                     print("region", currentRegion?.topLeft, currentRegion?.bottomRight, AvailabilityConfig.activityNames[selectedActivityIndex], availabilityFiltersResults.startDateTime, availabilityFiltersResults.endDateTime)
@@ -111,7 +111,7 @@ class AvailbilityViewModel: ObservableObject {
                         selectedEndTime: availabilityFiltersResults.endDateTime,
                         topLeft: currentRegion?.topLeft ?? GeoPoint(latitude: 0, longitude: 0),
                         bottomRight: currentRegion?.bottomRight ?? GeoPoint(latitude: 180, longitude: 180),
-                        selectedActivityType: ActivityTypes(rawValue: AvailabilityConfig.activityNames[selectedActivityIndex]) ?? .running
+                        selectedActivityType: ActivityType(rawValue: AvailabilityConfig.activityNames[selectedActivityIndex]) ?? .running
                         
 
                     )

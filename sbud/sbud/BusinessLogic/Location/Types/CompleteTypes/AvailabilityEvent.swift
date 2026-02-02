@@ -10,13 +10,11 @@ import FirebaseFirestore
 
 class AvailabilityEvent: IAvailabilityEvent{
     var id: String
-    var geohash: String
     var geoPoint: GeoPoint
     var ownerProfilePicture: String
     
-    init(id: String, geohash: String, geoPoint: GeoPoint, ownerProfilePicture: String) {
+    init(id: String, geoPoint: GeoPoint, ownerProfilePicture: String) {
         self.id = id
-        self.geohash = geohash
         self.geoPoint = geoPoint
         self.ownerProfilePicture = ownerProfilePicture
     }

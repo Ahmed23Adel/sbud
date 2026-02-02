@@ -31,7 +31,6 @@ nonisolated(unsafe) struct Event: Decodable, Sendable {
     func covertToAnchor() -> AnchorAvailabilityEvent {
         AnchorAvailabilityEvent(event: AvailabilityEvent(
             id: id,
-            geohash: g.geohash,
             geoPoint: GeoPoint(latitude: g.geopoint.latitude, longitude: g.geopoint.longitude),
             ownerProfilePicture: eventImage)
         )
