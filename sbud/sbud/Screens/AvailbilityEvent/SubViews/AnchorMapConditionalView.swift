@@ -15,18 +15,18 @@ struct AnchorMapConditionalView: View {
     let shouldShowIndividuals: Bool
     @Binding var cameraPosition: MapCameraPosition
     let onCameraChangeFunc: (MKCoordinateRegion) -> Void
-    
+
     var body: some View {
         Map(position: $cameraPosition) {
             UserAnnotation()
-            
-            if shouldShowIndividuals{
+
+            if shouldShowIndividuals {
                 AnchorsCollectioEventsView(anchorAvailabilityEvents: anchorAvailabilityEvents)
-                
-            } else{
+
+            } else {
                 AnchorsCollectioClustersView(anchorClusters: anchorClusters)
             }
-            
+
         }
         .onMapCameraChange { context in
             onCameraChangeFunc(context.region)
@@ -36,7 +36,7 @@ struct AnchorMapConditionalView: View {
             MapUserLocationButton()
             MapCompass()
             MapScaleView()
-            
+
         }
         .safeAreaPadding(.top, 40)
     }
@@ -49,16 +49,14 @@ struct AnchorMapConditionalView: View {
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         )
     )
-    
+
     AnchorMapConditionalView(
         anchorAvailabilityEvents: [
             AnchorAvailabilityEvent(
                 event: AvailabilityEvent(
                     id: "cf5f3e6b-a62b-4c43-85f5-e47ca287419f",
-                    geohash: "u0nd3zc8",
                     geoPoint: GeoPoint(latitude: 45.43817043216585, longitude: 9.219661393563264),
-                    notes: "some notes",
-                    userId: "jagGta4pl3XywZcBv4WUq1Bv1HL2",
+                    // swiftlint:disable:next line_length
                     ownerProfilePicture: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s"
                 )
             )

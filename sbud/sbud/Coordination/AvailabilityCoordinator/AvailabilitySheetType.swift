@@ -9,8 +9,7 @@ import Foundation
 
 enum AvailabilitySheetType: Identifiable {
     case filter
-    
-    
+
     var id: String {
         switch self {
         case .filter: return "filter"

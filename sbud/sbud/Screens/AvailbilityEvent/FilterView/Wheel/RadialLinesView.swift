@@ -7,13 +7,12 @@
 
 import SwiftUI
 
-
 struct RadialLinesView: View {
     let numberOfLines = 36
     let longLineLength: CGFloat = 100
     let shortLineLength: CGFloat = 80
     let lineWidth: CGFloat = 2
-        
+
     var body: some View {
         ZStack {
             ForEach(0..<numberOfLines, id: \.self) { index in
@@ -26,7 +25,7 @@ struct RadialLinesView: View {
         }
         .frame(width: 250, height: 250)
     }
-    
+
     func lineLength(for index: Int) -> CGFloat {
         let position = index % 3
         return position == 0 ? longLineLength : shortLineLength

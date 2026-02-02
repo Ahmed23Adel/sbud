@@ -9,26 +9,26 @@ import SwiftUI
 
 struct HomeTabsView: View {
     @StateObject var viewModel = HomeTabsViewModel()
-    
+
     var body: some View {
         TabView(selection: $viewModel.selectedTab) {
             HomeView()
-                .tabItem{
+                .tabItem {
                     Label("Home", systemImage: "house")
                 }
                 .tag(0)
             AvailabilityAppCoordinator()
-                .tabItem{
+                .tabItem {
                     Label("Availability", systemImage: "figure.run")
                 }
                 .tag(1)
             AllEventsView()
-                .tabItem{
+                .tabItem {
                     Label("Events", systemImage: "person.3")
                 }
                 .tag(2)
             AllEventsView()
-                .tabItem{
+                .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }
                 .tag(3)

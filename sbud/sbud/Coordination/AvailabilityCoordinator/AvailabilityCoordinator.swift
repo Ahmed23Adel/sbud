@@ -8,13 +8,13 @@
 import Foundation
 import Combine
 
-class AvailabilityCoordinator: ObservableObject{
+class AvailabilityCoordinator: ObservableObject {
     @Published var activeSheet: AvailabilitySheetType?
-    
+
     func showSheet(_ sheet: AvailabilitySheetType) {
         activeSheet = sheet
     }
-    
+
     func dismissSheet() {
         activeSheet = nil
     }

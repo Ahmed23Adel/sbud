@@ -1,0 +1,1 @@
+Both IAnchorCluster, and IAnchorAvailabilityEvent are expected to be used with GUI, currently they have only the cluster and availability information. But later, they may include much more information that may help with the GUI.

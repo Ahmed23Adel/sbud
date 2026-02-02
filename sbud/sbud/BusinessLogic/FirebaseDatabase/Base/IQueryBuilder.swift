@@ -11,6 +11,6 @@ import FirebaseFirestore
 protocol IQueryBuilder {
     mutating func appendFilter(_ filter: Filter) -> Self
     mutating func setLimit(_ limit: Int) -> Self
-    mutating func setOrderBy(_ orderBy: orderByAggregate) -> Self
+    mutating func setOrderBy(_ orderBy: OrderByAggregate) -> Self
     func build() -> Query
 }

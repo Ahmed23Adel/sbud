@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		E256EF3E2EFB2F6E000D5E8A /* Geohash in Frameworks */ = {isa = PBXBuildFile; productRef = E256EF3D2EFB2F6E000D5E8A /* Geohash */; };
+		E2843DB42F26533F0028825D /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = E2843DB32F26533F0028825D /* FirebaseFunctions */; };
 		E289D7B62EE832FA005F9F37 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */; };
 		E289D7B82EE832FA005F9F37 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B72EE832FA005F9F37 /* FirebaseAnalyticsCore */; };
 		E289D7BA2EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B92EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport */; };
@@ -19,6 +20,9 @@
 		E2A90D0A2F09E59300C287FD /* AdelsonValidator in Frameworks */ = {isa = PBXBuildFile; productRef = E2A90D092F09E59300C287FD /* AdelsonValidator */; };
 		E2A90D0D2F09E61900C287FD /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = E2A90D0C2F09E61900C287FD /* Lottie */; };
 		E2CB89BA2EF9924A0007AB32 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB89B92EF9924A0007AB32 /* FirebaseFirestore */; };
+		E2EBBBC62F2EAB1A002307D8 /* AdelsonAuthManager in Frameworks */ = {isa = PBXBuildFile; productRef = E2EBBBC52F2EAB1A002307D8 /* AdelsonAuthManager */; };
+		E2EBBBC92F2EAB57002307D8 /* AdelsonApiCaller in Frameworks */ = {isa = PBXBuildFile; productRef = E2EBBBC82F2EAB57002307D8 /* AdelsonApiCaller */; };
+		E2EBBD0A2F2F7535002307D8 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = E2EBBD092F2F7535002307D8 /* Alamofire */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -89,6 +93,10 @@
 				E2A90D0A2F09E59300C287FD /* AdelsonValidator in Frameworks */,
 				E289D7E82EE83A93005F9F37 /* FirebaseCore in Frameworks */,
 				E2CB89BA2EF9924A0007AB32 /* FirebaseFirestore in Frameworks */,
+				E2EBBD0A2F2F7535002307D8 /* Alamofire in Frameworks */,
+				E2EBBBC62F2EAB1A002307D8 /* AdelsonAuthManager in Frameworks */,
+				E2EBBBC92F2EAB57002307D8 /* AdelsonApiCaller in Frameworks */,
+				E2843DB42F26533F0028825D /* FirebaseFunctions in Frameworks */,
 				E289D7B82EE832FA005F9F37 /* FirebaseAnalyticsCore in Frameworks */,
 				E289D7BA2EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
 				E2A90D0D2F09E61900C287FD /* Lottie in Frameworks */,
@@ -172,6 +180,10 @@
 				E2A904A02F06F4CB00C287FD /* Kingfisher */,
 				E2A90D092F09E59300C287FD /* AdelsonValidator */,
 				E2A90D0C2F09E61900C287FD /* Lottie */,
+				E2843DB32F26533F0028825D /* FirebaseFunctions */,
+				E2EBBBC52F2EAB1A002307D8 /* AdelsonAuthManager */,
+				E2EBBBC82F2EAB57002307D8 /* AdelsonApiCaller */,
+				E2EBBD092F2F7535002307D8 /* Alamofire */,
 			);
 			productName = sbud;
 			productReference = E24825A02EE2DCA200330DC2 /* sbud.app */;
@@ -262,6 +274,9 @@
 				E2A9049F2F06F4CB00C287FD /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				E2A90D082F09E59300C287FD /* XCRemoteSwiftPackageReference "AdelsonValidator" */,
 				E2A90D0B2F09E61900C287FD /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				E2EBBBC42F2EAB1A002307D8 /* XCRemoteSwiftPackageReference "AdelsonAuthManager" */,
+				E2EBBBC72F2EAB57002307D8 /* XCRemoteSwiftPackageReference "AdelsonApiCaller" */,
+				E2EBBD082F2F7535002307D8 /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E24825A12EE2DCA200330DC2 /* Products */;
@@ -698,6 +713,30 @@
 				minimumVersion = 4.5.2;
 			};
 		};
+		E2EBBBC42F2EAB1A002307D8 /* XCRemoteSwiftPackageReference "AdelsonAuthManager" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Ahmed23Adel/AdelsonAuthManager";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		E2EBBBC72F2EAB57002307D8 /* XCRemoteSwiftPackageReference "AdelsonApiCaller" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Ahmed23Adel/AdelsonApiCaller";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		E2EBBD082F2F7535002307D8 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.11.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -705,6 +744,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E256EF3C2EFB2F6E000D5E8A /* XCRemoteSwiftPackageReference "Geohash" */;
 			productName = Geohash;
+		};
+		E2843DB32F26533F0028825D /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
 		};
 		E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -760,6 +804,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		E2EBBBC52F2EAB1A002307D8 /* AdelsonAuthManager */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2EBBBC42F2EAB1A002307D8 /* XCRemoteSwiftPackageReference "AdelsonAuthManager" */;
+			productName = AdelsonAuthManager;
+		};
+		E2EBBBC82F2EAB57002307D8 /* AdelsonApiCaller */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2EBBBC72F2EAB57002307D8 /* XCRemoteSwiftPackageReference "AdelsonApiCaller" */;
+			productName = AdelsonApiCaller;
+		};
+		E2EBBD092F2F7535002307D8 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2EBBD082F2F7535002307D8 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

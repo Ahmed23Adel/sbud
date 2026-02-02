@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ConditionalGlassEffect: ViewModifier {
-    func body(content: Content) -> some View{
+    func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
             content
                 .glassEffect()
@@ -16,7 +16,7 @@ struct ConditionalGlassEffect: ViewModifier {
             content
         }
     }
-    
+
 }
 
 extension View {
@@ -24,4 +24,3 @@ extension View {
         modifier(ConditionalGlassEffect())
     }
 }
-
