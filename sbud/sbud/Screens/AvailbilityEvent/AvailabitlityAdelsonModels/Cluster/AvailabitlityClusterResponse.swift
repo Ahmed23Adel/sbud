@@ -12,8 +12,8 @@ nonisolated(unsafe) struct ActivityCluster: Decodable, Sendable {
     let geohash: String
     let count: Int
     let centerCoordinate: Coordinate
-    
-    func convertToAnchorCluster() -> AnchorCluster{
+
+    func convertToAnchorCluster() -> AnchorCluster {
         AnchorCluster(cluster: AvailabiltiyAggregate(
             id: UUID().uuidString,
             count: count,
@@ -25,4 +25,3 @@ nonisolated(unsafe) struct ActivityCluster: Decodable, Sendable {
 nonisolated(unsafe) struct AvailabitlityClusterResponse: Decodable, Sendable {
     let clusters: [ActivityCluster]
 }
-

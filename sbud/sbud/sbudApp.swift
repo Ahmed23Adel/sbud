@@ -26,8 +26,8 @@ struct SbudApp: App {
     @StateObject var authManager = AuthenticationManager.shared
     let locationManager = LocationManager.shared
     let service = GeohashService.shared
-    
-    init(){
+
+    init() {
         AdelsonFirebaseAuthConfig.shared = AdelsonFirebaseAuthConfig(
             appName: "sBud",
             baseUrl: "https://sbud-backend.onrender.com/api/v1/",

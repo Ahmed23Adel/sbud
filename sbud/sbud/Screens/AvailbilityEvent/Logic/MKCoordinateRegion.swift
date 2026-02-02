@@ -14,7 +14,7 @@ extension MKCoordinateRegion {
         GeoPoint(latitude: center.latitude + (span.latitudeDelta / 2),
                  longitude: center.longitude - (span.longitudeDelta / 2))
     }
-    
+
     var bottomRight: GeoPoint {
         GeoPoint(latitude: center.latitude - (span.latitudeDelta / 2),
                  longitude: center.longitude + (span.longitudeDelta / 2))

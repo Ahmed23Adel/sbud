@@ -9,15 +9,17 @@ import Foundation
 import AdelsonApiCaller
 import AdelsonAuthManager
 
-class AvailbilityClusterRequester{
-    
+class AvailbilityClusterRequester {
+
     nonisolated func createApiCaller() -> AdelsonFirebaseApiCaller<AvailabitlityClusterResponse> {
         return AdelsonFirebaseApiCaller<AvailabitlityClusterResponse>()
     }
 
-    nonisolated func fetchClusters(requestParams: AvailabilityClusterModelRequest) async throws -> AvailabitlityClusterResponse {
+    nonisolated func fetchClusters(
+        requestParams: AvailabilityClusterModelRequest
+    ) async throws -> AvailabitlityClusterResponse {
         let apicaller = createApiCaller()
-        
+
         return try await apicaller.callGet(
             url: "events/clusters",
             queryParams: requestParams.toDict(),

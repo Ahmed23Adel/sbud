@@ -9,23 +9,23 @@ import Foundation
 import Combine
 import SwiftUI
 
-class FiltersViewModel: ObservableObject{
+class FiltersViewModel: ObservableObject {
     let icons = AvailabilityConfig.icons
     let activityNames = AvailabilityConfig.activityNames
     @Binding var availabilityFiltersResults: AvailabilityFiltersResults
     @Published var selectedActivityIndex: Int {
-        didSet{
+        didSet {
             availabilityFiltersResults.selectedActivityIndex = selectedActivityIndex
         }
     }
     var selectedActivityName: String {
         activityNames[selectedActivityIndex]
     }
-    
-    var selectedActivityType: ActivityType  {
+
+    var selectedActivityType: ActivityType {
         let index = availabilityFiltersResults.selectedActivityIndex
         let activityName = activityNames[index]
-        switch activityName{
+        switch activityName {
         case "Running":
             return .running
         case "Gym":
@@ -36,11 +36,10 @@ class FiltersViewModel: ObservableObject{
             return .running
         }
     }
-    
-    
-    init(availabilityFiltersResults: Binding<AvailabilityFiltersResults>){
+
+    init(availabilityFiltersResults: Binding<AvailabilityFiltersResults>) {
         self._availabilityFiltersResults = availabilityFiltersResults
         selectedActivityIndex = availabilityFiltersResults.wrappedValue.selectedActivityIndex
     }
-    
+
 }

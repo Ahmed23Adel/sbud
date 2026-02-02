@@ -11,7 +11,7 @@ import FirebaseFirestore
 nonisolated(unsafe) struct FlattenedEventResponse: Decodable, Sendable {
     let events: [Event]
     let count: Int
-    
+
 }
 
 nonisolated(unsafe) struct Event: Decodable, Sendable {
@@ -27,7 +27,7 @@ nonisolated(unsafe) struct Event: Decodable, Sendable {
     let isLocationConfirmed: Bool
     let isPublic: Bool
     let eventImage: String
-    
+
     func covertToAnchor() -> AnchorAvailabilityEvent {
         AnchorAvailabilityEvent(event: AvailabilityEvent(
             id: id,

@@ -7,7 +7,7 @@
 
 import Foundation
 
-class AvailabilityConfig{
+class AvailabilityConfig {
     static let icons = ["figure.run",
                  "figure.outdoor.cycle",
                  "dumbbell"]

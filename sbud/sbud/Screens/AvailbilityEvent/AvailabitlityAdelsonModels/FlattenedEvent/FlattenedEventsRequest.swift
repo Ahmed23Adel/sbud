@@ -14,7 +14,7 @@ nonisolated(unsafe) struct FlattenedEventsRequest: Encodable, Sendable {
     let selectedActivityType: String
     let selectedStartTime: Date
     let selectedEndTime: Date
-    
+
     func toDict() -> [String: String] {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -28,7 +28,7 @@ nonisolated(unsafe) struct FlattenedEventsRequest: Encodable, Sendable {
             "bottomRightLongitude": String(bottomRight.longitude),
             "selectedActivityType": selectedActivityType,
             "selectedStartTime": startString,
-            "selectedEndTime": endString,
+            "selectedEndTime": endString
         ]
         return dict
     }

@@ -11,7 +11,7 @@ internal import FirebaseFirestoreInternal
 
 struct AnchorsCollectioClustersView: MapContent {
     let anchorClusters: [AnchorCluster]
-    
+
     var body: some MapContent {
         ForEach(anchorClusters) { cluster in
             Annotation(
@@ -21,7 +21,7 @@ struct AnchorsCollectioClustersView: MapContent {
                     longitude: cluster.cluster.location.longitude
                 )
             ) {
-                
+
                 ClusterAnnotationView(count: cluster.count)
             }
         }

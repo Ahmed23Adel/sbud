@@ -9,13 +9,13 @@ import SwiftUI
 
 struct ClusterAnnotationView: View {
     let count: Int
-    
+
     var body: some View {
         ZStack {
             Circle()
                 .fill(Color.black)
                 .frame(width: 35, height: 35)
-            
+
             Text("\(count)")
                 .font(.system(size: 12, weight: .bold))
                 .foregroundColor(.white)
@@ -24,7 +24,6 @@ struct ClusterAnnotationView: View {
         .popUp()
     }
 }
-
 
 #Preview {
     ClusterAnnotationView(count: 10)

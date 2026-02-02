@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum FilterOperation{
+enum FilterOperation {
     case isEqualTo
     case isGreaterThan
     case isLessThan

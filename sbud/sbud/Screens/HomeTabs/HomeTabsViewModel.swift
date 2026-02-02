@@ -8,6 +8,6 @@
 import Foundation
 import Combine
 
-class HomeTabsViewModel: ObservableObject{
+class HomeTabsViewModel: ObservableObject {
     @Published var selectedTab = 0
 }

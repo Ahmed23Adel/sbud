@@ -11,7 +11,7 @@ struct RadialLine: View {
     let angle: Angle
     let length: CGFloat
     let width: CGFloat
-    
+
     var body: some View {
         Rectangle()
             .fill(Color.mainColor)
@@ -20,4 +20,3 @@ struct RadialLine: View {
             .rotationEffect(angle)
     }
 }
-

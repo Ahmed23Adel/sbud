@@ -8,8 +8,8 @@
 import Foundation
 import FirebaseAuth
 
-class FirebaseTokenExtractor: @unchecked Sendable{
-    
+class FirebaseTokenExtractor: @unchecked Sendable {
+
     func getIDToken() async -> String {
        guard let user = Auth.auth().currentUser else {
            return ""
@@ -21,7 +21,7 @@ class FirebaseTokenExtractor: @unchecked Sendable{
             print("not found")
             return ""
         }
-        
+
    }
-    
+
 }

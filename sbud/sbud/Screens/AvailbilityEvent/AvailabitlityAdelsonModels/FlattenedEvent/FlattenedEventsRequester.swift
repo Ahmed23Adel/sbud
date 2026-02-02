@@ -9,15 +9,15 @@ import Foundation
 import AdelsonApiCaller
 import AdelsonAuthManager
 
-class FlattenedEventsRequester{
-    
+class FlattenedEventsRequester {
+
     nonisolated func createApiCaller() -> AdelsonFirebaseApiCaller<FlattenedEventResponse> {
         return AdelsonFirebaseApiCaller<FlattenedEventResponse>()
     }
 
     nonisolated func fetchIndividuals(requestParams: FlattenedEventsRequest) async throws -> FlattenedEventResponse {
         let apicaller = createApiCaller()
-        
+
         return try await apicaller.callGet(
             url: "events/flattenedevents",
             queryParams: requestParams.toDict(),

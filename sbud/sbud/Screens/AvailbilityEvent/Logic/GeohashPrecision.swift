@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum GeohashPrecision: Int{
+enum GeohashPrecision: Int {
     case continent = 1
     case country  = 2
     case largeCity = 3

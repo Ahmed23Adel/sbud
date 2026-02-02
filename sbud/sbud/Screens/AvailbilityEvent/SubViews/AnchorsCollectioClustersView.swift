@@ -11,7 +11,7 @@ internal import FirebaseFirestoreInternal
 
 struct AnchorsCollectioEventsView: MapContent {
     let anchorAvailabilityEvents: [AnchorAvailabilityEvent]
-    
+
     var body: some MapContent {
         ForEach(anchorAvailabilityEvents) { event in
             Annotation(

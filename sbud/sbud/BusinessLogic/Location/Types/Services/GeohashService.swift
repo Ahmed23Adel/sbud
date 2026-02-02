@@ -12,11 +12,11 @@ import Combine
 
 class GeohashService: ObservableObject {
     static let shared = GeohashService()
-    
+
     @Published var currentLocation: CLLocation?
-    
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     private init() {
         if let currentCoordinate = LocationManager.shared.userLocation {
             let location = CLLocation(latitude: currentCoordinate.latitude, longitude: currentCoordinate.longitude)
@@ -24,7 +24,7 @@ class GeohashService: ObservableObject {
         }
         setupLocationObserver()
     }
-    
+
     private func setupLocationObserver() {
         LocationManager.shared.$userLocation
             .compactMap { $0 }

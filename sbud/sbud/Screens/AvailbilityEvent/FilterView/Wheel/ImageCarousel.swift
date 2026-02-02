@@ -11,7 +11,7 @@ struct ImageCarousel: View {
     let imageNames: [String]
     let names: [String]
     let rotation: Double
-    
+
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
@@ -22,13 +22,12 @@ struct ImageCarousel: View {
             // Calculate the base index - which item should be centered
             // Start at index 0, each -90° moves forward one item
             let rotationSteps = -rotation / 90.0
-            
-            
+
             ZStack {
-                ForEach(Array(imageNames.enumerated()), id: \.offset){ index, name in
+                ForEach(Array(imageNames.enumerated()), id: \.offset) { index, _ in
                     ImageItem(imageName: imageNames[index], name: names[index])
                         .offset(x: offset + width * CGFloat(index))
-                    
+
                 }
             }
             .frame(width: width, height: geometry.size.height)
@@ -37,7 +36,6 @@ struct ImageCarousel: View {
         .clipped()
     }
 }
-
 
 #Preview {
     let icons = ["figure.run",

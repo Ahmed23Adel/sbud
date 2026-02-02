@@ -23,8 +23,8 @@ nonisolated(unsafe) struct AvailabilityClusterModelRequest: Encodable, Sendable 
     let selectedStartTime: Date
     let selectedEndTime: Date
     let precision: Int
-    
-    func toDict() -> [String: String]{
+
+    func toDict() -> [String: String] {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
@@ -38,8 +38,8 @@ nonisolated(unsafe) struct AvailabilityClusterModelRequest: Encodable, Sendable 
             "selectedActivityType": selectedActivityType,
             "selectedStartTime": startString,
             "selectedEndTime": endString,
-            "precision": String(precision),
-            
+            "precision": String(precision)
+
         ]
     }
 }

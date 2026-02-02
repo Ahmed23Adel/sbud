@@ -11,10 +11,10 @@ import Kingfisher
 
 struct IndividualAnnotationView: View {
     let event: AnchorAvailabilityEvent
-    
+
     var body: some View {
         VStack(spacing: 4) {
-            ZStack{
+            ZStack {
                 Image("anchor")
                     .resizable()
                     .scaledToFit()
@@ -30,9 +30,7 @@ struct IndividualAnnotationView: View {
                     .offset(y: -4)
             }
             .popUp()
-            
-            
-            
+
         }
     }
 }
@@ -43,6 +41,7 @@ struct IndividualAnnotationView: View {
             event: AvailabilityEvent(
                 id: "cf5f3e6b-a62b-4c43-85f5-e47ca287419f",
                 geoPoint: GeoPoint(latitude: 45.43817043216585, longitude: 9.219661393563264),
+                // siwftlint:disable:next line_length
                 ownerProfilePicture: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s"))
     )
 }

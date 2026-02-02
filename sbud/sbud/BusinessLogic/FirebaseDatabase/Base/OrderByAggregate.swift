@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct orderByAggregate{
+struct OrderByAggregate {
     let field: String
     let descending: Bool
 }

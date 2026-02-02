@@ -9,37 +9,37 @@ import Foundation
 import CoreLocation
 import Combine
 
-class LocationManager: NSObject, ObservableObject{
+class LocationManager: NSObject, ObservableObject {
     static let shared = LocationManager()
     private let locationManager = CLLocationManager()
-    
+
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var authorizationStatus: CLAuthorizationStatus?
-    
-    private override init(){
+
+    private override init() {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
-    
-    func requestPermission(){
+
+    func requestPermission() {
         locationManager.requestAlwaysAuthorization()
     }
-    
-    func startUpdating(){
+
+    func startUpdating() {
         locationManager.startUpdatingLocation()
     }
-    
-    func stopUpdating(){
+
+    func stopUpdating() {
         locationManager.stopUpdatingLocation()
     }
-    
+
 }
-extension LocationManager: CLLocationManagerDelegate{
-    
+extension LocationManager: CLLocationManagerDelegate {
+
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
-        if authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse{
+        if authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse {
             startUpdating()
         }
     }

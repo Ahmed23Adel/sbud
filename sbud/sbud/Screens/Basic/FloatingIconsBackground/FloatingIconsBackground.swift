@@ -7,12 +7,11 @@
 
 import SwiftUI
 
-
 struct FloatingIconsBackground: View {
-    let iconNames: Array<String>
+    let iconNames: [String]
     let numIconsShown = 15
-    
-    init(iconBaseName: IconsBaseName){
+
+    init(iconBaseName: IconsBaseName) {
         iconNames = (1...10).map { "\(iconBaseName.rawValue)\($0)" }
     }
     var body: some View {

@@ -9,21 +9,20 @@ import SwiftUI
 import UIKit
 
 struct Wheel: View {
-    
+
     @State private var currentRotation: Double = 0
     @State private var lastRotation: Double = 0
     @GestureState private var dragRotation: Double = 0
-    
+
     let imageNames: [String]
     let names: [String]
     @Binding var selectedIndex: Int
-    
-    
+
     @State private var wheelScale: CGFloat = 1.0
     @State private var inactivityTimer: Timer?
     private let inactivityDelay: TimeInterval = 2
     private let scaledDownSize = 0.3
-    
+
     @State private var lastHapticIndex: Int = 0
     private let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
     var body: some View {
@@ -37,16 +36,16 @@ struct Wheel: View {
             )
             .popUp()
             .scaleEffect(wheelScale)
-            .onAppear{
+            .onAppear {
                 startInactivityTimer()
             }
-            .onDisappear{
+            .onDisappear {
                 cancelInactivityTimer()
             }
-            
+
             RadialLinesView()
                 .onAppear {
-                    if selectedIndex != 0{
+                    if selectedIndex != 0 {
                         let initialRotation = -Double(selectedIndex) * 90
                         currentRotation = initialRotation
                         lastRotation = currentRotation
@@ -82,12 +81,12 @@ struct Wheel: View {
                                 currentRotation = finalRotation
                                 lastRotation = finalRotation
                             }
-                            
+
                             //  Converts rotation angle to "how many items forward"
                             // snappedRotation = 0° → steps = 0
                             // snappedRotation = -90° → steps = 1
                             // why -ve? Swiping left (negative rotation) moves FORWARD in the list
-                            //steps = -1
+                            // steps = -1
                             // (-1 % 6) = -1          // First modulo: still negative
                             // -1 + 6 = 5             // Add array length: now positive
                             // 5 % 6 = 5              // Second modulo: final answer
@@ -104,7 +103,9 @@ struct Wheel: View {
     /// dy --> +ve when swipe down and -ve when swipe up
     /// usually user will swipe left, dx for ex is -182, and dy 8 --> angle is  ~ -92
     private func calculateAngle(from translation: CGSize) -> Double {
+        // swiftlint:disable:next identifier_name
         let dx = translation.width
+        // swiftlint:disable:next identifier_name
         let dy = translation.height
         let angle = dx * 0.5 - dy * 0.2
         return angle
@@ -113,27 +114,27 @@ struct Wheel: View {
     private func clampRotation(rotation: Double) -> Double {
         let minRotation = Double(-(imageNames.count - 1) * 90) // can't go more right
         let maxRotation = 0.0 // can't go more left
-        
+
         // it's neither before the minRotatin, nor is it after the maxRotation
         return max(minRotation, min(maxRotation, rotation))
     }
-    
-    private func startInactivityTimer(){
+
+    private func startInactivityTimer() {
         cancelInactivityTimer()
-        inactivityTimer = Timer.scheduledTimer(withTimeInterval: inactivityDelay, repeats: false ){ _ in
+        inactivityTimer = Timer.scheduledTimer(withTimeInterval: inactivityDelay, repeats: false ) { _ in
             scaleDownWheel()
         }
     }
-    
-    private func cancelInactivityTimer(){
+
+    private func cancelInactivityTimer() {
         inactivityTimer?.invalidate()
         inactivityTimer = nil
     }
-    
+
     private func scaleUpWheel() {
         // Cancel any existing timer
         cancelInactivityTimer()
-        
+
         // Scale up if currently scaled down
         if wheelScale != 1.0 {
             withAnimation(.spring(response: 0.9, dampingFraction: 0.57)) {
@@ -141,14 +142,14 @@ struct Wheel: View {
             }
         }
     }
-    
-    private func scaleDownWheel(){
+
+    private func scaleDownWheel() {
         withAnimation(.spring(response: 0.9, dampingFraction: 0.57)) {
             wheelScale = scaledDownSize
         }
     }
-    
-    private func triggerHapticRotation(rotation: Double){
+
+    private func triggerHapticRotation(rotation: Double) {
         let currentIndex = Int(abs(round(rotation / 10)))
         if currentIndex != lastHapticIndex {
             impactFeedback.impactOccurred(intensity: 0.5)

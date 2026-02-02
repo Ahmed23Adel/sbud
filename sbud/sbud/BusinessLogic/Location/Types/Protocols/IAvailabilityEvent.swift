@@ -8,10 +8,9 @@
 import Foundation
 import FirebaseFirestore
 
-protocol IAvailabilityEvent: Identifiable, Equatable{
+protocol IAvailabilityEvent: Identifiable, Equatable {
     var id: String { get set }
     var geoPoint: GeoPoint { get set }
     var ownerProfilePicture: String { get }
-    
-    
+
 }

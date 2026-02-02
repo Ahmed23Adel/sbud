@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum AvailabilityRoute{
+enum AvailabilityRoute {
     case maps
     case filter
 }

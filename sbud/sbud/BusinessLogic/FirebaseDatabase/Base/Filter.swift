@@ -7,8 +7,7 @@
 
 import Foundation
 
-
-struct Filter{
+struct Filter {
     let field: String
     let operation: FilterOperation
     let value: Any
