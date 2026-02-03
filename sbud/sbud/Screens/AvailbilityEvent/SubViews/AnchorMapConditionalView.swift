@@ -15,7 +15,8 @@ struct AnchorMapConditionalView: View {
     let shouldShowIndividuals: Bool
     @Binding var cameraPosition: MapCameraPosition
     let onCameraChangeFunc: (MKCoordinateRegion) -> Void
-
+    @EnvironmentObject private var coordinator: AvailabilityCoordinator
+    
     var body: some View {
         Map(position: $cameraPosition) {
             UserAnnotation()
@@ -28,6 +29,7 @@ struct AnchorMapConditionalView: View {
             }
 
         }
+        .environmentObject(coordinator)
         .onMapCameraChange { context in
             onCameraChangeFunc(context.region)
         }

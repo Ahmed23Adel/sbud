@@ -11,7 +11,8 @@ import Kingfisher
 
 struct IndividualAnnotationView: View {
     let event: AnchorAvailabilityEvent
-
+    @EnvironmentObject private var coordinator: AvailabilityCoordinator
+    
     var body: some View {
         VStack(spacing: 4) {
             ZStack {
@@ -32,6 +33,10 @@ struct IndividualAnnotationView: View {
             .popUp()
 
         }
+        .onTapGesture {
+            coordinator.push(.moreInfoEvent(event.event as! AvailabilityEvent))
+        }
+        
     }
 }
 

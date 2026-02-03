@@ -24,6 +24,7 @@ struct AvailbilityView: View {
                 shouldShowIndividuals: viewModel.shouldShowIndividuals,
                 cameraPosition: $viewModel.cameraPosition,
                 onCameraChangeFunc: viewModel.handleMapCameraChange)
+            .environmentObject(coordinator)
 
             VStack {
                 Spacer()

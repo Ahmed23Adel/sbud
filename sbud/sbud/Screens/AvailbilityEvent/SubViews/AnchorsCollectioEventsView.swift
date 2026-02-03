@@ -15,7 +15,7 @@ struct AnchorsCollectioClustersView: MapContent {
     var body: some MapContent {
         ForEach(anchorClusters) { cluster in
             Annotation(
-                "\(cluster.count) available",
+                "",
                 coordinate: CLLocationCoordinate2D(
                     latitude: cluster.cluster.location.latitude,
                     longitude: cluster.cluster.location.longitude

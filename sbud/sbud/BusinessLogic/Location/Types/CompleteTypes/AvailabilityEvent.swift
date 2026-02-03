@@ -7,11 +7,13 @@
 
 import Foundation
 import FirebaseFirestore
+import Combine
 
-class AvailabilityEvent: IAvailabilityEvent {
+class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
     var id: String
     var geoPoint: GeoPoint
     var ownerProfilePicture: String
+    @Published var isLoading: Bool = true
 
     init(id: String, geoPoint: GeoPoint, ownerProfilePicture: String) {
         self.id = id
@@ -21,6 +23,12 @@ class AvailabilityEvent: IAvailabilityEvent {
 
     static func == (lhs: AvailabilityEvent, rhs: AvailabilityEvent) -> Bool {
         lhs.id == rhs.id
+    }
+    
+    func loadRestOfDetails(){
+        isLoading = true
+        
+        isLoading = false
     }
 
 }

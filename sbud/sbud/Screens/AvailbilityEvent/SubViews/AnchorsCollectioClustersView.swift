@@ -11,7 +11,7 @@ internal import FirebaseFirestoreInternal
 
 struct AnchorsCollectioEventsView: MapContent {
     let anchorAvailabilityEvents: [AnchorAvailabilityEvent]
-
+    @EnvironmentObject private var coordinator: AvailabilityCoordinator
     var body: some MapContent {
         ForEach(anchorAvailabilityEvents) { event in
             Annotation(
@@ -22,6 +22,7 @@ struct AnchorsCollectioEventsView: MapContent {
                 )
             ) {
                 IndividualAnnotationView(event: event)
+                    .environmentObject(coordinator)
             }
         }
     }

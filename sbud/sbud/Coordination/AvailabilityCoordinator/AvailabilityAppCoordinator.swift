@@ -14,11 +14,16 @@ struct AvailabilityAppCoordinator: View {
 
     private let impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     var body: some View {
-        AvailbilityView(viewModel: AvailbilityViewModel(
-            locationManager: LocationManager.shared,
-            availabilityFiltersResults: availaibilityFiltesrResults
-
-        ))
+        NavigationStack(path: $coordinator.navigationPath){
+            
+            AvailbilityView(viewModel: AvailbilityViewModel(
+                locationManager: LocationManager.shared,
+                availabilityFiltersResults: availaibilityFiltesrResults
+                
+            ))
+            .navigationDestination(for: AvailabilityNavigationDestination.self){ destination in
+                destinationView(for: destination)
+            }
             .environmentObject(coordinator)
             .sheet(item: $coordinator.activeSheet) { sheetType in
                 sheetContent(for: sheetType)
@@ -28,6 +33,7 @@ struct AvailabilityAppCoordinator: View {
                     impactFeedbackGenerator.impactOccurred(intensity: 0.8)
                 }
             }
+        }
     }
 
     @ViewBuilder
@@ -35,6 +41,15 @@ struct AvailabilityAppCoordinator: View {
         switch sheetType {
         case .filter:
             FiltersView(availabilityFiltersResults: $availaibilityFiltesrResults)
+        }
+    }
+    @ViewBuilder
+    private func destinationView(
+        for destination: AvailabilityNavigationDestination)
+    -> some View {
+        switch destination {
+        case .moreInfoEvent(let event):
+            ViewMoreInfoEvent(basicEvent: event)
         }
     }
 }

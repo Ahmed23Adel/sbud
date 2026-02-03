@@ -65,6 +65,7 @@ final class AvailbilityViewModel: ObservableObject {
                         ?? .running
 
                     )
+                    logger.debug("Fetching individuals: \(self.anchorsClusters.count)")
                     anchorsClusters.removeAll()
                 } catch {
                     showErrorMsgForIndividuals()
@@ -84,6 +85,7 @@ final class AvailbilityViewModel: ObservableObject {
                         ?? .running
 
                     )
+                    logger.debug("Fetching clusters")
                     anchorAvailabilityEvents.removeAll()
                 } catch {
                     showErrorMsgForClusters()
@@ -139,13 +141,13 @@ final class AvailbilityViewModel: ObservableObject {
             shouldFetch = !mapsHelper.isNewRegionContained(new: region, old: oldRegion)
         }
         if shouldFetch {
-            logger.notice("Fetching new data")
+            logger.debug("Fetching new data")
             currentRegion = region
             currentCameraPrecision = newPrecision
             lastFetchedPrecision = newPrecision
             fetchNewData()
         } else {
-            logger.notice("No fetch needed - region contained or already showing same data")
+            logger.debug("No fetch needed - region contained or already showing same data")
             currentRegion = region
             currentCameraPrecision = newPrecision
             lastFetchedPrecision = newPrecision

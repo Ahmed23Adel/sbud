@@ -18,8 +18,10 @@ struct LoadingView: View {
             VStack {
                 LottieView(animation: .named("JoggingLoading"))
                     .playing()
+                    .looping()
                     .frame(width: 300, height: 300)
-                Text("Loading")
+                
+                Text("Loading...")
                     .font(.title)
                     .foregroundColor(.mainColor)
             }
