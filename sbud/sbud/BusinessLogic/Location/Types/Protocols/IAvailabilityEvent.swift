@@ -11,6 +11,6 @@ import FirebaseFirestore
 protocol IAvailabilityEvent: Identifiable, Equatable {
     var id: String { get set }
     var geoPoint: GeoPoint { get set }
-    var ownerProfilePicture: String { get }
+    var eventImage: String { get }
 
 }

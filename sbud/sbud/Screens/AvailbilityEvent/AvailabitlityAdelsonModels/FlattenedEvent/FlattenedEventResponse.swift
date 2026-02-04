@@ -32,7 +32,17 @@ nonisolated(unsafe) struct Event: Decodable, Sendable {
         AnchorAvailabilityEvent(event: AvailabilityEvent(
             id: id,
             geoPoint: GeoPoint(latitude: g.geopoint.latitude, longitude: g.geopoint.longitude),
-            ownerProfilePicture: eventImage)
+            dateLocationId: dateLocationId,
+            activityType: activityType,
+            startDateTime: startDateTime,
+            endDateTime: endDateTime,
+            createdAt: createdAt,
+            g: GeoLocation(geopoint: Coordinate(latitude: g.geopoint.latitude, longitude: g.geopoint.longitude), geohash: g.geohash),
+            isDateConfirmed: isDateConfirmed,
+            isLocationConfirmed: isLocationConfirmed,
+            isPublic: isPublic,
+            eventImage: eventImage
+        )
         )
     }
 }

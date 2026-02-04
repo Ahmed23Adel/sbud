@@ -18,7 +18,7 @@ struct AnchorsCollectioClustersView: MapContent {
                 "",
                 coordinate: CLLocationCoordinate2D(
                     latitude: cluster.cluster.location.latitude,
-                    longitude: cluster.cluster.location.longitude
+                     longitude: cluster.cluster.location.longitude
                 )
             ) {
 
