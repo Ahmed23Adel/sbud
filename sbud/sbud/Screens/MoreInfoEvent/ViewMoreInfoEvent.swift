@@ -35,6 +35,7 @@ struct ViewMoreInfoEvent: View {
                 } else{
                     DateLocationRow(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
                         .padding(.vertical, 8)
+                    StatusRow(isPublic: viewModel.event.isPublic)
                     
                 }
                 Spacer()

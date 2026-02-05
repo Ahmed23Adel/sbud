@@ -9,8 +9,8 @@ import SwiftUI
 import Lottie
 
 struct DateLocationRow: View {
-    var cardWidth: CGFloat = 160
-    var cardHeight: CGFloat = 55
+    var cardWidth: CGFloat = UIConstants.cardWidth
+    var cardHeight: CGFloat = UIConstants.cardHeight
     var lottieFileWidth: CGFloat =  80
     var lottieFileHeight: CGFloat =  90
     var isDateConfirmed: Bool
@@ -121,7 +121,6 @@ struct DateLocationRow: View {
                 )
                 .popUp()
                 .onTapGesture{
-                    print("The location is not confirmed")
                     PopUpGenerator.shared.show(msg: "The location is not confirmed", type: .information)
                 }
             }
