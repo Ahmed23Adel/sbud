@@ -65,5 +65,10 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
         
         isLoading = false
     }
+    
+    func convertToAnchor() -> AnchorAvailabilityEvent{
+        AnchorAvailabilityEvent(
+            event: self)
+    }
 
 }

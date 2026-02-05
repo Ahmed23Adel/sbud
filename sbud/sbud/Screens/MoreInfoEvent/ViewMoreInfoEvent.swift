@@ -37,6 +37,7 @@ struct ViewMoreInfoEvent: View {
                         .padding(.vertical, 8)
                     StatusRow(isPublic: viewModel.event.isPublic)
                     SuggestedTimeRow(startDate: viewModel.event.startDateTime, endDate: viewModel.event.endDateTime)
+                    LocationMapCard(event: viewModel.event)
                     
                 }
                 Spacer()
