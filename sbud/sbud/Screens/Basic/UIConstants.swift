@@ -14,4 +14,7 @@ enum UIConstants{
     
     static let cardHeight: CGFloat = 55
     static let cardWidth: CGFloat = 160
+    
+    static var lottieFileWidth: CGFloat =  100
+    static var lottieFileHeight: CGFloat =  100
 }
