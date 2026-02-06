@@ -12,7 +12,7 @@ import Kingfisher
 struct IndividualAnnotationView: View {
     let event: AnchorAvailabilityEvent
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
-    
+    let allowNavigation: Bool
     var body: some View {
         VStack(spacing: 4) {
             ZStack {
@@ -34,7 +34,9 @@ struct IndividualAnnotationView: View {
 
         }
         .onTapGesture {
-            coordinator.push(.moreInfoEvent(event.event as! AvailabilityEvent))
+            if allowNavigation{
+                coordinator.push(.moreInfoEvent(event.event as! AvailabilityEvent))
+            }
         }
         
     }
@@ -56,6 +58,6 @@ struct IndividualAnnotationView: View {
                 isLocationConfirmed: false,
                 isPublic: true,
                 eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s"
-            ))
+            )), allowNavigation: false
     )
 }

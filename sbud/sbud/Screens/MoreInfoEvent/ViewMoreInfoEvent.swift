@@ -20,29 +20,37 @@ struct ViewMoreInfoEvent: View {
         
         ZStack{
             Color.darkBackground
-            VStack{
-                KFImage(URL(string: viewModel.event.eventImage))
-                    .placeholder{
-                        ProgressView()
-                    }
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 250)
-                    .cornerRadius(16)
-                
-                if viewModel.event.isLoading{
-                    LoadingView()
-                } else{
-                    DateLocationRow(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
-                        .padding(.vertical, 8)
-                    StatusRow(isPublic: viewModel.event.isPublic)
-                    SuggestedTimeRow(startDate: viewModel.event.startDateTime, endDate: viewModel.event.endDateTime)
-                    LocationMapCard(event: viewModel.event)
+            ScrollView {
+                VStack{
+                    KFImage(URL(string: viewModel.event.eventImage))
+                        .placeholder{
+                            ProgressView()
+                        }
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 250)
+                        .cornerRadius(16)
                     
+                    if viewModel.event.isLoading{
+                        LoadingView()
+                    } else{
+                        DateLocationRow(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
+                        StatusRow(isPublic: viewModel.event.isPublic)
+                        SuggestedTimeRow(startDate: viewModel.event.startDateTime, endDate: viewModel.event.endDateTime)
+                        LocationMapCard(event: viewModel.event)
+                        
+                        // Attending people list
+                        LazyVStack(spacing: 0) {
+                            ForEach(1...100, id: \.self){ num in
+                                Text("num \(num)")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding()
+                            }
+                        }
+                    }
                 }
-                Spacer()
+                .padding(.bottom) // Add bottom padding if needed
             }
-            
         }
         .ignoresSafeArea()
     }

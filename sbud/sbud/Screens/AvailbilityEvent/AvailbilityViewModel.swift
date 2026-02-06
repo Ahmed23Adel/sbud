@@ -110,13 +110,19 @@ final class AvailbilityViewModel: ObservableObject {
 
     // MARK: error msgs
     private func showErrorMsgForClusters() {
-        alertMsg = "Error fetching new clusters, please try again later"
-        showErrorAlert = true
+        if !showErrorAlert{
+            alertMsg = "Error fetching new clusters, please try again later"
+            showErrorAlert = true
+        }
+        
     }
 
     private func showErrorMsgForIndividuals() {
-        alertMsg = "Error fetching new availability events, please try again later"
-        showErrorAlert = true
+        if !showErrorAlert{
+            alertMsg = "Error fetching new availability events, please try again later"
+            showErrorAlert = true
+        }
+        
     }
 
     // MARK: GUI Camera change handeler

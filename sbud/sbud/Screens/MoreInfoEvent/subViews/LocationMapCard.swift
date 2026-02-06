@@ -11,26 +11,23 @@ import MapKit
 struct LocationMapCard: View {
     var event: AvailabilityEvent
     @State private var showFullMap = false
-    
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: event.geoPoint.latitude, longitude: event.geoPoint.longitude)
     }
-    
     var cameraPosition: MapCameraPosition {
         .region(MKCoordinateRegion(
             center: coordinate,
             span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
         ))
     }
-    
     var body: some View {
         VStack {
             Map(position: .constant(cameraPosition)) {
                 Annotation("", coordinate: coordinate) {
-                    IndividualAnnotationView(event: event.convertToAnchor())
+                    IndividualAnnotationView(event: event.convertToAnchor(), allowNavigation: false)
                 }
             }
-            .frame(width: UIConstants.cardWidth * 2 + 30, height: UIConstants.cardHeight * 3)
+            .frame(width: UIConstants.bigCardWidth, height: UIConstants.bigCardHeight)
             .cornerRadius(UIConstants.cornerRadius)
             .allowsHitTesting(false)
         }
@@ -64,7 +61,7 @@ struct FullMapView: View {
         NavigationView {
             Map(position: .constant(cameraPosition)) {
                 Annotation("", coordinate: coordinate) {
-                    IndividualAnnotationView(event: event.convertToAnchor())
+                    IndividualAnnotationView(event: event.convertToAnchor(), allowNavigation: false)
                 }
             }
             .navigationTitle("Location")

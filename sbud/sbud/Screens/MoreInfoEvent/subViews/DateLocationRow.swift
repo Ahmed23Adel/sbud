@@ -1,51 +1,43 @@
+// DateLocationRow.swift
+// sbud
 //
-//  DateLocationRow.swift
-//  sbud
+// Created by ahmed on 04/02/2026.
 //
-//  Created by ahmed on 04/02/2026.
-//
-
 import SwiftUI
 import Lottie
 
 struct DateLocationRow: View {
-    var cardWidth: CGFloat = UIConstants.cardWidth
-    var cardHeight: CGFloat = UIConstants.cardHeight
-    var lottieFileWidth: CGFloat =  80
-    var lottieFileHeight: CGFloat =  90
+    var cardWidth: CGFloat = UIConstants.smallCardWidth
+    var cardHeight: CGFloat = UIConstants.smallCardHeight
     var isDateConfirmed: Bool
     var isLocationConfirmed: Bool
+    
     var body: some View {
         HStack{
             // MARK: Date
             Spacer()
             if isDateConfirmed{
-                ZStack{
-                    HStack{
-                        Text("Date")
-                            .font(.headline)
-                            .foregroundColor(Color.white)
-                            .multilineTextAlignment(.center)
-                        LottieView(animation: .named("Calendar"))
-                            .playing()
-                            .frame(width: lottieFileWidth, height: lottieFileHeight)
-                        
-                    }
-                    .frame(width: cardWidth, height: cardHeight)
-                    .padding(4)
-                    .background(
-                        RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
-                            .fill(Color.backgroundColor)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
-                            .stroke(Color.mainColor, lineWidth: 0.5)
-                    )
-                    .popUp()
-                    .onTapGesture{
-                        PopUpGenerator.shared.show(msg: "The date is confirmed", type: .information)
-                    }
-                        
+                HStack{
+                    Text("Date")
+                        .font(.headline)
+                        .foregroundColor(Color.white)
+                        .multilineTextAlignment(.center)
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(Color.green)
+                        .popUp()
+                }
+                .frame(width: cardWidth, height: cardHeight)
+                .background(
+                    RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
+                        .fill(Color.backgroundColor)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
+                        .stroke(Color.mainColor, lineWidth: 0.5)
+                )
+                .popUp()
+                .onTapGesture{
+                    PopUpGenerator.shared.show(msg: "The date is confirmed", type: .information)
                 }
             } else{
                 HStack{
@@ -53,18 +45,17 @@ struct DateLocationRow: View {
                         .font(.headline)
                         .foregroundColor(Color.white)
                         .multilineTextAlignment(.center)
-                    LottieView(animation: .named("wrong"))
-                        .playing()
-                        .frame(width: lottieFileWidth, height: lottieFileHeight)
+                    Image(systemName: "xmark.circle")
+                        .foregroundColor(Color.red)
+                        .popUp()
                 }
                 .frame(width: cardWidth, height: cardHeight)
-                .padding(4)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
                         .fill(Color.backgroundColor)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
                         .stroke(Color.mainColor, lineWidth: 1)
                 )
                 .popUp()
@@ -80,13 +71,11 @@ struct DateLocationRow: View {
                         .font(.headline)
                         .foregroundColor(Color.white)
                         .multilineTextAlignment(.center)
-                    LottieView(animation: .named("wrong"))
-                        .playing()
-                        .frame(width: lottieFileWidth, height: lottieFileHeight)
-                    
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(Color.green)
+                        .popUp()
                 }
                 .frame(width: cardWidth, height: cardHeight)
-                .padding(4)
                 .background(
                     RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
                         .fill(Color.backgroundColor)
@@ -105,18 +94,17 @@ struct DateLocationRow: View {
                         .font(.headline)
                         .foregroundColor(Color.white)
                         .multilineTextAlignment(.center)
-                    LottieView(animation: .named("wrong"))
-                        .playing()
-                        .frame(width: lottieFileWidth, height: lottieFileHeight)
+                    Image(systemName: "xmark.circle")
+                        .foregroundColor(Color.red)
+                        .popUp()
                 }
                 .frame(width: cardWidth, height: cardHeight)
-                .padding(4)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
                         .fill(Color.backgroundColor)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
                         .stroke(Color.mainColor, lineWidth: 1)
                 )
                 .popUp()

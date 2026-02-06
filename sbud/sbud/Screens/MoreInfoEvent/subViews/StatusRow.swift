@@ -16,6 +16,7 @@ struct StatusRow: View {
                 .playing()
                 .looping()
                 .frame(width: 40, height: 40)
+                .padding(.leading, 8)
             Text("Status: \(isPublic ? "Public" : "Only friends")")
                 .font(.headline)
                 .foregroundColor(Color.white)
@@ -23,8 +24,7 @@ struct StatusRow: View {
             Spacer()
             
         }
-        .frame(width: UIConstants.cardWidth * 2 + 15, height: UIConstants.cardHeight)
-        .padding(8)
+        .frame(width: UIConstants.bigCardWidth, height: UIConstants.smallCardHeight)
         .background(
             RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
                 .fill(Color.backgroundColor)

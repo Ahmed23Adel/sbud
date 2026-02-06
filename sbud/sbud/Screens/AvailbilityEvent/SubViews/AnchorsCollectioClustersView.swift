@@ -21,7 +21,7 @@ struct AnchorsCollectioEventsView: MapContent {
                     longitude: event.event.geoPoint.longitude
                 )
             ) {
-                IndividualAnnotationView(event: event)
+                IndividualAnnotationView(event: event, allowNavigation: true)
                     .environmentObject(coordinator)
             }
         }
@@ -49,3 +49,4 @@ struct AnchorsCollectioEventsView: MapContent {
         ])
     }
 }
+
