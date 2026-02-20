@@ -17,15 +17,47 @@ struct AvailbilityView: View {
     var body: some View {
         ZStack {
             Color.backgroundColor
-
-            AnchorMapConditionalView(
-                anchorAvailabilityEvents: viewModel.anchorAvailabilityEvents,
-                anchorClusters: viewModel.anchorsClusters,
-                shouldShowIndividuals: viewModel.shouldShowIndividuals,
-                cameraPosition: $viewModel.cameraPosition,
-                onCameraChangeFunc: viewModel.handleMapCameraChange)
-            .environmentObject(coordinator)
-
+            TabView(selection: $viewModel.selectedTab){
+                AnchorMapConditionalView(
+                    anchorAvailabilityEvents: viewModel.anchorAvailabilityEvents,
+                    anchorClusters: viewModel.anchorsClusters,
+                    shouldShowIndividuals: viewModel.shouldShowIndividuals,
+                    cameraPosition: $viewModel.cameraPosition,
+                    onCameraChangeFunc: viewModel.handleMapCameraChange)
+                .environmentObject(coordinator)
+                .tag(0)
+                
+                ViewFlattenedEventsList(
+                    region: viewModel.currentRegion ?? MKCoordinateRegion(
+                        center: CLLocationCoordinate2D(latitude: 43.9, longitude: 9.4),
+                        span: MKCoordinateSpan(
+                            latitudeDelta: 0.001, longitudeDelta: 0.001
+                        )
+                    ),
+                    filterResutls: viewModel.availabilityFiltersResults)
+                .id(viewModel.listViewRefreshId)
+                .tag(1)
+            }
+            .ignoresSafeArea()
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            
+            VStack{
+                Picker("View mode", selection: $viewModel.selectedTab){
+                    Text("Map")
+                        .tag(0)
+                    Text("List")
+                        .tag(1)
+                }
+                .pickerStyle(.segmented)
+                .padding()
+                Spacer()
+            }
+            .onChange(of: viewModel.selectedTab){
+                viewModel.updateListId()
+            }
+            .frame(width: UIConstants.bigCardWidth - 100)
+            .offset(y: 30)
+            
             VStack {
                 Spacer()
                 HStack {

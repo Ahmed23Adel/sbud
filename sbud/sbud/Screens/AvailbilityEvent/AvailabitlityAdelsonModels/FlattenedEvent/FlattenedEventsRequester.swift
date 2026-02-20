@@ -17,7 +17,7 @@ class FlattenedEventsRequester {
 
     nonisolated func fetchIndividuals(requestParams: FlattenedEventsRequest) async throws -> FlattenedEventResponse {
         let apicaller = createApiCaller()
-
+        print("FlattenedParams", requestParams.toDict())
         return try await apicaller.callGet(
             url: "events/flattenedevents",
             queryParams: requestParams.toDict(),
