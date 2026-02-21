@@ -38,6 +38,7 @@ struct ViewFlattenedEventsList: View {
                     }
                     
                 }
+                .padding(.top, 60)
             }
         }
         .alert("Error", isPresented: $viewModel.showAlert) {

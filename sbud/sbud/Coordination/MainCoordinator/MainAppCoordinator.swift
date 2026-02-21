@@ -32,6 +32,7 @@ struct MainAppCoordinator: View {
                             removal: .move(edge: .leading).combined(with: .opacity)))
                 }
             }
+            .ignoresSafeArea()
             .animation(.easeInOut(duration: 0.3), value: coordinator.currentRoute)
             .environmentObject(coordinator)
             

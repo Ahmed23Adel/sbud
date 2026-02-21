@@ -18,6 +18,7 @@ struct HomeTabsView: View {
                 }
                 .tag(0)
             AvailabilityAppCoordinator()
+                .ignoresSafeArea()
                 .tabItem {
                     Label("Availability", systemImage: "figure.run")
                 }
@@ -33,6 +34,7 @@ struct HomeTabsView: View {
                 }
                 .tag(3)
         }
+        .ignoresSafeArea()
     }
 }
 

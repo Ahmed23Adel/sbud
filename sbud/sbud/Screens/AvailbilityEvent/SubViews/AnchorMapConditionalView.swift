@@ -41,7 +41,7 @@ struct AnchorMapConditionalView: View {
             MapScaleView()
 
         }
-        .safeAreaPadding(.top, 40)
+        .ignoresSafeArea()
     }
 }
 
