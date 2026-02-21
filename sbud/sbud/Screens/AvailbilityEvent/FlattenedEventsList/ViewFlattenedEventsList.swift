@@ -7,38 +7,49 @@
 
 import SwiftUI
 import MapKit
+import Kingfisher
 
 struct ViewFlattenedEventsList: View {
     @StateObject var viewModel: ViewModelFlattenedEventsList
+    @EnvironmentObject private var coordinator: AvailabilityCoordinator
     
     init(region: MKCoordinateRegion, filterResutls: AvailabilityFiltersResults){
         _viewModel = StateObject(wrappedValue: ViewModelFlattenedEventsList(
             region: region, filterResults: filterResutls))
     }
     var body: some View {
-        Group{
-            if viewModel.isLoading{
-                LoadingView()
-            } else{
-                VStack{
-                    List{
-                        ForEach(viewModel.events.indices, id: \.self){ index in
-                            EventRow(event: viewModel.events[index])
-                                .onAppear{
-                                    if index == viewModel.events.count - 3 {
-                                        viewModel.loadEventsPaginnated()
-                                    }
+        ZStack{
+            Color.darkBackground
+            
+            Group{
+                if viewModel.isLoading{
+                    LoadingView()
+                } else{
+                    VStack{
+                        List{
+                            ForEach(viewModel.events.indices, id: \.self) { index in
+                                Group {
+                                    EventRow(event: viewModel.events[index])
+                                        .onAppear {
+                                            if index == viewModel.events.count - 3 {
+                                                viewModel.loadEventsPaginnated()
+                                            }
+                                        }
                                 }
+                                .listRowBackground(Color.backgroundColor)
+                                .listRowInsets(EdgeInsets())
+                            }
+                            if viewModel.isLoadingNewPage{
+                                Spacer()
+                                ProgressView()
+                            }
                         }
-                        .padding(64)
-                        if viewModel.isLoadingNewPage{
-                            Spacer()
-                            ProgressView()
-                        }
+                        .scrollContentBackground(.hidden)
+                        .background(Color.darkBackground)
+                        
                     }
-                    
+                    .padding(.top, 60)
                 }
-                .padding(.top, 60)
             }
         }
         .alert("Error", isPresented: $viewModel.showAlert) {
@@ -54,9 +65,35 @@ struct ViewFlattenedEventsList: View {
 }
 
 struct EventRow: View{
+    @EnvironmentObject private var coordinator: AvailabilityCoordinator
     var event: Event
+    
     var body: some View {
-        Text("event \(String(event.eventId))")
+        ZStack{
+            Color.backgroundColor
+            HStack{
+                KFImage(URL(string: event.eventImage))
+                    .placeholder {
+                        ProgressView()
+                    }
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 32, height: 32)
+                    .clipShape(Circle())
+                    .padding()
+                
+                VStack{
+                    Text("Ahmed")
+                        .font(.title)
+                        .foregroundColor(Color.white)
+                }
+                Spacer()
+            }
+        }
+        .onTapGesture {
+//            coordinator.push(.moreInfoEvent(event as! AvailabilityEvent))
+        }
+        .ignoresSafeArea()
     }
     
     
