@@ -19,7 +19,6 @@ class AvailbilityClusterRequester {
         requestParams: AvailabilityClusterModelRequest
     ) async throws -> AvailabitlityClusterResponse {
         let apicaller = createApiCaller()
-        print("ClusterParams", requestParams.toDict())
         return try await apicaller.callGet(
             url: "events/clusters",
             queryParams: requestParams.toDict(),

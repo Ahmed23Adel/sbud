@@ -17,7 +17,6 @@ class PaginatedFlattenedEventsRequester {
 
     nonisolated func fetchEvents(requestParams: PaginatedFlattenedEventsRequest) async throws -> PaginatedFlattenedEventResponse {
         let apicaller = createApiCaller()
-        print("flattenedevents/paginated", requestParams.toDict())
         return try await apicaller.callGet(
             url: "events/flattenedevents/paginated",
             queryParams: requestParams.toDict(),

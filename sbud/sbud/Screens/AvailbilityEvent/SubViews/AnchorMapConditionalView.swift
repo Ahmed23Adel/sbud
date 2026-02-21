@@ -77,7 +77,6 @@ struct AnchorMapConditionalView: View {
         shouldShowIndividuals: true,
         cameraPosition: $position,
         onCameraChangeFunc: { region in
-            print("Camera changed to: \(region.center)")
         }
     )
 }

@@ -22,7 +22,6 @@ class ViewModelFlattenedEventsList: ObservableObject{
     @Published var isLoadingNewPage = false
     
     init(region: MKCoordinateRegion, filterResults: AvailabilityFiltersResults) {
-        print("ViewModelFlattenedEventsList1")
         self.region = region
         self.filterResults = filterResults
         loadInitialEvents()
@@ -32,7 +31,6 @@ class ViewModelFlattenedEventsList: ObservableObject{
     private func loadInitialEvents() {
         isLoadingNewPage = true
         Task {
-            print("ViewModelFlattenedEventsList12")
             await loadEvents()
             await MainActor.run {
                 self.isLoading = false
@@ -54,7 +52,6 @@ class ViewModelFlattenedEventsList: ObservableObject{
     }
     
     private func loadEvents() async{
-        print("ViewModelFlattenedEventsList3")
         canLoadMore = false
         let requester = PaginatedFlattenedEventsRequester()
         do {
@@ -69,8 +66,6 @@ class ViewModelFlattenedEventsList: ObservableObject{
             )
             let results = try await requester.fetchEvents(requestParams: requestParams)
             await MainActor.run {
-                print("requestParams", requestParams.toDict())
-                print("results.events", results.events.count)
                 events.append(contentsOf: results.events)
                 incPage()
                 finishLoading()

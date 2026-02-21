@@ -10,7 +10,7 @@ import FirebaseAuth
 
 class FirebaseTokenExtractor: @unchecked Sendable {
 
-    func getIDToken() async -> String {
+    @Sendable func getIDToken() async -> String {
        guard let user = Auth.auth().currentUser else {
            return ""
        }
@@ -18,7 +18,6 @@ class FirebaseTokenExtractor: @unchecked Sendable {
             let idToken = try await user.getIDToken()
             return idToken
         } catch {
-            print("not found")
             return ""
         }
 
