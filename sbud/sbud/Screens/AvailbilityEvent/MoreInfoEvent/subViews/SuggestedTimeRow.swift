@@ -19,7 +19,6 @@ struct SuggestedTimeRow: View {
             Spacer()
             // MARK: Start Date
             TimeCard(date: startDate, title: "Start time")
-            Spacer()
             // MARK: End Date
             TimeCard(date: endDate, title: "End time")
             Spacer()
