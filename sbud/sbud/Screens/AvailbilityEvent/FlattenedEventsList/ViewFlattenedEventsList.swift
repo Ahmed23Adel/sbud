@@ -35,6 +35,7 @@ struct ViewFlattenedEventsList: View {
                                                 viewModel.loadEventsPaginnated()
                                             }
                                         }
+                                        .environmentObject(coordinator)
                                 }
                                 .listRowBackground(Color.backgroundColor)
                                 .listRowInsets(EdgeInsets())
@@ -66,7 +67,7 @@ struct ViewFlattenedEventsList: View {
 
 struct EventRow: View{
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
-    var event: Event
+    var event: AvailabilityEvent
     
     var body: some View {
         ZStack{
@@ -91,7 +92,7 @@ struct EventRow: View{
             }
         }
         .onTapGesture {
-//            coordinator.push(.moreInfoEvent(event as! AvailabilityEvent))
+            coordinator.push(.moreInfoEvent(event))
         }
         .ignoresSafeArea()
     }

@@ -15,7 +15,7 @@ class ViewModelFlattenedEventsList: ObservableObject{
     @Published var isLoading: Bool = true
     var currentPage = 1
     var pageSize = 10
-    @Published var events: [Event] = []
+    @Published var events: [AvailabilityEvent] = []
     @Published var showAlert = false
     @Published var alertMsg = ""
     private var canLoadMore = true
@@ -66,7 +66,8 @@ class ViewModelFlattenedEventsList: ObservableObject{
             )
             let results = try await requester.fetchEvents(requestParams: requestParams)
             await MainActor.run {
-                events.append(contentsOf: results.events)
+                let availabilityEvents: [AvailabilityEvent] = results.events.map { $0.covertToAnchor().event as! AvailabilityEvent}
+                events.append(contentsOf: availabilityEvents)
                 incPage()
                 finishLoading()
                 canLoadMore = results.hasNext

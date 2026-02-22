@@ -36,6 +36,7 @@ struct AvailbilityView: View {
             .id(viewModel.listViewRefreshId)
             .ignoresSafeArea()
             .opacity(viewModel.selectedTab == 1 ? 1 : 0)
+            .environmentObject(coordinator)
 
             // Segmented picker
             VStack {
