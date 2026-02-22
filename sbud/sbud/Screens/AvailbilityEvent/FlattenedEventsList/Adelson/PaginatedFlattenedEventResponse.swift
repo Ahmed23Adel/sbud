@@ -18,6 +18,7 @@ nonisolated(unsafe) struct PaginatedFlattenedEventResponse: Decodable, Sendable 
     let hasNext: Bool
     let hasPrevious: Bool
     
+    
     enum CodingKeys: String, CodingKey {
         case events
         case page

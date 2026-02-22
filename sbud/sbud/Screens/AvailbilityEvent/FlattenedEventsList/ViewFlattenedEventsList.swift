@@ -84,10 +84,11 @@ struct EventRow: View{
                     .padding()
                 
                 VStack{
-                    Text("Ahmed")
+                    Text(event.creatorName)
                         .font(.title)
                         .foregroundColor(Color.white)
                 }
+                
                 Spacer()
             }
         }

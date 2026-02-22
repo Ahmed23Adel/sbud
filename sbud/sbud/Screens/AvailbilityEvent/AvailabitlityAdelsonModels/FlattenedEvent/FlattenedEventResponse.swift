@@ -27,6 +27,7 @@ nonisolated(unsafe) struct Event: Decodable, Sendable {
     let isLocationConfirmed: Bool
     let isPublic: Bool
     let eventImage: String
+    let name: String
 
     func covertToAnchor() -> AnchorAvailabilityEvent {
         AnchorAvailabilityEvent(event: AvailabilityEvent(
@@ -41,7 +42,8 @@ nonisolated(unsafe) struct Event: Decodable, Sendable {
             isDateConfirmed: isDateConfirmed,
             isLocationConfirmed: isLocationConfirmed,
             isPublic: isPublic,
-            eventImage: eventImage
+            eventImage: eventImage,
+            creatorName: name
         )
         )
     }

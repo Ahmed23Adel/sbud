@@ -74,6 +74,7 @@ class ViewModelFlattenedEventsList: ObservableObject{
             }
             
         } catch {
+            print("error list", error)
             await MainActor.run {
                 showError()
                 canLoadMore = false
