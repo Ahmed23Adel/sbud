@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import _MapKit_SwiftUI
+import OSLog
 
 class ViewModelFlattenedEventsList: ObservableObject{
     let region: MKCoordinateRegion
@@ -20,6 +21,7 @@ class ViewModelFlattenedEventsList: ObservableObject{
     @Published var alertMsg = ""
     private var canLoadMore = true
     @Published var isLoadingNewPage = false
+    let logger = Logger(subsystem: "sBud", category: "ViewModelFlattenedEventsList")
     
     init(region: MKCoordinateRegion, filterResults: AvailabilityFiltersResults) {
         self.region = region
@@ -64,9 +66,12 @@ class ViewModelFlattenedEventsList: ObservableObject{
                 page: currentPage,
                 pageSize: pageSize
             )
+            logger.notice("requestParamslist \(requestParams.toDict())")
             let results = try await requester.fetchEvents(requestParams: requestParams)
+            
             await MainActor.run {
                 let availabilityEvents: [AvailabilityEvent] = results.events.map { $0.covertToAnchor().event as! AvailabilityEvent}
+                logger.notice("results \(availabilityEvents.count)")
                 events.append(contentsOf: availabilityEvents)
                 incPage()
                 finishLoading()

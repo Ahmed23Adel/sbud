@@ -45,6 +45,7 @@ struct ViewFlattenedEventsList: View {
                                 ProgressView()
                             }
                         }
+                        .padding(.bottom, 65)
                         .scrollContentBackground(.hidden)
                         .background(Color.darkBackground)
                         
