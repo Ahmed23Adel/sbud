@@ -27,11 +27,16 @@ struct HomeTabsView: View {
                     Label("Events", systemImage: "person.3")
                 }
                 .tag(2)
+            NavigationStack {
+                    ConversationsView()
+                }
+                .tabItem { Label("Messages", systemImage: "envelope.fill") }
+                .tag(3)
             AllEventsView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }
-                .tag(3)
+                .tag(4)
         }
     }
 }

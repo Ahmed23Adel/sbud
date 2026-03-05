@@ -7,11 +7,12 @@
 import Combine
 import FirebaseAuth
 import SwiftUI
+import FirebaseFirestore
 
 class AuthenticationManager: IAuthenticationManager {
     static let shared = AuthenticationManager()
     @Published var isSignedIn: Bool = false
-    @Published var currentUser: FirebaseAuth.User?
+    @Published var currentUser: User?
     @Published var isLoading: Bool = true
 
     @AppStorage(AppStorageConstants.signInMethod) var signInMethod = AuthType.unknown.rawValue
@@ -45,23 +46,70 @@ class AuthenticationManager: IAuthenticationManager {
             self.isLoading = false
         }
     }
+    
+    @MainActor
+    func setCurrentUser(from firebaseUser: FirebaseAuth.User) async {
+        // 1. Try to load a full profile from Firestore
+        if let user = try? await fetchUserFromFirestore(uid: firebaseUser.uid) {
+            self.currentUser = user
+        } else {
+            let newUser = User(
+                uid: firebaseUser.uid,
+                username: firebaseUser.displayName ?? firebaseUser.email ?? "Unknown",
+                email: firebaseUser.email ?? "",
+                profileImageUrl: firebaseUser.photoURL?.absoluteString
+            )
+            try? await saveUserToFirestore(newUser)
+            self.currentUser = newUser
+        }
+        self.isSignedIn = true
+        self.isLoading = false
+    }
+    
+    private func saveUserToFirestore(_ user: User) async throws {
+        guard let uid = user.uid else { return }
+        try Firestore.firestore()
+            .collection("users")
+            .document(uid)
+            .setData(from: user)
+    }
+    
+    private func fetchUserFromFirestore(uid: String) async throws -> User? {
+        let snapshot = try await Firestore.firestore()
+            .collection("users")
+            .document(uid)
+            .getDocument()
+        return try snapshot.data(as: User.self)
+    }
 
     // MARK: Google sign in
     func signUp() async throws {
         try await signInMethodManager?.signUp()
+        if let firebaseUser = Auth.auth().currentUser {
+            await setCurrentUser(from: firebaseUser)
+        }
     }
 
     func signIn() async throws {
         try await signInMethodManager?.signIn()
+        if let firebaseUser = Auth.auth().currentUser {
+            await setCurrentUser(from: firebaseUser)
+        }
     }
 
     // MARK: Email sing in
     func signIn(email: String, password: String) async throws {
         try await signInMethodManager?.signIn(email: email, password: password)
+        if let firebaseUser = Auth.auth().currentUser {
+            await setCurrentUser(from: firebaseUser)
+        }
     }
 
     func signUp(email: String, password: String) async throws {
         try await signInMethodManager?.signUp(email: email, password: password)
+        if let firebaseUser = Auth.auth().currentUser {
+            await setCurrentUser(from: firebaseUser)
+        }
     }
 
     // MARK: Sign out
@@ -69,7 +117,7 @@ class AuthenticationManager: IAuthenticationManager {
         try await signInMethodManager?.signOut()
         signInMethod = AuthType.unknown.rawValue
         signInMethodManager = nil
-
+        await MainActor.run { setUserLoggedOut() }
     }
 
     func checkAuthStatus() -> Bool {

@@ -12,16 +12,18 @@ import GoogleSignIn
 
 class AuthenticationManagerGoogle: IAuthenticationManager {
     @Published var isSignedIn: Bool = false
-    @Published var currentUser: FirebaseAuth.User?
+    @Published var currentUser: User?
+    @Published var isLoading: Bool = true
     private let googleSignUpManager: IGoogleSignUpManager
     private var authStateHandler: AuthStateDidChangeListenerHandle?
 
     init(googleSignUpManager: IGoogleSignUpManager = GoogleSignUpManager()) {
         self.googleSignUpManager = googleSignUpManager
         checkAuthState()
-        authStateHandler = Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            DispatchQueue.main.async {
-                self?.updateUserState(user: user, methodUsed: .google)
+        authStateHandler = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
+            guard let self, let firebaseUser else { return }
+            Task { @MainActor in
+                await self.propagateToShared(firebaseUser: firebaseUser, method: .google)
             }
         }
     }
@@ -34,22 +36,28 @@ class AuthenticationManagerGoogle: IAuthenticationManager {
 
     // MARK: Checking state
     private func checkAuthState() {
-        if let user  = Auth.auth().currentUser {
-            updateUserState(user: user, methodUsed: .google)
+        guard let firebaseUser = Auth.auth().currentUser else { return }
+        Task { @MainActor in
+            await propagateToShared(firebaseUser: firebaseUser, method: .google)
         }
     }
 
     // MARK: Google sign in/up
     func signUp() async throws {
         try await googleSignUpManager.signUpWithGoogle()
-
+        if let firebaseUser = Auth.auth().currentUser {
+            await propagateToShared(firebaseUser: firebaseUser, method: .google)
+        }
     }
 
     func signIn() async throws {
         try await googleSignUpManager.signUpWithGoogle()
+        if let firebaseUser = Auth.auth().currentUser {
+            await propagateToShared(firebaseUser: firebaseUser, method: .google)
+        }
     }
 
-    // MARK: Email sign in/up
+    // MARK: - Email sign in / up (unsupported)
     func signIn(email: String, password: String) async throws {
         throw AuthError.unauthorizedAction
     }
@@ -58,24 +66,36 @@ class AuthenticationManagerGoogle: IAuthenticationManager {
         throw AuthError.unauthorizedAction
     }
 
-    // MARK: sign  out
+    // MARK: - Sign out
     func signOut() async throws {
         try Auth.auth().signOut()
         GIDSignIn.sharedInstance.signOut()
-        AuthenticationManager.shared.signInMethod = AuthType.unknown.rawValue
-        AuthenticationManager.shared.isSignedIn = false
-        AuthenticationManager.shared.currentUser = nil
-        AuthenticationManager.shared.isLoading = false
-
-    }
-
-    func checkAuthStatus() -> Bool {
-        if let user  = Auth.auth().currentUser {
-            updateUserState(user: user, methodUsed: .google)
-            return true
-        } else {
-            return false
+        await MainActor.run {
+            self.currentUser = nil
+            self.isSignedIn = false
+            AuthenticationManager.shared.currentUser = nil
+            AuthenticationManager.shared.isSignedIn = false
+            AuthenticationManager.shared.isLoading = false
+            AuthenticationManager.shared.signInMethod = AuthType.unknown.rawValue
         }
     }
 
+    func checkAuthStatus() -> Bool {
+        guard let firebaseUser = Auth.auth().currentUser else { return false }
+        Task {
+            await propagateToShared(firebaseUser: firebaseUser, method: .google)
+        }
+        return true
+    }
+
+
+    @MainActor
+    private func propagateToShared(firebaseUser: FirebaseAuth.User, method: AuthType) async {
+        await AuthenticationManager.shared.setCurrentUser(from: firebaseUser)
+        AuthenticationManager.shared.signInMethod = method.rawValue
+        // Mirror state locally in case anything observes this manager directly
+        self.currentUser = AuthenticationManager.shared.currentUser
+        self.isSignedIn = true
+        self.isLoading = false
+    }
 }
