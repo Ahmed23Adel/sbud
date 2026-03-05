@@ -11,11 +11,11 @@ import AdelsonAuthManager
 
 class AvailbilityClusterRequester {
 
-    nonisolated func createApiCaller() -> AdelsonFirebaseApiCaller<AvailabitlityClusterResponse> {
+    func createApiCaller() -> AdelsonFirebaseApiCaller<AvailabitlityClusterResponse> {
         return AdelsonFirebaseApiCaller<AvailabitlityClusterResponse>()
     }
 
-    nonisolated func fetchClusters(
+    func fetchClusters(
         requestParams: AvailabilityClusterModelRequest
     ) async throws -> AvailabitlityClusterResponse {
         let apicaller = createApiCaller()

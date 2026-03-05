@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-nonisolated(unsafe) struct PaginatedFlattenedEventsRequest: Encodable, Sendable, Decodable {
+struct PaginatedFlattenedEventsRequest: Encodable, Sendable, Decodable {
     let topLeft: GeoPoint
     let bottomRight: GeoPoint
     let selectedActivityType: String

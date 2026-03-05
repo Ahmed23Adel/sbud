@@ -9,7 +9,13 @@ import Foundation
 import AdelsonApiCaller
 import AdelsonAuthManager
 
-class FlattenedEventsRequester {
+// nonisolated is safe when:
+// no stored mutable state
+// just methods that call an API
+// no shared variables between calls
+// if not, If two tasks call func simultaneously, Swift guarantees no data race because everything is serialized through the main actor. otherwisw, it's your responsibility to guard it
+
+nonisolated class FlattenedEventsRequester {
 
     nonisolated func createApiCaller() -> AdelsonFirebaseApiCaller<FlattenedEventResponse> {
         return AdelsonFirebaseApiCaller<FlattenedEventResponse>()

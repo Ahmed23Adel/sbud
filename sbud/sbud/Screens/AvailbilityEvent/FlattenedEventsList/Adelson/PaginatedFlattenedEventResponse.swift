@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-nonisolated(unsafe) struct PaginatedFlattenedEventResponse: Decodable, Sendable {
+nonisolated struct PaginatedFlattenedEventResponse: Decodable, Sendable {
     
     let events: [Event]
     let page: Int
