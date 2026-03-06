@@ -58,6 +58,9 @@ struct AvailbilityView: View {
             VStack {
                 Spacer()
                 HStack {
+                    GlassFloatingButton(systemName: "plus") {
+                        coordinator.showSheet(.addNewEvent)
+                    }
                     Spacer()
                     GlassFloatingButton(systemName: "line.3.horizontal.decrease") {
                         coordinator.showSheet(.filter)
@@ -65,6 +68,7 @@ struct AvailbilityView: View {
                 }
                 .padding(.bottom, 100)
                 .padding(.trailing, 16)
+                .padding(.leading, 16)
             }
         }
         .alert("Error", isPresented: $viewModel.showErrorAlert) {
