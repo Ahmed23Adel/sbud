@@ -121,6 +121,5 @@ class ViewModelEventImageSelection: ObservableObject{
         }
         let token = try await currentUser.getIDToken()
         return token
-        return nil
     }
 }

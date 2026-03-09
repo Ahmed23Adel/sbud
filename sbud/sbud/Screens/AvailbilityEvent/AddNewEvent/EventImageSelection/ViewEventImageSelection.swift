@@ -52,7 +52,6 @@ struct ViewEventImageSelection: View {
             .onChange(of: viewModel.eventImgUrl){
                 selectedImgURL = viewModel.eventImgUrl
             }
-            Spacer()
                 
         }
     }

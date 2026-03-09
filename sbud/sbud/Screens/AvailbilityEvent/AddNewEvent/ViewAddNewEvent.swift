@@ -16,6 +16,23 @@ struct ViewAddNewEvent: View {
             Color.darkBackground
             VStack{
                 ViewEventImageSelection(selectedImgURL: $viewModel.selectedImgURL)
+                HStack{
+                    Picker(
+                        "Sport type",
+                        selection: $viewModel.selectedSportType){
+                            ForEach(ActivityType.allCases, id: \.self){ type in
+                                Text(type.rawValue)
+                            }
+                            .pickerStyle(.menu)
+                        }
+                        .padding(.top)
+                    Spacer()
+                }
+                
+                ViewConditionalExtraArgs(selectedActivity: $viewModel.selectedSportType, extraArgs: $viewModel.extraArgsForSelectedSport)
+                    
+                ViewDateLocationAdder()
+                Spacer()
             }
             
             
