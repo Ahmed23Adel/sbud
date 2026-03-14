@@ -9,10 +9,14 @@ import Foundation
 import Combine
 
 class NewEventOrchestrator: ObservableObject{
+    @Published var title: String = ""
     @Published var eventImageURL: String = ""
     @Published var extraArgsHolder = NewEventExtraArgsHoder()
     @Published var dateLocationsHolder = MultipleDateLocationsHolder()
-    
+    @Published var isEventPublic = true
+    @Published var joiningCondition: JoinCondition = .requestFromCreator
+    @Published var maxAllowedToJoin = "150"
+    @Published var notes = ""
     func updateEventImageURL(_ img: String){
         self.eventImageURL = img
     }

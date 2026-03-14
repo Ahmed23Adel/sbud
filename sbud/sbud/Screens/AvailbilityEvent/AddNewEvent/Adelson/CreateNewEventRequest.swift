@@ -15,10 +15,23 @@ enum GymDayType: String, Encodable{
     case arm = "Arm"
 }
 
-enum JoinCondition: Encodable{
-    case autoJoin
-    case requestFromCreator
-    case requestFromHost
+enum JoinCondition: String, Encodable, CaseIterable {
+    case autoJoin = "Auto join"
+    case requestFromCreator = "Ask from creator"
+    case requestFromHost = "Ask from hosts"
+    
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .autoJoin:
+            try container.encode("autoJoin")
+        case .requestFromCreator:
+            try container.encode("requestFromCreator")
+        case .requestFromHost:
+            try container.encode("requestFromHost")
+        }
+    }
 }
 protocol RequestActivityDetails: Encodable, Sendable{
     var activityType: String { get set }
@@ -50,6 +63,7 @@ nonisolated struct DateLocation: Encodable, Sendable {
 nonisolated struct CreateNewEventRequest: Encodable, Sendable {
     // bcz this is protocol, it need encode func
     var activityDetails: any RequestActivityDetails
+    var title: String
     var eventImage: String
     var isDateConfirmed = false
     var isLocationConfirmed = false
@@ -61,11 +75,12 @@ nonisolated struct CreateNewEventRequest: Encodable, Sendable {
 
     enum CodingKeys: String, CodingKey {
         case activityDetails, eventImage, isDateConfirmed, isLocationConfirmed
-        case isPublic, joiningCondition, maxAllowedToJoin, notes, dateLocations
+        case isPublic, joiningCondition, maxAllowedToJoin, notes, dateLocations, title
     }
 
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(title, forKey: .title)
         try container.encode(activityDetails, forKey: .activityDetails)
         try container.encode(eventImage, forKey: .eventImage)
         try container.encode(isDateConfirmed, forKey: .isDateConfirmed)
