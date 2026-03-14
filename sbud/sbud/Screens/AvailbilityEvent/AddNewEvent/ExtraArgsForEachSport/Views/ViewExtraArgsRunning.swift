@@ -6,11 +6,14 @@
 //
 
 import SwiftUI
+import Combine
 
-struct ExtraArgsRunning: View {
+
+struct ViewExtraArgsRunning: View {
     @State var proposedDistance = "6.0"
     @State var propsosedPace = "8.30"
-    @Binding var returnableArgs: [String: String]
+    @ObservedObject var args: ExtraArgsHolderRunning
+    
     var body: some View {
         VStack{
             HStack{
@@ -25,7 +28,7 @@ struct ExtraArgsRunning: View {
             .padding(.leading)
             .keyboardType(.decimalPad)
             .onChange(of: proposedDistance){ _, newValue in
-                returnableArgs["distance"] = newValue
+                args.proposedDistance = newValue
             }
             HStack{
                 Text("Proposed pace")
@@ -40,7 +43,7 @@ struct ExtraArgsRunning: View {
             .keyboardType(.decimalPad)
             .padding([.leading, .bottom])
             .onChange(of: propsosedPace){ _, newValue in
-                returnableArgs["pace"] = newValue
+                args.propsosedPace = newValue
             }
         }
         
@@ -49,5 +52,5 @@ struct ExtraArgsRunning: View {
 }
 
 #Preview {
-    ExtraArgsRunning(returnableArgs: .constant(["pace": "5.3"]))
+    ViewExtraArgsRunning(args: ExtraArgsHolderRunning())
 }

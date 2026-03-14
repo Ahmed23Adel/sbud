@@ -8,17 +8,16 @@
 import SwiftUI
 
 struct ViewConditionalExtraArgs: View {
-    @Binding var selectedActivity: ActivityType
-    @Binding var extraArgs: [String: String]
+    @ObservedObject var argsHolder: NewEventExtraArgsHoder
     var body: some View {
         VStack{
-            switch selectedActivity {
+            switch argsHolder.selectedActivity {
             case .running:
-                ExtraArgsRunning(returnableArgs: $extraArgs)
+                ViewExtraArgsRunning(args: argsHolder.extraArgs as! ExtraArgsHolderRunning)
             case .cycling:
-                ExtraArgsCycling(returnableArgs: $extraArgs)
+                ViewExtraArgsCycling(args: argsHolder.extraArgs as! ExtraArgsHolderCycling)
             case .gym:
-                ExtraArgsGym(returnableArgs: $extraArgs)
+                ViewExtraArgsGym(args: argsHolder.extraArgs as! ExtraArgsHolderGym)
             }
         }
         .background(Color.backgroundColor)
@@ -29,7 +28,7 @@ struct ViewConditionalExtraArgs: View {
         
     }
 }
-
-#Preview {
-    ViewConditionalExtraArgs(selectedActivity: .constant(.running), extraArgs: .constant([:]))
-}
+//
+//#Preview {
+//    ViewConditionalExtraArgs(selectedActivity: .constant(.running), extraArgs: .constant([:]))
+//}

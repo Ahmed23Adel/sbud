@@ -14,6 +14,12 @@ enum GymDayType: String, Encodable{
     case leg = "Leg"
     case arm = "Arm"
 }
+
+enum JoinCondition: Encodable{
+    case autoJoin
+    case requestFromCreator
+    case requestFromHost
+}
 protocol RequestActivityDetails: Encodable, Sendable{
     var activityType: String { get set }
 }
@@ -41,14 +47,14 @@ nonisolated struct DateLocation: Encodable, Sendable {
     var locations: [GeoPoint]
 }
 
-struct CreateNewEventRequest: Encodable, Sendable {
+nonisolated struct CreateNewEventRequest: Encodable, Sendable {
     // bcz this is protocol, it need encode func
     var activityDetails: any RequestActivityDetails
     var eventImage: String
-    var isDateConfirmed: Bool
-    var isLocationConfirmed: Bool
+    var isDateConfirmed = false
+    var isLocationConfirmed = false
     var isPublic: Bool
-    var joiningCondition: String
+    var joiningCondition: JoinCondition
     var maxAllowedToJoin: Int
     var notes: String
     var dateLocations: [DateLocation]

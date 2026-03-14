@@ -14,8 +14,8 @@ import FirebaseAuth
 
 class ViewModelAddNewEvent: ObservableObject{
     @Published var selectedImgURL: String = "https://firebasestorage.googleapis.com/v0/b/sbud-e5bdd.firebasestorage.app/o/uploads%2Fkd5YqKdsHoeRelMwDgssF9xwE7H3%2Frun8.png?alt=media&token=c99a16df-fce1-4f98-81ea-f5e54f7903fb"
-    @Published var selectedSportType: ActivityType = .running
-    @Published var extraArgsForSelectedSport: [String: String] = [:]
+    
+    @Published var orchestrator = NewEventOrchestrator()
     
     
     

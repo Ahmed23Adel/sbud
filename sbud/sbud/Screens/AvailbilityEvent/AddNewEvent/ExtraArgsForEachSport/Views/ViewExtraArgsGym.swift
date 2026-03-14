@@ -7,16 +7,9 @@
 
 import SwiftUI
 
-enum GymDayTypes: String, CaseIterable{
-    case push = "push"
-    case pull = "pull"
-    case leg = "leg"
-    case arm = "arm"
-}
-
-struct ExtraArgsGym: View {
+struct ViewExtraArgsGym: View {
     @State var proposedDayType = GymDayTypes.push
-    @Binding var returnableArgs: [String: String]
+    @ObservedObject var args: ExtraArgsHolderGym
     var body: some View {
         VStack{
             HStack{
@@ -34,7 +27,7 @@ struct ExtraArgsGym: View {
             }
             .padding(.leading)
             .onChange(of: proposedDayType){ _, newValue in
-                returnableArgs["dayType"] = newValue.rawValue
+                args.proposedDayType = newValue
             }
             
         }
@@ -43,5 +36,5 @@ struct ExtraArgsGym: View {
 }
 
 #Preview {
-    ExtraArgsGym(returnableArgs: .constant([:]))
+    ViewExtraArgsGym(args: ExtraArgsHolderGym())
 }

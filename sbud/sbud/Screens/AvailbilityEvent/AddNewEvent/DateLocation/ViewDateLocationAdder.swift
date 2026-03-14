@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ViewDateLocationAdder: View {
     @StateObject private var viewModel = ViewModelDateLocationAdder()
-    @StateObject var objsDateLocations = MultipleDateLocationsHolder()
+    @ObservedObject var objsDateLocations: MultipleDateLocationsHolder
     var body: some View {
         ScrollView{
             VStack{
@@ -51,17 +51,9 @@ struct ViewDateLocationAdder: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .frame(height: CGFloat(objsDateLocations.lst.count) * 160)
                 .scrollContentBackground(.hidden)
-                .background(Color.backgroundColor.colorMultiply(Color.black.opacity(0.3)))
                 .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
                 .padding(.horizontal)
                 
-                
-                Button("Submit"){
-                    
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(objsDateLocations.count == 0)
-                .foregroundColor(Color.mainColor)
             }
         }
         
@@ -69,5 +61,5 @@ struct ViewDateLocationAdder: View {
 }
 
 #Preview {
-    ViewDateLocationAdder()
+    ViewDateLocationAdder(objsDateLocations: MultipleDateLocationsHolder())
 }

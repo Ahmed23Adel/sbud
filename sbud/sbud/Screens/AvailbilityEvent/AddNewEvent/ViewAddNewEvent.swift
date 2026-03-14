@@ -19,7 +19,7 @@ struct ViewAddNewEvent: View {
                 HStack{
                     Picker(
                         "Sport type",
-                        selection: $viewModel.selectedSportType){
+                        selection: $viewModel.orchestrator.extraArgsHolder.selectedActivity){
                             ForEach(ActivityType.allCases, id: \.self){ type in
                                 Text(type.rawValue)
                             }
@@ -29,9 +29,11 @@ struct ViewAddNewEvent: View {
                     Spacer()
                 }
                 
-                ViewConditionalExtraArgs(selectedActivity: $viewModel.selectedSportType, extraArgs: $viewModel.extraArgsForSelectedSport)
+                ViewConditionalExtraArgs(argsHolder: viewModel.orchestrator.extraArgsHolder)
                     
-                ViewDateLocationAdder()
+                ViewDateLocationAdder(objsDateLocations: viewModel.orchestrator.dateLocationsHolder)
+                
+                
                 Spacer()
             }
             

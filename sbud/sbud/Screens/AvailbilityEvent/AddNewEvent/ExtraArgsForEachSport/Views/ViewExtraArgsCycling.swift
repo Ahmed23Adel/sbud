@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-struct ExtraArgsCycling: View {
+struct ViewExtraArgsCycling: View {
     @State var proposedPowerInWatt = "200"
     @State var proposedCadenceInRPM = "80"
-    @Binding var returnableArgs: [String: String]
+    @ObservedObject var args: ExtraArgsHolderCycling
     var body: some View {
         VStack{
             HStack{
@@ -25,7 +25,7 @@ struct ExtraArgsCycling: View {
             .keyboardType(.decimalPad)
             .foregroundColor(Color.mainColor)
             .onChange(of: proposedPowerInWatt){ _, newValue in
-                returnableArgs["power"] = newValue
+                args.proposedPowerInWatt = newValue
             }
             HStack{
                 Text("Proposed Cadence")
@@ -40,7 +40,7 @@ struct ExtraArgsCycling: View {
             .padding([.leading, .bottom])
             .foregroundColor(Color.mainColor)
             .onChange(of: proposedCadenceInRPM){ _, newValue in
-                returnableArgs["cadence"] = newValue
+                args.proposedCadenceInRPM = newValue
             }
         }
         
@@ -49,5 +49,5 @@ struct ExtraArgsCycling: View {
 }
 
 #Preview {
-    ExtraArgsCycling(returnableArgs: .constant([:]))
+    ViewExtraArgsCycling(args: ExtraArgsHolderCycling())
 }
