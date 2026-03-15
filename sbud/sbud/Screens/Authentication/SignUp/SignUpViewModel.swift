@@ -63,7 +63,7 @@ class SignUpViewModel: ObservableObject {
             try await authManager.signUp(email: email, password: password)
             isSigningUp = false
             stopLoading()
-            coordinator?.goToHome()
+            coordinator?.checkAppFlow()
         } catch {
             await MainActor.run {
                 isSigningUp = false

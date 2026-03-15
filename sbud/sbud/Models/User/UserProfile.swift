@@ -9,9 +9,14 @@ import Foundation
 
 struct UserProfile: Codable, Identifiable {
     let id: String
-    var fullName: String = "" 
-    var age: Int = 18
+    //var fullName: String = ""
+    var name: String = ""
+    var surName: String = ""
+    var email: String = ""
+    var birthDate: Date = Date()
+    
     var gender: String? = nil
+    var profileImageUrl: String? = nil
     
     var country: String = ""
     var city: String = ""
@@ -24,11 +29,18 @@ struct UserProfile: Codable, Identifiable {
     var lastSeenAt: Date = Date()
     
     var bio: String? = nil
-    var profileImageUrl: String? = nil
     var isProfileCompleted: Bool = false
     var pushToken: String? = nil
+    
+    var onboardingStep: Int = 0
 
+    
+    var age: Int {
+            Calendar.current.dateComponents([.year], from: birthDate, to: Date()).year ?? 0
+        }
+    
     init(id: String) {
         self.id = id
     }
+    
 }

@@ -54,7 +54,7 @@ class SignInViewModel: ObservableObject {
             try await authManager.signIn(email: email, password: password)
             isSigningIn = false
             stopLoading()
-            coordinator?.goToHome()
+            coordinator?.checkAppFlow()
         } catch {
             stopLoading()
             isSigningIn = false

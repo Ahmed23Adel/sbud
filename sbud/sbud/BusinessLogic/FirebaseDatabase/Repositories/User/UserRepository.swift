@@ -48,6 +48,7 @@ class UserRepository: IFirebaesRepository{
     }
     
     func fetchProfile(_ id: String) async throws -> UserProfile? {
+        print("10")
         let snapshot = try await db.collection("users").document(id).getDocument()
         guard snapshot.exists else { return nil }
         return try snapshot.data(as: UserProfile.self)
@@ -55,6 +56,10 @@ class UserRepository: IFirebaesRepository{
     
     func update(_ id: String, _ item: any T) async throws {
     
+    }
+    
+    func updateUserProfileFields(uid: String, fields: [String: Any]) async throws {
+        try await db.collection("users").document(uid).setData(fields, merge: true)
     }
         
     func delete(_ id: String) async throws {

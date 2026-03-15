@@ -12,6 +12,8 @@ final class LocalUserStorage {
 
     func save(_ profile: UserProfile) {
         do {
+            print(profile)
+            print("LOCAL STORAGE")
             let data = try JSONEncoder().encode(profile)
             UserDefaults.standard.set(data, forKey: profileKey)
         } catch {
@@ -21,6 +23,7 @@ final class LocalUserStorage {
 
     func load() -> UserProfile? {
         guard let data = UserDefaults.standard.data(forKey: profileKey) else {
+            print("dönmedi")
             return nil
         }
 
@@ -30,6 +33,12 @@ final class LocalUserStorage {
             print("LocalUserStorage load error:", error)
             return nil
         }
+    }
+    
+    func update(id: String, _ block: (inout UserProfile) -> Void) {
+        var profile = load() ?? UserProfile(id: id)
+        block(&profile)
+        save(profile)
     }
     
     func clear() {
