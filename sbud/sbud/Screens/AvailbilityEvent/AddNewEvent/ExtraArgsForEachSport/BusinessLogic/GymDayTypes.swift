@@ -6,10 +6,10 @@
 //
 
 import Foundation
-
-enum GymDayTypes: String, CaseIterable{
-    case push = "push"
-    case pull = "pull"
-    case leg = "leg"
-    case arm = "arm"
-}
+//
+//enum GymDayTypes: String, CaseIterable{
+//    case push = "push"
+//    case pull = "pull"
+//    case leg = "leg"
+//    case arm = "arm"
+//}

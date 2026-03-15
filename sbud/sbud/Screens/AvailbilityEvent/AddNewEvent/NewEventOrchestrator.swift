@@ -22,6 +22,20 @@ class NewEventOrchestrator: ObservableObject{
     }
     
     
+    func createRequestData() -> CreateNewEventRequest{
+        return CreateNewEventRequest(
+            activityDetails: extraArgsHolder.createRequest(),
+            title: title,
+            eventImage: eventImageURL,
+            isPublic: isEventPublic,
+            joiningCondition: joiningCondition,
+            maxAllowedToJoin: Int(maxAllowedToJoin)!,
+            notes: notes,
+            dateLocations: dateLocationsHolder.lst.compactMap{ $0 }
+            
+        )
+    }
+    
     
     
     

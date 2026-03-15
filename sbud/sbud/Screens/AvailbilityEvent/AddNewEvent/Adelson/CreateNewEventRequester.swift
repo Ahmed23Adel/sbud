@@ -15,7 +15,7 @@ class CreateNewEventRequester {
         return AdelsonFirebaseApiCaller<CreateNewEventResponse>()
     }
 
-    func fetchClusters(
+    func createNewEvent(
         requestParams: CreateNewEventRequest
     ) async throws -> CreateNewEventResponse {
         let apicaller = createApiCaller()

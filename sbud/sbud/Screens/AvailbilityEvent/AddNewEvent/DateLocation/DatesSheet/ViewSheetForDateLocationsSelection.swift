@@ -41,12 +41,10 @@ struct ViewSheetForDateLocationsSelection: View {
                 .padding()
                 .clipShape(RoundedRectangle(cornerRadius: 21))
             Button("Submit"){
-                let oneReturnables = DateLocationsHolder(
-                    startDate: startDate,
-                    endDate: endDate,
+                let oneReturnables = DateLocations(
+                    startDateTime: startDate,
+                    endDateTime: endDate,
                     locations: pickedCoordinates.map { GeoPoint(latitude: $0.latitude, longitude: $0.longitude) }
-                    
-                    
                 )
                 returnables.append(oneReturnables)
                 dismiss()

@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-enum GymDayType: String, Encodable{
+enum GymDayType: String, Encodable, CaseIterable{
     case push = "Push"
     case pull = "Pull"
     case leg = "Leg"
@@ -45,7 +45,8 @@ nonisolated struct RequestActivityDetailsRunning: RequestActivityDetails{
 
 nonisolated struct RequestActivityDetailsCycling: RequestActivityDetails{
     var activityType = "Cycling"
-    var dayType: Double
+    var powerInWatt: Double
+    var cadenceInRPM: Double
     
 }
 
@@ -54,10 +55,25 @@ nonisolated struct RequestActivityDetailsGym: RequestActivityDetails{
     var dayTyp: GymDayType
 }
 
-nonisolated struct DateLocation: Encodable, Sendable {
-    var startDateTime: String
-    var endDateTime: String
+nonisolated struct DateLocations: Encodable, Sendable {
+    var id = UUID()
+    var startDateTime: Date
+    var endDateTime: Date
     var locations: [GeoPoint]
+    
+    enum CodingKeys: String, CodingKey {
+        case startDateTime
+        case endDateTime
+        case locations
+    }
+    
+    func encode(to encoder: any Encoder) throws {
+        let formatter = ISO8601DateFormatter()
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(formatter.string(from: startDateTime), forKey: .startDateTime)
+        try container.encode(formatter.string(from: endDateTime), forKey: .endDateTime)
+        try container.encode(locations, forKey: .locations)
+    }
 }
 
 nonisolated struct CreateNewEventRequest: Encodable, Sendable {
@@ -71,7 +87,7 @@ nonisolated struct CreateNewEventRequest: Encodable, Sendable {
     var joiningCondition: JoinCondition
     var maxAllowedToJoin: Int
     var notes: String
-    var dateLocations: [DateLocation]
+    var dateLocations: [DateLocations]
 
     enum CodingKeys: String, CodingKey {
         case activityDetails, eventImage, isDateConfirmed, isLocationConfirmed

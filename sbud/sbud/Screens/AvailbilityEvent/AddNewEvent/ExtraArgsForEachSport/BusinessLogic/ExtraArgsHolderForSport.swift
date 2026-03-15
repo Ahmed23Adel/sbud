@@ -21,7 +21,7 @@ class ExtraArgsHolderCycling: ExtraArgsHolderForSport{
 }
 
 class ExtraArgsHolderGym: ExtraArgsHolderForSport{
-    @Published var proposedDayType = GymDayTypes.push
+    @Published var proposedDayType = GymDayType.push
 }
 
 class NewEventExtraArgsHoder: ObservableObject{
@@ -43,6 +43,20 @@ class NewEventExtraArgsHoder: ObservableObject{
         }
     }
     
+    
+    func createRequest() -> RequestActivityDetails{
+        switch self.selectedActivity {
+        case .running:
+            RequestActivityDetailsRunning(targetDistanceInKm: Double((extraArgs as! ExtraArgsHolderRunning).proposedDistance)!, targetPace: Double((extraArgs as! ExtraArgsHolderRunning).propsosedPace)!)
+        case .cycling:
+            RequestActivityDetailsCycling(
+                powerInWatt: Double((extraArgs as! ExtraArgsHolderCycling).proposedPowerInWatt)!,
+                cadenceInRPM: Double((extraArgs as! ExtraArgsHolderCycling).proposedCadenceInRPM)!)
+               
+        case .gym:
+            RequestActivityDetailsGym(dayTyp: (extraArgs as! ExtraArgsHolderGym).proposedDayType)
+        }
+    }
     
 }
 

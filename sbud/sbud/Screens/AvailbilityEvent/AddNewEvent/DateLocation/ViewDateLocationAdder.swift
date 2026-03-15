@@ -33,9 +33,9 @@ struct ViewDateLocationAdder: View {
                     ForEach(objsDateLocations.lst, id: \.id ){ obj in
                         VStack(alignment: .leading){
                             
-                            Text("From: \(obj.startDate.formatted(date: .abbreviated, time: .shortened))")
+                            Text("From: \(obj.startDateTime.formatted(date: .abbreviated, time: .shortened))")
                                 .foregroundColor(Color.mainColor)
-                            Text("To: \(obj.endDate.formatted(date: .abbreviated, time: .shortened))")
+                            Text("To: \(obj.endDateTime.formatted(date: .abbreviated, time: .shortened))")
                                 .foregroundColor(Color.mainColor)
                             Text("Locations: \(obj.locations.count)")
                                 .foregroundColor(Color.mainColor)

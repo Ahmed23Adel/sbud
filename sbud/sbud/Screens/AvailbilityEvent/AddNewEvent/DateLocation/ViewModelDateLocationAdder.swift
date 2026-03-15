@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 class ViewModelDateLocationAdder: ObservableObject{
-    @Published var dateLoactions: [DateLocationsHolder] = []
+    @Published var dateLoactions: [DateLocations] = []
     @Published var isShowSheetForDateLocations = false
     
     func submitNewEvent(){

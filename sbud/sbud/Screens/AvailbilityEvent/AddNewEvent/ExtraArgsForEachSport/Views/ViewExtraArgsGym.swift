@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ViewExtraArgsGym: View {
-    @State var proposedDayType = GymDayTypes.push
+    @State var proposedDayType = GymDayType.push
     @ObservedObject var args: ExtraArgsHolderGym
     var body: some View {
         VStack{
@@ -19,7 +19,7 @@ struct ViewExtraArgsGym: View {
             }
             .padding([.top, .leading])
             Picker("Day type", selection: $proposedDayType){
-                ForEach(GymDayTypes.allCases, id: \.self){ dayType in
+                ForEach(GymDayType.allCases, id: \.self){ dayType in
                     Text(dayType.rawValue)
                         .foregroundColor(Color.mainColor)
                 }
