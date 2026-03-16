@@ -117,18 +117,21 @@ final class ProfileSetupVM: ObservableObject {
         currentStep = max(0, currentStep - 1)
     }
     
-    func saveStep1() async -> Bool {
+    func saveStep1(imageData: Data?) async -> Bool {
         let tempName = profile.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !tempName.isEmpty else {
-            errorMessage = "Full name is required."
+            errorMessage = "First name is required."
             return false
         }
 
         let tempsurName = profile.surName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !tempsurName.isEmpty else {
-            errorMessage = "Surname is required."
+            errorMessage = "Last name is required."
             return false
         }
+        if let uploadedURL = await uploadProfileImageIfNeeded(imageData) {
+          profile.profileImageUrl = uploadedURL
+         }
 
         profile.name = tempName
         profile.surName = tempsurName
@@ -140,6 +143,7 @@ final class ProfileSetupVM: ObservableObject {
             "name": profile.name,
             "surName": profile.surName,
             "email": profile.email,
+            "profileImageUrl": profile.profileImageUrl as Any,
             "onboardingStep": profile.onboardingStep,
             "isProfileCompleted": profile.isProfileCompleted
         ])
@@ -176,6 +180,19 @@ final class ProfileSetupVM: ObservableObject {
             "isProfileCompleted": profile.isProfileCompleted,
             "createdAt": profile.createdAt
         ])
+    }
+    
+    func uploadProfileImageIfNeeded(_ imageData: Data?) async -> String? {
+        guard let imageData, !profile.id.isEmpty else { return profile.profileImageUrl }
+
+        do {
+            let url = try await profileManager.uploadProfileImage(data: imageData, userId: profile.id)
+            profile.profileImageUrl = url
+            return url
+        } catch {
+            errorMessage = "Profile image upload failed: \(error.localizedDescription)"
+            return nil
+        }
     }
 
     

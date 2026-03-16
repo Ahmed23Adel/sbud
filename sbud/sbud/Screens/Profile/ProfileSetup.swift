@@ -16,6 +16,7 @@ struct ProfileSetupView: View {
     
     @State private var selectedItem: PhotosPickerItem?
     @State private var selectedImage: Image?
+    @State private var selectedImageData: Data?
     
     @State private var showLocationPopup = false
     @State private var cameraPosition: MapCameraPosition = .automatic
@@ -35,12 +36,12 @@ struct ProfileSetupView: View {
                         }
                     }
 
-                    if let err = vm.errorMessage {
-                        Text(err)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                            .padding(.top, 8)
-                    }
+//                    if let err = vm.errorMessage {
+//                        Text(err)
+//                            .font(.caption)
+//                            .foregroundColor(.red)
+//                            .padding(.top, 8)
+//                    }
 
                     Spacer()
                 }
@@ -84,7 +85,7 @@ struct ProfileSetupView: View {
                         Task {
                             switch vm.currentStep {
                             case 0:
-                                let success = await vm.saveStep1()
+                                let success = await vm.saveStep1(imageData: selectedImageData)
                                 if success {
                                     vm.goNext()
                                 }
@@ -267,16 +268,86 @@ struct ProfileSetupView: View {
         }
     }
     
+//    private var isContinueDisabled: Bool {
+//        switch vm.currentStep {
+//        case 0:
+//            return vm.isSaving || vm.isLoading || vm.profile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || vm.profile.surName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+//        case 1:
+//            return vm.isSaving || vm.isLoading
+//        default:
+//            return vm.isSaving || vm.isLoading
+//        }
+//    }
+    
     private var isContinueDisabled: Bool {
-        switch vm.currentStep {
-        case 0:
-            return vm.isSaving || vm.isLoading || vm.profile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || vm.profile.surName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        case 1:
-            return vm.isSaving || vm.isLoading
-        default:
-            return vm.isSaving || vm.isLoading
-        }
+        vm.isSaving || vm.isLoading
     }
+    
+//    private var stepOneView: some View {
+//        VStack(alignment: .leading, spacing: 0) {
+//            Text("Tell Us About Yourself")
+//                .font(.system(size: 25, weight: .bold))
+//                .foregroundColor(.black)
+//                .padding(.top, 10)
+//            
+//            Text("Please enter your details to create your profile.")
+//                .font(.system(size: 16))
+//                .foregroundColor(.gray)
+//                .lineSpacing(4)
+//                .padding(.top, 8)
+//            
+//            HStack {
+//                Spacer()
+//                
+//                PhotosPicker(
+//                    selection: $selectedItem,
+//                    matching: .images,
+//                    photoLibrary: .shared()
+//                ) {
+//                    if let selectedImage {
+//                        selectedImage
+//                            .resizable()
+//                            .scaledToFill()
+//                            .frame(width: 120, height: 120)
+//                            .clipShape(Circle())
+//                    } else {
+//                        Circle()
+//                            .fill(Color("textFieldColor"))
+//                            .frame(width: 120, height: 120)
+//                            .overlay(
+//                                Image(systemName: "camera.fill")
+//                                    .font(.system(size: 28))
+//                                    .foregroundColor(.gray)
+//                            )
+//                    }
+//                }
+//                
+//                Spacer()
+//            }
+//            .padding(.top, 50)
+//            
+//            CustomInputField(
+//                title: "First Name",
+//                placeholder: "Enter first name",
+//                text: $vm.profile.name
+//            )
+//            .padding(.top, 30)
+//            
+//            CustomInputField(
+//                title: "Last Name",
+//                placeholder: "Enter last name",
+//                text: $vm.profile.surName
+//            )
+//            .padding(.top, 10)
+//            
+//            if let err = vm.errorMessage {
+//                Text(err)
+//                    .font(.caption)
+//                    .foregroundColor(.red)
+//                    .padding(.top, 8)
+//            }
+//        }
+//    }
     
     private var stepOneView: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -316,6 +387,16 @@ struct ProfileSetupView: View {
                             )
                     }
                 }
+                .onChange(of: selectedItem) { newItem in
+                    Task {
+                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                            selectedImageData = data
+                            if let uiImage = UIImage(data: data) {
+                                selectedImage = Image(uiImage: uiImage)
+                            }
+                        }
+                    }
+                }
                 
                 Spacer()
             }
@@ -327,6 +408,9 @@ struct ProfileSetupView: View {
                 text: $vm.profile.name
             )
             .padding(.top, 30)
+            .onChange(of: vm.profile.name) { _ in
+                vm.errorMessage = nil
+            }
             
             CustomInputField(
                 title: "Last Name",
@@ -334,6 +418,9 @@ struct ProfileSetupView: View {
                 text: $vm.profile.surName
             )
             .padding(.top, 10)
+            .onChange(of: vm.profile.surName) { _ in
+                vm.errorMessage = nil
+            }
             
             if let err = vm.errorMessage {
                 Text(err)
@@ -442,137 +529,8 @@ struct ProfileSetupView: View {
      }
      }
      }*/
-    private var stepThreeView: some View {
-        ZStack {
-            Color.black.opacity(0.08)
-                .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                Spacer()
-                
-                Button {
-                    vm.goBack()
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 68, height: 68)
-                            .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 6)
-                        
-                        Image(systemName: "xmark")
-                            .font(.system(size: 24, weight: .medium))
-                            .foregroundColor(.black)
-                    }
-                }
-                .padding(.bottom, -10)
-                .zIndex(1)
-                
-                VStack(spacing: 0) {
-                    Text("Allow \"ZEOVA\" To Use\nYour Location?")
-                        .font(.system(size: 26, weight: .bold))
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.black)
-                        .padding(.top, 54)
-                    
-                    Text("We use your location to find services around you")
-                        .font(.system(size: 16))
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 14)
-                        .padding(.horizontal, 28)
-                    
-                    Map(position: $cameraPosition) {
-                        if vm.profile.location.latitude != 0 && vm.profile.location.longitude != 0 {
-                            Annotation(
-                                "",
-                                coordinate: CLLocationCoordinate2D(
-                                    latitude: vm.profile.location.latitude,
-                                    longitude: vm.profile.location.longitude
-                                )
-                            ) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.blue.opacity(0.2))
-                                        .frame(width: 24, height: 24)
-                                    
-                                    Circle()
-                                        .fill(Color.blue)
-                                        .frame(width: 12, height: 12)
-                                }
-                            }
-                        }
-                    }
-                    .mapStyle(.standard)
-                    .frame(height: 190)
-                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                    .padding(.horizontal, 22)
-                    .padding(.top, 26)
-                    .onAppear {
-                        vm.requestCurrentLocation()
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                            vm.fillLocationFromDevice()
-                            vm.fillAddressDetails()
-                            updateMapToCurrentLocation()
-                        }
-                    }
-                    
-                    Button {
-                        Task {
-                            vm.requestCurrentLocation()
-                            
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                vm.fillLocationFromDevice()
-                                vm.fillAddressDetails()
-                                updateMapToCurrentLocation()
-                            }
-                            
-                            let success = await vm.saveStep3()
-                            if success {
-                                coordinator.goToHome()
-                            }
-                        }
-                    } label: {
-                        ZStack {
-                            if vm.isSaving || vm.isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                            } else {
-                                Text("Allow")
-                                    .font(.system(size: 18, weight: .medium))
-                                    .foregroundColor(.white)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 78)
-                        .background(Color.black)
-                        .clipShape(Capsule())
-                        .shadow(color: .black.opacity(0.12), radius: 14, x: 0, y: 10)
-                    }
-                    .padding(.horizontal, 22)
-                    .padding(.top, 34)
-                    .disabled(vm.isSaving || vm.isLoading)
-                    
-                    Button {
-                        coordinator.goToHome()
-                    } label: {
-                        Text("Don’t Allow")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 58)
-                    }
-                    .padding(.horizontal, 22)
-                    .padding(.top, 14)
-                    .padding(.bottom, 26)
-                }
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-                .padding(.horizontal, 14)
-                .padding(.bottom, 18)
-            }
-        }
-    }
+     
+    
     
     private func updateMapToCurrentLocation() {
         let lat = vm.profile.location.latitude

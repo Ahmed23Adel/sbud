@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C574A8ED2F683E1B00F68FF1 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = C574A8EC2F683E1B00F68FF1 /* FirebaseStorage */; };
 		E256EF3E2EFB2F6E000D5E8A /* Geohash in Frameworks */ = {isa = PBXBuildFile; productRef = E256EF3D2EFB2F6E000D5E8A /* Geohash */; };
 		E289D7B62EE832FA005F9F37 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */; };
 		E289D7B82EE832FA005F9F37 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B72EE832FA005F9F37 /* FirebaseAnalyticsCore */; };
@@ -88,6 +89,7 @@
 				E289D7BD2EE83372005F9F37 /* GoogleSignIn in Frameworks */,
 				E2A90D0A2F09E59300C287FD /* AdelsonValidator in Frameworks */,
 				E289D7E82EE83A93005F9F37 /* FirebaseCore in Frameworks */,
+				C574A8ED2F683E1B00F68FF1 /* FirebaseStorage in Frameworks */,
 				E2CB89BA2EF9924A0007AB32 /* FirebaseFirestore in Frameworks */,
 				E289D7B82EE832FA005F9F37 /* FirebaseAnalyticsCore in Frameworks */,
 				E289D7BA2EE832FA005F9F37 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
@@ -172,6 +174,7 @@
 				E2A904A02F06F4CB00C287FD /* Kingfisher */,
 				E2A90D092F09E59300C287FD /* AdelsonValidator */,
 				E2A90D0C2F09E61900C287FD /* Lottie */,
+				C574A8EC2F683E1B00F68FF1 /* FirebaseStorage */,
 			);
 			productName = sbud;
 			productReference = E24825A02EE2DCA200330DC2 /* sbud.app */;
@@ -701,6 +704,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C574A8EC2F683E1B00F68FF1 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
 		E256EF3D2EFB2F6E000D5E8A /* Geohash */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E256EF3C2EFB2F6E000D5E8A /* XCRemoteSwiftPackageReference "Geohash" */;

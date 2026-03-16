@@ -6,6 +6,7 @@
 //
 enum ActivityType: String, Codable, CaseIterable {
     case running
+    case cycling
 }
 
 struct ActivityMetrics: Codable, Equatable {

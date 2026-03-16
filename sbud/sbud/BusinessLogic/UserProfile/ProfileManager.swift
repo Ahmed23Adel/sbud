@@ -55,6 +55,7 @@ class ProfileManager: IProfileServiceManager {
 
 import Foundation
 import FirebaseAuth
+import FirebaseStorage
 
 class ProfileManager: IProfileServiceManager {
     
@@ -103,6 +104,17 @@ class ProfileManager: IProfileServiceManager {
         try await userRepository.updateUserProfileFields(uid: uid, fields: fields)
         localStorage.save(localProfile)
     }
+    
+    func uploadProfileImage(data: Data, userId: String) async throws -> String {
+            let ref = Storage.storage().reference().child("profile_images/\(userId).jpg")
+
+            let metadata = StorageMetadata()
+            metadata.contentType = "image/jpeg"
+
+            _ = try await ref.putDataAsync(data, metadata: metadata)
+            let downloadURL = try await ref.downloadURL()
+            return downloadURL.absoluteString
+        }
 
     func saveProfileToLocale(profile: UserProfile) {    localStorage.save(profile)  }
     func deleteProfileFromLocale() { localStorage.clear() }
