@@ -55,6 +55,8 @@ struct AvailabilityAppCoordinator: View {
         switch destination {
         case .moreInfoEvent(let event):
             ViewMoreInfoEvent(basicEvent: event)
+        case .addNewEvent:
+            CoordinatorAddNewEvent()
         }
     }
 }

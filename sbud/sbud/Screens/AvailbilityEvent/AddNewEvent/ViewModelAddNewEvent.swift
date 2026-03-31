@@ -19,22 +19,22 @@ class ViewModelAddNewEvent: ObservableObject{
     @Published var isLoading = false
    
     func submit(){
-        isLoading = true
-        let requestData = orchestrator.createRequestData()
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        if let jsonData = try? encoder.encode(requestData),
-           let jsonString = String(data: jsonData, encoding: .utf8) {
-            print(jsonString)
-        }
-        
-        let requester = CreateNewEventRequester()
-        Task{
-            let _ = try await requester.createNewEvent(requestParams: requestData)
-            await MainActor.run{
-                isLoading = false
-            }
-        }
+//        isLoading = true
+//        let requestData = orchestrator.createRequestData()
+//        let encoder = JSONEncoder()
+//        encoder.outputFormatting = .prettyPrinted
+//        if let jsonData = try? encoder.encode(requestData),
+//           let jsonString = String(data: jsonData, encoding: .utf8) {
+//            print(jsonString)
+//        }
+//        
+//        let requester = CreateNewEventRequester()
+//        Task{
+//            let _ = try await requester.createNewEvent(requestParams: requestData)
+//            await MainActor.run{
+//                isLoading = false
+//            }
+//        }
         
     }
 }

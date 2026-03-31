@@ -12,7 +12,7 @@ import Combine
 struct ViewExtraArgsRunning: View {
     @State var proposedDistance = "6.0"
     @State var propsosedPace = "8.30"
-    @ObservedObject var args: ExtraArgsHolderRunning
+    @State var args: ExtraArgsHolderRunning
     
     var body: some View {
         VStack{

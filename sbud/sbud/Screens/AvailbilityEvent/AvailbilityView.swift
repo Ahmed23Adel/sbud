@@ -59,7 +59,7 @@ struct AvailbilityView: View {
                 Spacer()
                 HStack {
                     GlassFloatingButton(systemName: "plus") {
-                        coordinator.showSheet(.addNewEvent)
+                        coordinator.push(.addNewEvent)
                     }
                     Spacer()
                     GlassFloatingButton(systemName: "line.3.horizontal.decrease") {

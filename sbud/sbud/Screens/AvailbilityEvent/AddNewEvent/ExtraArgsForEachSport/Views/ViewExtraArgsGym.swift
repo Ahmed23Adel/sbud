@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ViewExtraArgsGym: View {
     @State var proposedDayType = GymDayType.push
-    @ObservedObject var args: ExtraArgsHolderGym
+    @State var args: ExtraArgsHolderGym
     var body: some View {
         VStack{
             HStack{

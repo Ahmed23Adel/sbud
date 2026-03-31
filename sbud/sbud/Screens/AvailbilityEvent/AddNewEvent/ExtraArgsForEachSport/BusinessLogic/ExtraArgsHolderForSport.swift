@@ -8,21 +8,42 @@
 import Foundation
 import Combine
 
-protocol ExtraArgsHolderForSport: ObservableObject{}
 
+protocol ExtraArgsHolderForSport: Encodable{
+    
+    func createEncodableRequest() -> RequestActivityDetails
+}
+
+@Observable
 class ExtraArgsHolderRunning: ExtraArgsHolderForSport{
-    @Published var proposedDistance = "6.0"
-    @Published var propsosedPace = "8.30"
+    var proposedDistance = "6.0"
+    var propsosedPace = "8.30"
+    
+    func createEncodableRequest() -> any RequestActivityDetails {
+        RequestActivityDetailsRunning(targetDistanceInKm: Double(proposedDistance)!, targetPace: Double(propsosedPace)!)
+    }
 }
-
+@Observable
 class ExtraArgsHolderCycling: ExtraArgsHolderForSport{
-    @Published var proposedPowerInWatt = "200"
-    @Published var proposedCadenceInRPM = "80"
+    var proposedPowerInWatt = "200"
+    var proposedCadenceInRPM = "80"
+    
+    func createEncodableRequest() -> any RequestActivityDetails {
+        RequestActivityDetailsCycling(
+            powerInWatt: Double(proposedPowerInWatt)!,
+            cadenceInRPM: Double(proposedCadenceInRPM)!)
+           
+    }
+}
+@Observable
+class ExtraArgsHolderGym: ExtraArgsHolderForSport{
+    var proposedDayType = GymDayType.push
+    
+    func createEncodableRequest() -> any RequestActivityDetails {
+        RequestActivityDetailsGym(dayTyp: proposedDayType)
+    }
 }
 
-class ExtraArgsHolderGym: ExtraArgsHolderForSport{
-    @Published var proposedDayType = GymDayType.push
-}
 
 class NewEventExtraArgsHoder: ObservableObject{
     @Published var selectedActivity: ActivityType = .running {
@@ -40,21 +61,6 @@ class NewEventExtraArgsHoder: ObservableObject{
             self.extraArgs = ExtraArgsHolderCycling()
         case .gym:
             self.extraArgs = ExtraArgsHolderGym()
-        }
-    }
-    
-    
-    func createRequest() -> RequestActivityDetails{
-        switch self.selectedActivity {
-        case .running:
-            RequestActivityDetailsRunning(targetDistanceInKm: Double((extraArgs as! ExtraArgsHolderRunning).proposedDistance)!, targetPace: Double((extraArgs as! ExtraArgsHolderRunning).propsosedPace)!)
-        case .cycling:
-            RequestActivityDetailsCycling(
-                powerInWatt: Double((extraArgs as! ExtraArgsHolderCycling).proposedPowerInWatt)!,
-                cadenceInRPM: Double((extraArgs as! ExtraArgsHolderCycling).proposedCadenceInRPM)!)
-               
-        case .gym:
-            RequestActivityDetailsGym(dayTyp: (extraArgs as! ExtraArgsHolderGym).proposedDayType)
         }
     }
     

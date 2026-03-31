@@ -10,7 +10,7 @@ import SwiftUI
 struct ViewExtraArgsCycling: View {
     @State var proposedPowerInWatt = "200"
     @State var proposedCadenceInRPM = "80"
-    @ObservedObject var args: ExtraArgsHolderCycling
+    @State var args: ExtraArgsHolderCycling
     var body: some View {
         VStack{
             HStack{
