@@ -30,6 +30,16 @@ struct MainAppCoordinator: View {
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)))
+                case .profileSetup:
+                    ProfileSetupView()
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)))
+                case .loadingPage:
+                    LoadingView()
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)))
                 }
             }
             .ignoresSafeArea()
