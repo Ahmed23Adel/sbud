@@ -33,6 +33,7 @@ struct ViewAddNewEventStep1: View {
                     ActivityTypeSelector(selectedActivityType: $eventBuilder.activityType, extraArgsHolder: $eventBuilder.activityExtraArgs)
                     
                     ViewConditionalExtraArgs(argsHolder: eventBuilder.activityExtraArgs)
+                        .padding(.bottom, 100)
                 }
                 
             }
