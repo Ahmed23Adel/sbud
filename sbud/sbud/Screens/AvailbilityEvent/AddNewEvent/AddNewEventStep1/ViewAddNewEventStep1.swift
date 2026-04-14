@@ -16,6 +16,14 @@ struct ViewAddNewEventStep1: View {
                 VStack{
                     ViewEventImageSelection(eventBuidler: eventBuilder)
                         .padding(.top, 100)
+                    
+                    GenericTextInputView(
+                        fieldName: "Title",
+                        placeholder: "Ex: Midnight Runners",
+                        iconString: "text.rectangle",
+                        text: $eventBuilder.title)
+                    
+                    ActivityTypeSelector(selectedActivityType: $eventBuilder.activityType)
                 }
                 
             }
