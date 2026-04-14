@@ -24,6 +24,12 @@ struct ViewAddNewEventStep1: View {
                         iconString: "text.rectangle",
                         text: $eventBuilder.title)
                     
+                    GenericMultilineTextInputView(
+                        fieldName: "Description",
+                        placeholder: "Ex: Come join us",
+                        iconString: "pencil",
+                        text: $eventBuilder.description)
+                    
                     ActivityTypeSelector(selectedActivityType: $eventBuilder.activityType, extraArgsHolder: $eventBuilder.activityExtraArgs)
                     
                     ViewConditionalExtraArgs(argsHolder: eventBuilder.activityExtraArgs)
