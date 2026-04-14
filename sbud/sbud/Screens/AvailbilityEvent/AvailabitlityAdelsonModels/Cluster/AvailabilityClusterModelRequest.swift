@@ -16,7 +16,7 @@ struct Coordinate: Codable, Sendable {
     let longitude: Double
 }
 
-nonisolated(unsafe) struct AvailabilityClusterModelRequest: Encodable, Sendable {
+struct AvailabilityClusterModelRequest: Encodable, Sendable {
     let topLeft: GeoPoint
     let bottomRight: GeoPoint
     let selectedActivityType: String

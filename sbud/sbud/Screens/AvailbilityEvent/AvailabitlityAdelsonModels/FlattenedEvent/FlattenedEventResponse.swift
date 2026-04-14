@@ -8,13 +8,23 @@
 import Foundation
 import FirebaseFirestore
 
-nonisolated(unsafe) struct FlattenedEventResponse: Decodable, Sendable {
+// `Sendable` means: **"this type is safe to use across any thread, with no actor restrictions."**
+// But Swift now sees:
+//- `FlattenedEventResponse`'s `Decodable` conformance = `@MainActor` (main thread only) (bcz it was called in main actor context probably)
+//- `Sendable` = any thread
+//Sendable    =  "any thread"
+
+
+// Under the hood, Decodable conformance generates a real function:
+// this generated function is a piece of code that lives somewhere. And in Swift 6, every piece of code must belong to a concurrency context — either an actor, or nonisolated.
+// probabaly in @mainactor
+nonisolated struct FlattenedEventResponse: Decodable, Sendable {
     let events: [Event]
     let count: Int
 
 }
 
-nonisolated(unsafe) struct Event: Decodable, Sendable {
+struct Event: Decodable, Sendable {
     let id: String
     let eventId: String
     let dateLocationId: String
@@ -27,6 +37,7 @@ nonisolated(unsafe) struct Event: Decodable, Sendable {
     let isLocationConfirmed: Bool
     let isPublic: Bool
     let eventImage: String
+    let name: String
 
     func covertToAnchor() -> AnchorAvailabilityEvent {
         AnchorAvailabilityEvent(event: AvailabilityEvent(
@@ -41,13 +52,14 @@ nonisolated(unsafe) struct Event: Decodable, Sendable {
             isDateConfirmed: isDateConfirmed,
             isLocationConfirmed: isLocationConfirmed,
             isPublic: isPublic,
-            eventImage: eventImage
+            eventImage: eventImage,
+            creatorName: name
         )
         )
     }
 }
 
-nonisolated(unsafe) struct GeoLocation: Decodable, Sendable {
+struct GeoLocation: Decodable, Sendable {
     let geopoint: Coordinate
     let geohash: String
 }

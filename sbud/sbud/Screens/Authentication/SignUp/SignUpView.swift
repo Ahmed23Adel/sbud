@@ -79,19 +79,33 @@ struct SignUpView: View {
                     .padding(.vertical)
                     .popUp()
 
-                    Button {
-                        viewModel.isSigningIn = true
-                        Task {
-                            await viewModel.signUpWithGoogle()
-                            viewModel.isSigningIn = false
+                    HStack(spacing: 30) {//new phone bottom
+                        Button {
+                            viewModel.isSigningIn = true
+                            Task {
+                                await viewModel.signUpWithGoogle()
+                                viewModel.isSigningIn = false
+                            }
+                        } label: {
+                            LottieView(animation: .named("GoogleLogoEffect"))
+                                .playing()
+                                .frame(width: 80, height: 80)
                         }
-                    } label: {
-                        LottieView(animation: .named("GoogleLogoEffect"))
-                            .playing()
-                            .frame(width: 80, height: 80)
+                        .popUp(delay: 0.3)
+                        .disabled(viewModel.isSigningIn)
+
+                        Button {
+                            viewModel.goToPhoneLogin()
+                        } label: {
+                            Image(systemName: "phone.circle.fill")
+                                .resizable()
+                                .frame(width: 70, height: 70)
+                                .foregroundColor(.mainColor)
+                                .background(Circle().fill(Color.white))
+                                .shadow(radius: 3)
+                        }
+                        .popUp(delay: 0.3)
                     }
-                    .popUp(delay: 0.3)
-                    .disabled(viewModel.isSigningIn)
 
                     Spacer()
 

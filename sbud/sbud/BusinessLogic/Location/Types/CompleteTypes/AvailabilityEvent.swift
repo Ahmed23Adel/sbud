@@ -22,6 +22,7 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
     let isLocationConfirmed: Bool
     let isPublic: Bool
     let eventImage: String
+    let creatorName: String
 
     @Published var isLoading: Bool = false
     
@@ -38,7 +39,8 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
         isDateConfirmed: Bool,
         isLocationConfirmed: Bool,
         isPublic: Bool,
-        eventImage: String
+        eventImage: String,
+        creatorName: String
     ) {
         self.id = id
         self.geoPoint = geoPoint
@@ -52,6 +54,7 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
         self.isLocationConfirmed = isLocationConfirmed
         self.isPublic = isPublic
         self.eventImage = eventImage
+        self.creatorName = creatorName
     }
 
        

@@ -41,7 +41,7 @@ struct AnchorMapConditionalView: View {
             MapScaleView()
 
         }
-        .safeAreaPadding(.top, 40)
+        .ignoresSafeArea()
     }
 }
 
@@ -68,7 +68,8 @@ struct AnchorMapConditionalView: View {
                     isDateConfirmed: true,
                     isLocationConfirmed: false,
                     isPublic: true,
-                    eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s"
+                    eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s",
+                    creatorName: "Ahmed"
                 )
             )
 
@@ -77,7 +78,6 @@ struct AnchorMapConditionalView: View {
         shouldShowIndividuals: true,
         cameraPosition: $position,
         onCameraChangeFunc: { region in
-            print("Camera changed to: \(region.center)")
         }
     )
 }

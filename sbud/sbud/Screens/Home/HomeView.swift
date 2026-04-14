@@ -6,19 +6,36 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct HomeView: View {
-    let authManager = AuthenticationManager.shared
+    
+    @ObservedObject var authManager = AuthenticationManager.shared
     @EnvironmentObject var coordinator: MainCoordinator
+    
     var body: some View {
-        Button {
-            Task {
-                try await authManager.signOut()
-                coordinator.goToSignUp()
+        VStack{
+            if let user = authManager.currentUser, let firebaseUser = Auth.auth().currentUser,
+                !firebaseUser.isEmailVerified {
+                EmailVerificationBanner()
+                    .padding(.top)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
-        } label: {
-            Text("sign out")
+            
+            Spacer()
+            
+            
+            Button {
+                Task {
+                    try await authManager.signOut()
+                    coordinator.goToSignUp()
+                }
+            } label: {
+                Text("sign out")
+            }
+            Spacer()
         }
+        .animation(.easeInOut, value: Auth.auth().currentUser?.isEmailVerified)
     }
 }
 

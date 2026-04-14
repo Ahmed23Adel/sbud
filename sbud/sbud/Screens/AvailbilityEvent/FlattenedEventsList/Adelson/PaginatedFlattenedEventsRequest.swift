@@ -1,19 +1,21 @@
 //
-//  FlattenedEventsRequest.swift
+//  FlattenedEventsPaginatedRequest.swift
 //  sbud
 //
-//  Created by ahmed on 01/02/2026.
+//  Created by ahmed on 08/02/2026.
 //
 
 import Foundation
 import FirebaseFirestore
 
-struct FlattenedEventsRequest: Encodable, Sendable {
+struct PaginatedFlattenedEventsRequest: Encodable, Sendable, Decodable {
     let topLeft: GeoPoint
     let bottomRight: GeoPoint
     let selectedActivityType: String
     let selectedStartTime: Date
     let selectedEndTime: Date
+    let page: Int
+    let pageSize: Int
 
     func toDict() -> [String: String] {
         let formatter = ISO8601DateFormatter()
@@ -28,7 +30,9 @@ struct FlattenedEventsRequest: Encodable, Sendable {
             "bottomRightLongitude": String(bottomRight.longitude),
             "selectedActivityType": selectedActivityType,
             "selectedStartTime": startString,
-            "selectedEndTime": endString
+            "selectedEndTime": endString,
+            "page": String(page),
+            "page_size": String(pageSize)
         ]
         return dict
     }

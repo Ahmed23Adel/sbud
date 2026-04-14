@@ -21,6 +21,8 @@ struct AvailabilityAppCoordinator: View {
                 availabilityFiltersResults: availaibilityFiltesrResults
                 
             ))
+            .ignoresSafeArea()
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: AvailabilityNavigationDestination.self){ destination in
                 destinationView(for: destination)
             }
@@ -34,6 +36,7 @@ struct AvailabilityAppCoordinator: View {
                 }
             }
         }
+        .ignoresSafeArea()
     }
 
     @ViewBuilder

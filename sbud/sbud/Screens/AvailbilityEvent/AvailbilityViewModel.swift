@@ -20,16 +20,19 @@ final class AvailbilityViewModel: ObservableObject {
     @Published var anchorAvailabilityEvents: [AnchorAvailabilityEvent] = []
     var currentCameraPrecision: GeohashPrecision = .neighbourhood
     var desiredDataPrecision: GeohashPrecision = .neighbourhood
-    private var currentRegion: MKCoordinateRegion?
+    @Published var currentRegion: MKCoordinateRegion?
     private var lastFetchedPrecision: GeohashPrecision?
     let dataFetcher = AvailabilityDataFetcher()
     let mapsHelper = MapsHelper()
     var locationManager: LocationManager
     private var cancellables = Set<AnyCancellable>()
-    private var availabilityFiltersResults: AvailabilityFiltersResults
+    @Published var availabilityFiltersResults: AvailabilityFiltersResults
     private var selectedActivityIndex: Int = 0
+    @Published var listViewRefreshId = UUID()
     private let logger = Logger(subsystem: "sBud", category: "AvailbilityViewModel")
 
+    
+    @Published var selectedTab = 0
     init(locationManager: LocationManager, availabilityFiltersResults: AvailabilityFiltersResults) {
         self.locationManager = locationManager
         self.availabilityFiltersResults = availabilityFiltersResults
@@ -172,6 +175,10 @@ final class AvailbilityViewModel: ObservableObject {
     func changeSelectedActivity(selectedActivityIndex: Int) {
         self.selectedActivityIndex = selectedActivityIndex
         fetchNewData()
+    }
+    
+    func updateListId(){
+        listViewRefreshId = UUID()
     }
 
 }

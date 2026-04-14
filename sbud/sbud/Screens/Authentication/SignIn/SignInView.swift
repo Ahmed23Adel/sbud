@@ -79,8 +79,8 @@ struct SignInView: View {
                     .popUp()
                     .padding(.vertical)
 
-                    HStack {
 
+                    HStack(spacing: 30) {
                         Button {
                             viewModel.isSigningIn = true
                             Task {
@@ -93,6 +93,20 @@ struct SignInView: View {
                                 .frame(width: 80, height: 80)
                         }
                         .disabled(viewModel.isSigningIn)
+                        
+                        //bottom telephone
+                        Button {
+                            
+                            coordinator.goToPhoneLogin()
+                        } label: {
+                            
+                            Image(systemName: "phone.circle.fill")
+                                .resizable()
+                                .frame(width: 70, height: 70)
+                                .foregroundColor(.mainColor)
+                                .background(Circle().fill(Color.white))
+                                .shadow(radius: 3)
+                        }
                     }
 
                     Spacer()

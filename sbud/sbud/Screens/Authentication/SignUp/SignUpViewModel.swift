@@ -49,7 +49,7 @@ class SignUpViewModel: ObservableObject {
         }
     }
 
-    // MARK: auth email
+    
     func signUpWithEmail() async throws {
         if !InputValidators().validateInputs(
             email: email,
@@ -61,9 +61,12 @@ class SignUpViewModel: ObservableObject {
         isSigningUp = true
         do {
             try await authManager.signUp(email: email, password: password)
+            //send verification mail
+            AuthenticationManagerEmailAndPassword.shared.sendVerificationEmail()
+            
             isSigningUp = false
             stopLoading()
-            coordinator?.goToHome()
+            coordinator?.goToHome() //it would be better if we verifate and then go to home
         } catch {
             await MainActor.run {
                 isSigningUp = false
@@ -114,7 +117,10 @@ class SignUpViewModel: ObservableObject {
     func goToSignIn() {
         coordinator?.goToSignIn()
     }
-
+    
+    func goToPhoneLogin() {
+        coordinator?.goToPhoneLogin()
+    }
     // MARK: View helpers
     private func startLoading() {
         self.isLoading = true

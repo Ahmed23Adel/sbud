@@ -7,9 +7,9 @@
 
 import Foundation
 
-class AnchorAvailabilityEvent: IAnchorAvailabilityEvent {
-    let id: String
-    var event: any IAvailabilityEvent
+nonisolated class AnchorAvailabilityEvent: IAnchorAvailabilityEvent {
+    nonisolated let id: String
+    nonisolated var event: any IAvailabilityEvent
 
     init(event: any IAvailabilityEvent) {
         self.event = event

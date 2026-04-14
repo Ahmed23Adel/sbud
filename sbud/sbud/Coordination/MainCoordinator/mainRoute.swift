@@ -7,8 +7,11 @@
 
 import Foundation
 
-enum MainRoute {
+enum MainRoute : Equatable{
     case signUp
     case signIn
     case homePage
+    case phoneLogin
+    case otpVerification(verificationID: String, phoneNumber: String)
+    case completeProfile(phoneNumber: String)
 }

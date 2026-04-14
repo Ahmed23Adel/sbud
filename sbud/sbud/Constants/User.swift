@@ -12,6 +12,7 @@ struct User: Identifiable, Codable {
     @DocumentID var uid: String?
     var username: String
     let email: String
+    var phoneNumber: String?
     var profileImageUrl: String?
     var fullname: String?
     var bio: String?

@@ -57,6 +57,36 @@ class AuthenticationManagerEmailAndPassword: IAuthenticationManager {
         return true
     }
     
+    func sendVerificationEmail() {
+        // Assicuriamoci che ci sia un utente loggato
+        guard let user = Auth.auth().currentUser else {
+            print("Nessun utente attualmente loggato.")
+            return
+        }
+        
+        user.sendEmailVerification { error in
+            if let error = error {
+                print("Errore durante l'invio dell'email di verifica: \(error.localizedDescription)")
+                // Qui puoi aggiornare lo stato della UI per mostrare un messaggio di errore
+            } else {
+                print("Email di verifica inviata con successo!")
+                // Qui puoi avvisare l'utente di controllare la casella di posta
+            }
+        }
+    }
+    
+
+    func reloadUser() async throws {
+        guard let user = Auth.auth().currentUser else { return }
+        
+        
+        try await user.reload()
+        
+        
+        guard let updatedUser = Auth.auth().currentUser else { return }
+        await propagateToShared(firebaseUser: updatedUser, method: .email)
+    }
+    
     @MainActor
     private func propagateToShared(firebaseUser: FirebaseAuth.User, method: AuthType) async {
         await AuthenticationManager.shared.setCurrentUser(from: firebaseUser)

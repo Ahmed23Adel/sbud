@@ -18,6 +18,7 @@ struct HomeTabsView: View {
                 }
                 .tag(0)
             AvailabilityAppCoordinator()
+                .ignoresSafeArea()
                 .tabItem {
                     Label("Availability", systemImage: "figure.run")
                 }
@@ -32,12 +33,13 @@ struct HomeTabsView: View {
                 }
                 .tabItem { Label("Messages", systemImage: "envelope.fill") }
                 .tag(3)
-            AllEventsView()
+            PersonalView()
                 .tabItem {
-                    Label("Settings", systemImage: "gearshape")
+                    Label("Personal", systemImage: "gearshape")
                 }
                 .tag(4)
         }
+        .ignoresSafeArea()
     }
 }
 

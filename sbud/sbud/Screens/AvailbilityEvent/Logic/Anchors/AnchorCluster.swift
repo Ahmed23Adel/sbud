@@ -7,9 +7,9 @@
 
 import Foundation
 
-class AnchorCluster: IAnchorCluster {
-    var cluster: any IAailabilityAggregate
-    var count: Int {
+nonisolated class AnchorCluster: IAnchorCluster {
+    nonisolated var cluster: any IAailabilityAggregate
+    nonisolated var count: Int {
         cluster.count
     }
 

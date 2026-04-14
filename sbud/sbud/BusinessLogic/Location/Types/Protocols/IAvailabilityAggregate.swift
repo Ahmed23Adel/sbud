@@ -9,8 +9,8 @@ import Foundation
 import FirebaseFirestore
 
 protocol IAailabilityAggregate: Identifiable, Equatable {
-    var id: String { get }
-    var count: Int { get }
-    var location: GeoPoint { get }
+    nonisolated var id: String { get }
+    nonisolated var count: Int { get }
+    nonisolated var location: GeoPoint { get }
 
 }

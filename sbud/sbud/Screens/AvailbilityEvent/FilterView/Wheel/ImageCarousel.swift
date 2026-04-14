@@ -21,7 +21,6 @@ struct ImageCarousel: View {
             let offset = (rotation / 90) * width
             // Calculate the base index - which item should be centered
             // Start at index 0, each -90° moves forward one item
-            let rotationSteps = -rotation / 90.0
 
             ZStack {
                 ForEach(Array(imageNames.enumerated()), id: \.offset) { index, _ in

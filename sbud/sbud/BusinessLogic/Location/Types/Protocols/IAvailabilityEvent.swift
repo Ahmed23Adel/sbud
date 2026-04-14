@@ -9,7 +9,7 @@ import Foundation
 import FirebaseFirestore
 
 protocol IAvailabilityEvent: Identifiable, Equatable {
-    var id: String { get set }
+    nonisolated var id: String { get set }
     var geoPoint: GeoPoint { get set }
     var eventImage: String { get }
 

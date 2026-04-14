@@ -36,5 +36,18 @@ class MainCoordinator: ObservableObject {
     func goToHome() {
         navigateTo(.homePage)
     }
+    
+    func goToPhoneLogin() {
+        navigateTo(.phoneLogin)
+    }
+
+    // Passiamo l'ID e il numero al coordinator
+    func goToOTPVerification(verificationID: String, phoneNumber: String) {
+        navigateTo(.otpVerification(verificationID: verificationID, phoneNumber: phoneNumber))
+    }
+    
+    func goToCompleteProfile(phoneNumber: String) {
+        navigateTo(.completeProfile(phoneNumber: phoneNumber))
+    }
 
 }

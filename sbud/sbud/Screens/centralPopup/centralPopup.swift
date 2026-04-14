@@ -52,6 +52,9 @@ struct CentralPopup: View {
                 ))
             }
         }
+        // take all the width space the parent is willing to give
+        // to exactly show from the middle
+        .frame(maxWidth: .infinity)
         .onAppear {
             // Only trigger animation for the front popup (index 0)
             if index == 0 {
