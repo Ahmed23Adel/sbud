@@ -17,7 +17,7 @@ struct GenericTextInputView: View {
             HStack{
                 Text(fieldName)
                     .font(.title2)
-                     .foregroundColor(.white)
+                     .foregroundColor(.mainColor)
                      .padding()
                 Spacer()
             }
