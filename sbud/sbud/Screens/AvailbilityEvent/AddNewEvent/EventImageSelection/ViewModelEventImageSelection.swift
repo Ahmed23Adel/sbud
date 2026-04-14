@@ -6,30 +6,25 @@
 //
 
 import Foundation
-import Combine
 import _PhotosUI_SwiftUI
 import FirebaseAuth
+import OSLog
 
-class ViewModelEventImageSelection: ObservableObject{
-    @Published var useUserImageAsEventImg: Bool = true
-    @Published var selectedImgs: [PhotosPickerItem] = []
+@Observable
+class ViewModelEventImageSelection{
+    let logger = Logger(subsystem: "sBud", category: "EventImageSelection")
+    var eventBuilder: NewEventBuilder
+    var selectedImgs: [PhotosPickerItem] = []
     var selectedImg: PhotosPickerItem? {
         if selectedImgs.count == 1 {
             return selectedImgs[0]
         }
         return nil
     }
-    @Published var isUploading: Bool = false
-    var uploadedImgUrl: String?
-    var eventImgUrl: String{
-        if useUserImageAsEventImg{
-            // TODO: Replace it by user's image
-            "https://firebasestorage.googleapis.com/v0/b/sbud-e5bdd.firebasestorage.app/o/uploads%2Fkd5YqKdsHoeRelMwDgssF9xwE7H3%2Frun8.png?alt=media&token=c99a16df-fce1-4f98-81ea-f5e54f7903fb"
-        } else{
-            uploadedImgUrl!
-        }
+    var isUploading: Bool = false
+    init(eventBuilder: NewEventBuilder) {
+        self.eventBuilder = eventBuilder
     }
-    
     
     func uploadSelectedImg() async{
         await startUploadingUI()
@@ -41,8 +36,7 @@ class ViewModelEventImageSelection: ObservableObject{
         if let data = try? await selectedImg.loadTransferable(type: Data.self){
             // plz remember that UIImage is an object that really understands the image
             guard let img = UIImage(data: data) else {
-                PopUpGenerator.shared.show(msg: "Error with image uploading", type: .error)
-                await finishLoadingUI()
+                await finishLoadingUIWithError()
                 return
             }
             await uploadedGivenUIImage(img)
@@ -55,7 +49,7 @@ class ViewModelEventImageSelection: ObservableObject{
     func uploadedGivenUIImage(_ image: UIImage) async {
         do {
             if let compressdData = await compressImage(image){
-                if let token = try await getTokenId(){
+                if let token = try await BasicAuth.getTokenId(){
                     let url = URL(string: "https://sbud-backend.onrender.com/api/v1/images/upload")!
                     var request = URLRequest(url: url)
                     request.httpMethod = "POST"
@@ -77,8 +71,8 @@ class ViewModelEventImageSelection: ObservableObject{
                     let response = try JSONDecoder().decode(ImageUploadResponse.self, from: data)
                     let imgUrl = response.url
                     await MainActor.run {
-                        uploadedImgUrl = imgUrl
-                        useUserImageAsEventImg = false
+                        eventBuilder.coverImgURL = imgUrl
+                        logger.info("New img url: \(self.eventBuilder.coverImgURL)")
                         isUploading = false
                         
                     }
@@ -87,7 +81,6 @@ class ViewModelEventImageSelection: ObservableObject{
         } catch {
             await finishLoadingUI()
         }
-        
         await finishLoadingUI()
         
         
@@ -96,30 +89,27 @@ class ViewModelEventImageSelection: ObservableObject{
     
     private func compressImage(_ image: UIImage) async -> Data?{
         guard let imgData = image.jpegData(compressionQuality: 0.8) else {
-            PopUpGenerator.shared.show(msg: "Error with image uploading", type: .error)
-            await finishLoadingUI()
+            await finishLoadingUIWithError()
             return nil
         }
         return imgData
     }
     
     private func startUploadingUI() async{
-        await MainActor.run{
+        await MainActor.run {
             isUploading = true
         }
     }
     
+    private func finishLoadingUIWithError() async {
+        PopUpGenerator.shared.show(msg: "Error with image uploading", type: .error)
+        await finishLoadingUI()
+    }
     private func finishLoadingUI() async{
         await MainActor.run{
             isUploading = false
         }
     }
     
-    private func getTokenId() async throws -> String? {
-        guard let currentUser = Auth.auth().currentUser else{
-            return nil
-        }
-        let token = try await currentUser.getIDToken()
-        return token
-    }
+    
 }

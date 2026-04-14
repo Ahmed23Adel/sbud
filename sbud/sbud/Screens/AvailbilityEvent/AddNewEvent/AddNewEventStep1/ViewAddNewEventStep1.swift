@@ -6,11 +6,21 @@
 //
 
 import SwiftUI
-
+import Kingfisher
 struct ViewAddNewEventStep1: View {
     @Bindable var eventBuilder: NewEventBuilder
     var body: some View {
-        Text("step1")
+        ZStack{
+            Color.darkBackground
+            ScrollView{
+                VStack{
+                    ViewEventImageSelection(eventBuidler: eventBuilder)
+                        .padding(.top, 100)
+                }
+                
+            }
+        }
+        .ignoresSafeArea()
     }
 }
 
