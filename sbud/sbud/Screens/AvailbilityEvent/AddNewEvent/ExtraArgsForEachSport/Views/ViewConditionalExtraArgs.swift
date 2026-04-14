@@ -20,10 +20,8 @@ struct ViewConditionalExtraArgs: View {
                 ViewExtraArgsGym(args: argsHolder.extraArgs as! ExtraArgsHolderGym)
             }
         }
-        .background(Color.backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
         .fixedSize(horizontal: false, vertical: true)
-        .padding()
         
         
     }

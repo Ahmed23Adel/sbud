@@ -8,29 +8,35 @@
 import SwiftUI
 
 struct ViewExtraArgsGym: View {
-    @State var proposedDayType = GymDayType.push
     @State var args: ExtraArgsHolderGym
     var body: some View {
         VStack{
             HStack{
-                Text("Proposed day type")
-                    .foregroundColor(Color.mainColor)
+                Text("Day Type")
+                    .font(.title3)
+                    .foregroundColor(Color(
+                            red: 0.0,
+                            green: 227.0/255.0,
+                            blue: 253.0/255.0
+                        ))
                 Spacer()
+                
             }
-            .padding([.top, .leading])
-            Picker("Day type", selection: $proposedDayType){
+            .padding()
+            Picker("Day type", selection: $args.proposedDayType){
                 ForEach(GymDayType.allCases, id: \.self){ dayType in
                     Text(dayType.rawValue)
                         .foregroundColor(Color.mainColor)
                 }
                 .pickerStyle(.menu)
             }
-            .padding(.leading)
-            .onChange(of: proposedDayType){ _, newValue in
-                args.proposedDayType = newValue
-            }
-            
+            .padding()
         }
+        .background(Color.backgroundColor)
+        .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
+        .padding(.horizontal)
+        .padding(.top)
+        
         
     }
 }

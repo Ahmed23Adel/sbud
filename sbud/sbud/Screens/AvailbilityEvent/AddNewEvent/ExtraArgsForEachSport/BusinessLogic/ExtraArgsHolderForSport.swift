@@ -16,22 +16,22 @@ protocol ExtraArgsHolderForSport: Encodable{
 
 @Observable
 class ExtraArgsHolderRunning: ExtraArgsHolderForSport{
-    var proposedDistance = "6.0"
-    var propsosedPace = "8.30"
+    var proposedDistance = 6.0
+    var propsosedPace = 8.30
     
     func createEncodableRequest() -> any RequestActivityDetails {
-        RequestActivityDetailsRunning(targetDistanceInKm: Double(proposedDistance)!, targetPace: Double(propsosedPace)!)
+        RequestActivityDetailsRunning(targetDistanceInKm: proposedDistance, targetPace: propsosedPace)
     }
 }
 @Observable
 class ExtraArgsHolderCycling: ExtraArgsHolderForSport{
-    var proposedPowerInWatt = "200"
-    var proposedCadenceInRPM = "80"
+    var proposedPowerInWatt = 200.0
+    var proposedCadenceInRPM = 80.0
     
     func createEncodableRequest() -> any RequestActivityDetails {
         RequestActivityDetailsCycling(
-            powerInWatt: Double(proposedPowerInWatt)!,
-            cadenceInRPM: Double(proposedCadenceInRPM)!)
+            powerInWatt: proposedPowerInWatt,
+            cadenceInRPM: proposedCadenceInRPM)
            
     }
 }

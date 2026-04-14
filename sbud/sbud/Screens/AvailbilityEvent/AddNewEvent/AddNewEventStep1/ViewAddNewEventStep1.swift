@@ -12,6 +12,7 @@ struct ViewAddNewEventStep1: View {
     var body: some View {
         ZStack{
             Color.darkBackground
+                .ignoresSafeArea()
             ScrollView{
                 VStack{
                     ViewEventImageSelection(eventBuidler: eventBuilder)
@@ -23,12 +24,16 @@ struct ViewAddNewEventStep1: View {
                         iconString: "text.rectangle",
                         text: $eventBuilder.title)
                     
-                    ActivityTypeSelector(selectedActivityType: $eventBuilder.activityType)
+                    ActivityTypeSelector(selectedActivityType: $eventBuilder.activityType, extraArgsHolder: $eventBuilder.activityExtraArgs)
+                    
+                    ViewConditionalExtraArgs(argsHolder: eventBuilder.activityExtraArgs)
                 }
                 
             }
         }
-        .ignoresSafeArea()
+        //only ignores edge insets (notch/home bar)
+        // otherwise, it will ignore the keyboard as well
+        .ignoresSafeArea(.container)
     }
 }
 

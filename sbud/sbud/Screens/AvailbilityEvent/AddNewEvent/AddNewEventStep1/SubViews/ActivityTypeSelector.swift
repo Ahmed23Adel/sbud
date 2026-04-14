@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ActivityTypeSelector: View {
     @Binding var selectedActivityType: ActivityType
-    
+    @Binding var extraArgsHolder: NewEventExtraArgsHoder
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false){
             HStack{
@@ -28,6 +28,7 @@ struct ActivityTypeSelector: View {
                     .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
                     .onTapGesture {
                         selectedActivityType = activity
+                        extraArgsHolder.selectedActivity = activity
                     }
                 }
             }
@@ -38,5 +39,7 @@ struct ActivityTypeSelector: View {
 }
 
 #Preview {
-    ActivityTypeSelector(selectedActivityType: .constant(.running))
+    ActivityTypeSelector(
+        selectedActivityType: .constant(.running),
+        extraArgsHolder: .constant(NewEventExtraArgsHoder()))
 }
