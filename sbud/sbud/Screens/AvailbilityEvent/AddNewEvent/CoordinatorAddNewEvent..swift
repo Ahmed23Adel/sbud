@@ -18,7 +18,7 @@ struct CoordinatorAddNewEvent: View {
                         insertion: .move(edge: .leading),
                         removal: .move(edge: .leading)))
             } else if viewModel.currentStep == .step2 {
-                ViewAddNewEventStep2()
+                ViewAddNewEventStep2(eventBuilder: viewModel.newEventBuilder)
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing),
                         removal: .move(edge: .trailing)))

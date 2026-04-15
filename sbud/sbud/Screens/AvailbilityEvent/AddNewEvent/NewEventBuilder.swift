@@ -17,6 +17,7 @@ class NewEventBuilder{
     var description: String = ""
     var activityExtraArgs = NewEventExtraArgsHoder()
     // MARK: Step2
+    var dateLocationsHolder = MultipleDateLocationsHolder()
     var isEventPublic = true
     var joiningCondition: JoinCondition = .requestFromCreator
     var eventCapacity = "150"

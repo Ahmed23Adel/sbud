@@ -8,11 +8,24 @@
 import SwiftUI
 
 struct ViewAddNewEventStep2: View {
+    @Bindable var eventBuilder: NewEventBuilder
     var body: some View {
-        Text("step2")
+        ZStack{
+            Color.darkBackground
+                .ignoresSafeArea()
+            ScrollView{
+                VStack{
+                    ViewDateLocationAdder(objsDateLocations: eventBuilder.dateLocationsHolder)
+                        .padding(.top, 100)
+                    VisibilitySelector(isPublic: $eventBuilder.isEventPublic)
+                        .padding(.bottom, 100)
+                }
+            }
+        }
+        .ignoresSafeArea(.container)
     }
 }
 
 #Preview {
-    ViewAddNewEventStep2()
+    ViewAddNewEventStep2(eventBuilder: NewEventBuilder())
 }
