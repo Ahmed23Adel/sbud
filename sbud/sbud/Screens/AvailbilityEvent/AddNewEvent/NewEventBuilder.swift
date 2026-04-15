@@ -52,7 +52,21 @@ class NewEventBuilder{
         
     }
     
-    func sendRequest(){
-        
+    func sendRequest() async {
+        let request = CreateNewEventRequest(
+            activityDetails: activityExtraArgs.extraArgs.createEncodableRequest(),
+            title: title,
+            eventImage: coverImgURL,
+            isPublic: isEventPublic,
+            joiningCondition: joiningCondition,
+            maxAllowedToJoin: eventCapacity,
+            notes: description,
+            dateLocations: dateLocationsHolder.lst)
+        let requester = CreateNewEventRequester()
+        do {
+            let _ = try await requester.createNewEvent(requestParams: request)
+        } catch {
+            PopUpGenerator.shared.show(msg: "Error, please try again", type: .error)
+        }
     }
 }

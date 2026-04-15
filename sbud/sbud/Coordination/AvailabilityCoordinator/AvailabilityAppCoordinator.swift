@@ -44,8 +44,7 @@ struct AvailabilityAppCoordinator: View {
         switch sheetType {
         case .filter:
             FiltersView(availabilityFiltersResults: $availaibilityFiltesrResults)
-        case .addNewEvent:
-            ViewAddNewEvent()
+        
         }
     }
     @ViewBuilder

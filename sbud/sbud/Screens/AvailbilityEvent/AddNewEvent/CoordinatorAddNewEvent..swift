@@ -27,7 +27,7 @@ struct CoordinatorAddNewEvent: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
-    
+            
             ToolbarItem(placement: .principal){
                 Text("Create event")
                     .font(.headline)
@@ -90,7 +90,7 @@ struct CoordinatorAddNewEvent: View {
                         .textCase(.uppercase)
                     }
                 }
-
+                
                 ToolbarItem(placement: .topBarTrailing) {
                     if viewModel.currentStep == .step1 {
                         Button("Next") {
@@ -113,6 +113,11 @@ struct CoordinatorAddNewEvent: View {
         }
         .toolbarBackground(Color.darkBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .onChange(of: viewModel.isDismissed){
+            if viewModel.isDismissed{
+                dismiss()
+            }
+        }
     }
 }
 

@@ -16,7 +16,7 @@ struct ViewAddNewEventStep1: View {
             ScrollView{
                 VStack{
                     ViewEventImageSelection(eventBuidler: eventBuilder)
-                        .padding(.top, 100)
+                        .padding(.top, 30)
                     
                     GenericTextInputView(
                         fieldName: "Title",

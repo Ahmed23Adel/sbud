@@ -9,12 +9,17 @@ import Foundation
 
 @Observable
 class ViewModelCoordinatorAddNewEvent{
-    var currentStep = AddNewEventSteps.step1    
+    var currentStep = AddNewEventSteps.step1
     var newEventBuilder = NewEventBuilder()
+    var isDismissed = false
     
     func createEvent() {
         if !newEventBuilder.areFieldsValid(){
             newEventBuilder.generateErrorMsg()
+        }
+        Task {
+            await newEventBuilder.sendRequest()
+            isDismissed = true
         }
         
     }
