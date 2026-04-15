@@ -13,10 +13,19 @@ struct HomeView: View {
     @ObservedObject var authManager = AuthenticationManager.shared
     @EnvironmentObject var coordinator: MainCoordinator
     
+    private var isPhoneUser: Bool {
+        Auth.auth().currentUser?.providerData
+            .contains(where: { $0.providerID == "phone" }) ?? false
+    }
+    
+    private var shouldShowEmailBanner: Bool {
+        guard let firebaseUser = Auth.auth().currentUser else { return false }
+        return !firebaseUser.isEmailVerified && !isPhoneUser
+    }
+    
     var body: some View {
         VStack{
-            if let user = authManager.currentUser, let firebaseUser = Auth.auth().currentUser,
-                !firebaseUser.isEmailVerified {
+            if shouldShowEmailBanner {
                 EmailVerificationBanner()
                     .padding(.top)
                     .transition(.move(edge: .top).combined(with: .opacity))

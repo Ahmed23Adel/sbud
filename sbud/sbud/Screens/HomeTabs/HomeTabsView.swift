@@ -35,7 +35,7 @@ struct HomeTabsView: View {
                 .tag(3)
             PersonalView()
                 .tabItem {
-                    Label("Personal", systemImage: "gearshape")
+                    Label("Personal", systemImage: "person")
                 }
                 .tag(4)
         }

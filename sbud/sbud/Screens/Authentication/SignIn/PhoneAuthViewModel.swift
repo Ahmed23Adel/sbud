@@ -25,7 +25,7 @@ class PhoneLoginViewModel: ObservableObject {
     func sendVerificationCode() async {
         // Controllo base (assicurati che l'utente metta il prefisso)
         guard phoneNumber.hasPrefix("+") && phoneNumber.count > 8 else {
-            showError("Inserisci un numero valido includendo il prefisso (es. +39...)")
+            showError("Please enter a valid number including the area code (e.g., +39 for italy...)")
             return
         }
         

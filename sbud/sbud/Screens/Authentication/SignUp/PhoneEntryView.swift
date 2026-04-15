@@ -31,7 +31,7 @@ struct PhoneLoginView: View {
                 }
                 .padding(.horizontal)
                 
-                Text("Login via Phone")
+                Text("Phone login")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.mainColor)

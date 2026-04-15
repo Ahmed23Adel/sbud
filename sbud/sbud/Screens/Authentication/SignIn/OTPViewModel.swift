@@ -49,7 +49,7 @@ class OTPViewModel: ObservableObject {
             }
         } catch {
             isLoading = false
-            showError("Codice errato.")
+            showError("Code is wrong")
         }
     }
     

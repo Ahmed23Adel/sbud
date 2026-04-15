@@ -30,7 +30,7 @@ struct ConversationCell: View {
                 
                 VStack(alignment: .leading, spacing: 4) {
                     if let user = message.user {
-                        Text(user.email)
+                        Text(user.email ?? user.username)
                             .font(.system(size: 14, weight: .semibold))
                     }
                     
