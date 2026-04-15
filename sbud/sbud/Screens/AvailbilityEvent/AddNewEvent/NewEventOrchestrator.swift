@@ -14,7 +14,7 @@ class NewEventOrchestrator: ObservableObject{
     @Published var extraArgsHolder = NewEventExtraArgsHoder()
     @Published var dateLocationsHolder = MultipleDateLocationsHolder()
     @Published var isEventPublic = true
-    @Published var joiningCondition: JoinCondition = .requestFromCreator
+    @Published var joiningCondition: JoinCondition = .requestFromHost
     @Published var maxAllowedToJoin = "150"
     @Published var notes = ""
     func updateEventImageURL(_ img: String){

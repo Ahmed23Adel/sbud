@@ -6,10 +6,10 @@
 //
 
 import Foundation
-import Combine
 
-class MultipleDateLocationsHolder: RandomAccessCollection, ObservableObject{
-    @Published var lst: [DateLocations] = []
+@Observable
+class MultipleDateLocationsHolder: RandomAccessCollection{
+    var lst: [DateLocations] = []
     var startIndex: Int {lst.startIndex}
     var endIndex: Int {lst.endIndex}
     
@@ -19,5 +19,9 @@ class MultipleDateLocationsHolder: RandomAccessCollection, ObservableObject{
     
     subscript(position: Int) -> DateLocations{
         lst[position]
+    }
+    
+    func areFieldsValid() -> Bool {
+        lst.count > 0
     }
 }

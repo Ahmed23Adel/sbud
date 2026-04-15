@@ -64,7 +64,7 @@ struct CoordinatorAddNewEvent: View {
                         
                     } else if viewModel.currentStep == .step2{
                         Button("Done") {
-                            
+                            viewModel.createEvent()
                         }
                         .foregroundColor(Color.mainColor)
                         .textCase(.uppercase)
@@ -102,7 +102,7 @@ struct CoordinatorAddNewEvent: View {
                         
                     } else if viewModel.currentStep == .step2{
                         Button("Done") {
-                            
+                            viewModel.createEvent()
                         }
                         .foregroundColor(Color.mainColor)
                         .textCase(.uppercase)

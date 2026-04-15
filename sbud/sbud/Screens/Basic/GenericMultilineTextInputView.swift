@@ -11,7 +11,6 @@ struct GenericMultilineTextInputView: View {
     let placeholder: String
     let iconString: String
     @Binding var text: String
-    @FocusState private var isFocused: Bool
     
     var body: some View {
         VStack {
@@ -37,16 +36,8 @@ struct GenericMultilineTextInputView: View {
                         .font(.body)
                         .foregroundColor(.white)
                         .scrollContentBackground(.hidden)
-                        .frame(minHeight: 100, maxHeight: 200)
-                        .focused($isFocused)
-                        .toolbar {
-                            ToolbarItemGroup(placement: .keyboard) {
-                                Spacer()
-                                Button("Done") {
-                                    isFocused = false
-                                }
-                            }
-                        }
+//                        .frame(minHeight: 100, maxHeight: 200)
+                        
                 }
                 .padding(.vertical, 8)
                 .padding(.leading, 12)

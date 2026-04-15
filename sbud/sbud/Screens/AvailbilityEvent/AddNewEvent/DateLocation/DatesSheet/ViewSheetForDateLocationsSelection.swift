@@ -14,7 +14,7 @@ struct ViewSheetForDateLocationsSelection: View {
     @State var endDate = Date()
     @State var isLocationInputted = false
     @State var pickedCoordinates: [CLLocationCoordinate2D] = []
-    @ObservedObject var returnables: MultipleDateLocationsHolder
+    var returnables: MultipleDateLocationsHolder
     @Environment(\.dismiss) var dismiss
     var body: some View {
         VStack{

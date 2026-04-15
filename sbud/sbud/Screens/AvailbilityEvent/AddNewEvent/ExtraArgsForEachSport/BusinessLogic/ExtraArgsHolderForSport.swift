@@ -12,6 +12,7 @@ import Combine
 protocol ExtraArgsHolderForSport: Encodable{
     
     func createEncodableRequest() -> RequestActivityDetails
+    func areFieldsValid() -> Bool
 }
 
 @Observable
@@ -21,6 +22,13 @@ class ExtraArgsHolderRunning: ExtraArgsHolderForSport{
     
     func createEncodableRequest() -> any RequestActivityDetails {
         RequestActivityDetailsRunning(targetDistanceInKm: proposedDistance, targetPace: propsosedPace)
+    }
+    
+    func areFieldsValid() -> Bool {
+        if proposedDistance > 0 && propsosedPace > 0{
+            return true
+        }
+        return false
     }
 }
 @Observable
@@ -32,7 +40,13 @@ class ExtraArgsHolderCycling: ExtraArgsHolderForSport{
         RequestActivityDetailsCycling(
             powerInWatt: proposedPowerInWatt,
             cadenceInRPM: proposedCadenceInRPM)
-           
+    }
+    
+    func areFieldsValid() -> Bool {
+        if proposedPowerInWatt > 0 && proposedCadenceInRPM > 0{
+            return true
+        }
+        return false
     }
 }
 @Observable
@@ -41,6 +55,9 @@ class ExtraArgsHolderGym: ExtraArgsHolderForSport{
     
     func createEncodableRequest() -> any RequestActivityDetails {
         RequestActivityDetailsGym(dayTyp: proposedDayType)
+    }
+    func areFieldsValid() -> Bool {
+        return true
     }
 }
 
@@ -64,5 +81,9 @@ class NewEventExtraArgsHoder: ObservableObject{
         }
     }
     
+    
+    func areFieldsValid() -> Bool {
+        self.extraArgs.areFieldsValid()
+    }
 }
 

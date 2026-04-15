@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ViewDateLocationAdder: View {
     @StateObject private var viewModel = ViewModelDateLocationAdder()
-    @ObservedObject var objsDateLocations: MultipleDateLocationsHolder
+    var objsDateLocations: MultipleDateLocationsHolder
     var body: some View {
         ScrollView{
             VStack{

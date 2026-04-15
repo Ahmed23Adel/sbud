@@ -19,7 +19,40 @@ class NewEventBuilder{
     // MARK: Step2
     var dateLocationsHolder = MultipleDateLocationsHolder()
     var isEventPublic = true
-    var joiningCondition: JoinCondition = .requestFromCreator
-    var eventCapacity = "150"
+    var joiningCondition: JoinCondition = .requestFromHost
+    var eventCapacity = 150
     
+    
+    func areFieldsValid() -> Bool {
+        if coverImgURL.count != 0 &&
+            title.count != 0 &&
+            description.count != 0 &&
+            activityExtraArgs.areFieldsValid() &&
+            dateLocationsHolder.areFieldsValid() &&
+            eventCapacity > 0 {
+            return true
+        }
+        return false
+    }
+    
+    func generateErrorMsg(){
+        var errorMsg = ""
+        if title.count <= 0{
+            errorMsg = "Event must have a title"
+        }else if description.count <= 0 {
+            errorMsg = "Please enter a valid description"
+        } else if !activityExtraArgs.areFieldsValid() {
+            errorMsg = "Performance targets are not valid"
+        } else if !dateLocationsHolder.areFieldsValid(){
+            errorMsg = "Non valid Date&Locations"
+        } else if eventCapacity <= 0 {
+            errorMsg = "Please enter a valid capacity"
+        }
+        PopUpGenerator.shared.show(msg: errorMsg, type: .error)
+        
+    }
+    
+    func sendRequest(){
+        
+    }
 }

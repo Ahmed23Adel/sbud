@@ -15,10 +15,10 @@ enum GymDayType: String, Encodable, CaseIterable{
     case arm = "Arm"
 }
 
+// TODO: change the backend to accept only requestFromHost
 enum JoinCondition: String, Encodable, CaseIterable {
     case autoJoin = "Auto join"
-    case requestFromCreator = "Ask from creator"
-    case requestFromHost = "Ask from hosts"
+    case requestFromHost = "Manual Approval by event hosts"
     
     
     func encode(to encoder: any Encoder) throws {
@@ -26,8 +26,6 @@ enum JoinCondition: String, Encodable, CaseIterable {
         switch self {
         case .autoJoin:
             try container.encode("autoJoin")
-        case .requestFromCreator:
-            try container.encode("requestFromCreator")
         case .requestFromHost:
             try container.encode("requestFromHost")
         }

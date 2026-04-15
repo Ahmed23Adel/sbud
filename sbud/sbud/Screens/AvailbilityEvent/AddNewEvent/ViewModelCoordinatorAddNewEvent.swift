@@ -12,10 +12,12 @@ class ViewModelCoordinatorAddNewEvent{
     var currentStep = AddNewEventSteps.step1    
     var newEventBuilder = NewEventBuilder()
     
-    func createEvent(){
+    func createEvent() {
+        if !newEventBuilder.areFieldsValid(){
+            newEventBuilder.generateErrorMsg()
+        }
         
     }
-    
     func moveToStep2(){
         currentStep = .step2
     }
