@@ -14,7 +14,7 @@ struct VisibilitySelector: View {
             HStack{
                 Text("Visibility")
                     .foregroundColor(Color.mainColor)
-                    .font(.system(size: 32))
+                    .font(.title2)
                     .padding()
                 Spacer()
             }
@@ -23,7 +23,7 @@ struct VisibilitySelector: View {
                 VStack(spacing: 10){
                     HStack{
                         Text("Public")
-                            .font(.title2)
+                            .font(.system(size: 17))
                             .foregroundColor(isPublic ? .black : .gray)
                             .animation(.easeInOut(duration: 0.25), value: isPublic)
                             .padding(.horizontal)
@@ -31,7 +31,7 @@ struct VisibilitySelector: View {
                     }
                     HStack{
                         Text("Visible to everyone ")
-                            .font(.body)
+                            .font(.system(size: 12))
                             .foregroundColor(.gray)
                             .padding(.horizontal)
                         Spacer()
@@ -39,7 +39,7 @@ struct VisibilitySelector: View {
                 }
                 .padding(.vertical)
                 Image(systemName: "eye.fill")
-                    .font(.system(size: 30))
+                    .font(.system(size: 20))
                     .padding(.horizontal)
                 
             }
@@ -58,7 +58,7 @@ struct VisibilitySelector: View {
                 VStack(spacing: 10){
                     HStack{
                         Text("Private")
-                            .font(.title2)
+                            .font(.system(size: 17))
                             .foregroundColor(!isPublic ? .black : .gray)
                             .animation(.easeInOut(duration: 0.25), value: isPublic)
                             .padding(.horizontal)
@@ -66,7 +66,7 @@ struct VisibilitySelector: View {
                     }
                     HStack{
                         Text("Visible to friends ")
-                            .font(.body)
+                            .font(.system(size: 12))
                             .foregroundColor(.gray)
                             .padding(.horizontal)
                         Spacer()
@@ -74,7 +74,7 @@ struct VisibilitySelector: View {
                 }
                 .padding(.vertical)
                 Image(systemName: "lock")
-                    .font(.system(size: 30))
+                    .font(.system(size: 20))
                     .padding(.horizontal)
                 
             }
