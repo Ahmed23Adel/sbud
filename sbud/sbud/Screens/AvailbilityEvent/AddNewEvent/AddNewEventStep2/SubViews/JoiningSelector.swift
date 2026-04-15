@@ -38,7 +38,7 @@ struct JoiningSelector: View {
                     }
                 }
                 .padding(.vertical)
-                Image(systemName: "eye.fill")
+                Image(systemName: "door.left.hand.open")
                     .font(.system(size: 20))
                     .padding(.horizontal)
                 
@@ -73,7 +73,7 @@ struct JoiningSelector: View {
                     }
                 }
                 .padding(.vertical)
-                Image(systemName: "lock")
+                Image(systemName: "door.left.hand.closed")
                     .font(.system(size: 20))
                     .padding(.horizontal)
                 
