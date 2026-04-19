@@ -26,6 +26,8 @@ struct SbudApp: App {
     let locationManager = LocationManager.shared
     let service = GeohashService.shared
     
+    //let currentLocationService = CurrentLocationService.shared
+    
     init(){
         AdelsonFirebaseAuthConfig.shared = AdelsonFirebaseAuthConfig(
             appName: "sBud",
@@ -38,7 +40,11 @@ struct SbudApp: App {
             .onOpenURL { url in
                 GIDSignIn.sharedInstance.handle(url)
             }
-
+            
+            .onAppear { _ = CurrentLocationService.shared   }
+            .onReceive( NotificationCenter.default.publisher(
+                        for: UIApplication.willEnterForegroundNotification)) { _ in
+                            CurrentLocationService.shared.forceUpdate() }
         }
 
     }

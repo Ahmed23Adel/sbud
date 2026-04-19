@@ -22,6 +22,8 @@ struct UserProfile: Codable, Identifiable {
     var city: String = ""
     var location: UserLocation = UserLocation(latitude: 0, longitude: 0, fullAddress: "")
     
+    var currentLocation: UserLocation? = nil
+    
     var preferredActivity: ActivityType = .running
     var metrics: ActivityMetrics = ActivityMetrics()
     
