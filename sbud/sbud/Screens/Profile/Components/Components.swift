@@ -4,6 +4,7 @@
 //
 //  Created by Erdal on 24.03.2026.
 //
+
 import SwiftUI
 
 struct CustomInputField: View {
@@ -23,9 +24,38 @@ struct CustomInputField: View {
                     .frame(height: 58)
                     .background(Color("textFieldColor"))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .toolbar {
+                                        ToolbarItemGroup(placement: .keyboard) {
+                                            Spacer()
+                                            Button("Done") {
+                                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                            }
+                                        }
+                                    }
             }
         }
     }
+// MARK: - Yardımcı View Bileşeni
+@ViewBuilder
+func customTextField(title: String, placeholder: String, text: Binding<String>) -> some View {
+    VStack(alignment: .leading, spacing: 8) {
+        Text(title)
+            .font(.system(size: 12, weight: .bold)).foregroundColor(Color.gray).kerning(1.2)
+            
+        
+        TextField("", text: text, prompt:
+            Text(placeholder)
+                .foregroundColor(Color.white.opacity(0.2))
+                .font(.system(size: 24, weight: .bold))
+        )
+        .padding()
+        .frame(height: 60)
+        .background(Color.white.opacity(0.08))
+        .foregroundColor(.white)
+        .cornerRadius(4)
+    }
+}
+
     
     struct CustomMultilineField: View {
         let title: String
@@ -44,6 +74,14 @@ struct CustomInputField: View {
                     .frame(minHeight: 110, alignment: .topLeading)
                     .background(Color("textFieldColor"))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .toolbar {
+                                        ToolbarItemGroup(placement: .keyboard) {
+                                            Spacer()
+                                            Button("Done") {
+                                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                            }
+                                        }
+                                    }
             }
         }
     }
@@ -121,6 +159,14 @@ struct CustomInputField: View {
                     .frame(height: 58)
                     .background(Color("textFieldColor"))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Bitti") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
+                    }
+                }
             }
         }
     }

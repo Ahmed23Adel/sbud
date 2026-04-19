@@ -28,7 +28,7 @@ struct UserProfile: Codable, Identifiable {
     var createdAt: Date = Date()
     var lastSeenAt: Date = Date()
     
-    var bio: String? = nil
+    var bio: String = ""
     var isProfileCompleted: Bool = false
     var pushToken: String? = nil
 

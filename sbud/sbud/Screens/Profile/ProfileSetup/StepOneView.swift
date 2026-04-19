@@ -10,88 +10,105 @@ import PhotosUI
 
 struct StepOneView: View {
     @EnvironmentObject var vm: ProfileSetupVM
-
+    
     var body: some View {
+        // En dıştaki VStack'te padding'i kaldırıyoruz çünkü ScrollView içinde yöneteceğiz
         VStack(alignment: .leading, spacing: 0) {
-            Text("Tell Us About Yourself")
-                .font(.system(size: 25, weight: .bold))
-                .foregroundColor(.black)
-                .padding(.top, 10)
-
-            Text("Please enter your details to create your profile.")
-                .font(.system(size: 16))
-                .foregroundColor(.gray)
-                .lineSpacing(4)
-                .padding(.top, 8)
             
-            profilePhotoPicker
-                .padding(.top, 50)
-
-            CustomInputField(
-                title: "First Name",
-                placeholder: "Enter first name",
-                text: $vm.profile.name
-            )
-            .padding(.top, 30)
-            .onChange(of: vm.profile.name) { _ in
-                vm.clearError()
+            // Başlık sabit kalıyor
+            VStack(alignment: .leading, spacing: 15) {
+                Text("TELL US ABOUT\nYOURSELF")
+                    .font(.system(size: 32, weight: .black))
+                    .foregroundColor(.white)
+                    .lineSpacing(-5)
             }
+            .padding(.bottom, 20)
 
-            CustomInputField(
-                title: "Last Name",
-                placeholder: "Enter last name",
-                text: $vm.profile.surName
-            )
-            .padding(.top, 10)
-            .onChange(of: vm.profile.surName) { _ in
-                vm.clearError()
+            ScrollView(showsIndicators: false) {
+                // İçerik alanı
+                VStack(alignment: .leading, spacing: 25) {
+                    
+                    profilePhotoPicker
+                        .frame(maxWidth: .infinity)
+
+                    VStack(alignment: .leading, spacing: 20) {
+                        customTextField(title: "FIRST NAME", placeholder: "", text: $vm.profile.name)
+                            .onChange(of: vm.profile.name) { _ in vm.clearError() }
+                        
+                        customTextField(title: "LAST NAME", placeholder: "", text: $vm.profile.surName)
+                            .onChange(of: vm.profile.surName) { _ in vm.clearError() }
+                        
+                        if let errorMessage1 = vm.errorMessage {
+                            Text(errorMessage1)
+                                .font(.caption)
+                                .foregroundColor(Color("palelime"))
+                                .padding(.top, 4)
+                        }
+                    }
+                    
+                    // Klavyenin veya Continue butonunun içeriği kapatmaması için güvenli boşluk
+                    Color.clear.frame(height: 120)
+                }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                // fixedSize içeriğin dikeyde kesilmesini engeller
+                .fixedSize(horizontal: false, vertical: true)
             }
-
-            if let errorMessage = vm.errorMessage {
-                Text(errorMessage)
-                    .font(.caption)
-                    .foregroundColor(.red)
-                    .padding(.top, 8)
+            .onTapGesture {
+                hideKeyboard()
             }
         }
     }
 }
 
+// MARK: - Subviews Extension
 private extension StepOneView {
     var profilePhotoPicker: some View {
-        HStack {
-            Spacer()
-
-            PhotosPicker(
-                selection: $vm.selectedItem,
-                matching: .images,
-                photoLibrary: .shared()
-            ) {
-                Group {
-                        if let uiImage = vm.selectedProfileImage {
+        PhotosPicker(
+            selection: $vm.selectedItem,
+            matching: .images,
+            photoLibrary: .shared()
+        ) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.white.opacity(0.03))
+                
+                VStack(spacing: 15) {
+                    if let uiImage = vm.selectedProfileImage {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
-                        } else {
+                            .frame(width: 100, height: 100)
+                            .clipShape(Circle())
+                    } else {
+                        Image(systemName: "camera")
+                            .font(.system(size: 30))
+                            .foregroundColor(.gray)
+                            .padding(25)
+                            .overlay(
                                 Circle()
-                                .fill(Color("textFieldColor"))
-                                .overlay(
-                                Image(systemName: "camera.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundColor(.gray)
+                                    .stroke(Color.gray, style: StrokeStyle(lineWidth: 1, dash: [5]))
                             )
                     }
+                    
+                    VStack(spacing: 4) {
+                        Text(vm.isLoading ? "UPLOADING..." : "UPLOAD PROFILE IMAGE")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.white)
+                        
+                        Text("REQUIRED FOR PROFILE CREATE")
+                            .font(.system(size: 10))
+                            .foregroundColor(.gray.opacity(0.7))
+                            .kerning(1.2)
+                    }
                 }
-                .frame(width: 120, height: 120)
-                .clipShape(Circle())
             }
-            .onChange(of: vm.selectedItem) {
-                Task {
-                    await vm.handleSelectedPhoto()
-                }
-            }
-
-            Spacer()
+            .frame(height: 220)
+            .frame(maxWidth: .infinity)
+            .border(Color.white.opacity(0.1), width: 1)
         }
+        .onChange(of: vm.selectedItem) { _ in
+            Task { await vm.handleSelectedPhoto() }
+        }
+        .onChange(of: vm.selectedItem) { _ in vm.clearError() }
     }
 }

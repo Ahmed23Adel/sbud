@@ -6,70 +6,69 @@
 //
 
 import SwiftUI
-import PhotosUI
 
 struct StepThreeView: View {
     @EnvironmentObject var vm: ProfileSetupVM
-    
+
     var body: some View {
-        
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Complete Your Details")
-                .font(.system(size: 25, weight: .bold))
-                .foregroundColor(.black)
-                .padding(.top, 10)
-            
-            Text("Add a few more details for your profile.")
-                .font(.system(size: 16))
-                .foregroundColor(.gray)
-                .lineSpacing(4)
-                .padding(.top, 8)
-            
-            CustomMultilineField(
-                title: "Bio",
-                placeholder: "Tell us about yourself",
-                text: Binding(
-                    get: { vm.profile.bio ?? "" },
-                    set: { vm.profile.bio = $0 })
-            )
-            .padding(.top, 30)
-            .onChange(of: vm.profile.bio) { _ in
-                vm.clearError()
+        VStack(alignment: .leading, spacing: 20) {
+            // Başlık Bölümü
+            VStack(alignment: .leading, spacing: 10) {
+                Text("COMPLETE YOUR\nDETAILS")
+                    .font(.system(size: 32, weight: .black))
+                    .foregroundColor(.white)
+                    .lineSpacing(2)
+                
+                Text("Your biography is the tactical briefing for tthe community. Tell us more about yourself, your disciplines, and what boost your performance.")
+                    .font(.system(size: 13))
+                    .foregroundColor(.gray)
+                    .lineSpacing(4)
             }
             
-            preferredActivitySection
-                .padding(.top, 10)
+            // Bio Giriş Alanı
             
-            if let err = vm.errorMessage {
-                Text(err)
-                    .font(.caption)
-                    .foregroundColor(.red)
-                    .padding(.top, 8)
+            VStack(alignment: .leading, spacing: 12) {
+                Text("ATHLETIC BIO")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.gray)
+                    .kerning(1.2)
+            ScrollView(showsIndicators: false) {
+                ZStack(alignment: .topLeading) {
+
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white.opacity(0.05))
+                        .frame(height: 250)
+
+                    TextEditor(text: $vm.profile.bio)
+                        .scrollContentBackground(.hidden)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .foregroundColor(.white)
+                        .accentColor(Color("palelime"))
+                        .frame(height: 250)
+                }
+                .onChange(of: vm.profile.bio) { _ in vm.clearError() }
+                if let err = vm.errorMessage {
+                    Text(err)
+                        .font(.caption)
+                        .foregroundColor(Color("palelime"))
+                        .padding(.top, 4)
+                }
             }
+            .padding(.top,10)
         }
+
+            Spacer()
+        }
+        .onTapGesture {
+            hideKeyboard()
+        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 }
 
-private extension StepThreeView {
-    var preferredActivitySection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Preferred Activity")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.black)
-            
-            Picker("Activity Type", selection: $vm.profile.preferredActivity) {
-                ForEach(ActivityType.allCases, id: \.self) { type in
-                    Text(type.rawValue.capitalized).tag(type)
-                }
-            }
-            .padding(.horizontal, 8)
-            .frame(height: 58)
-            .frame(maxWidth: .infinity)
-            .background(Color("textFieldColor"))
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .onChange(of: vm.profile.preferredActivity) { _ in
-                vm.clearError()
-            }
-        }
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

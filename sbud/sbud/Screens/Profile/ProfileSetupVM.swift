@@ -82,6 +82,11 @@ final class ProfileSetupVM: ObservableObject {
     // MARK: - Step Validations
 
     func validateStepOne() -> Bool {
+        guard profile.profileImageUrl != nil else {
+            errorMessage = "Profile image is required."
+            return false
+        }
+        
         if trimmed(profile.name).isEmpty {
             errorMessage = "First name is required."
             return false
@@ -97,12 +102,13 @@ final class ProfileSetupVM: ObservableObject {
     }
 
     func validateStepTwo() -> Bool {
-        if trimmed(profile.gender ?? "").isEmpty {
-            errorMessage = "Please select your gender."
+        
+        if !validatePhone() {
             return false
         }
 
-        if !validatePhone() {
+        if trimmed(profile.gender ?? "").isEmpty {
+            errorMessage = "Please select your gender."
             return false
         }
         
@@ -110,13 +116,20 @@ final class ProfileSetupVM: ObservableObject {
             errorMessage = "Please select your birth date."
             return false
         }
-
+        
+        if let age = profile.age {
+            if age < 18 {
+                errorMessage = "Under 18 years old not allowed."
+                return false
+            }
+        }
+    
         errorMessage = nil
         return true
     }
 
     func validateStepThree() -> Bool {
-        if trimmed(profile.bio ?? "").isEmpty {
+        if trimmed(profile.bio).isEmpty {
             errorMessage = "Bio is required."
             return false
         }
@@ -229,110 +242,6 @@ final class ProfileSetupVM: ObservableObject {
         isLoading = false
     }
 
-    // MARK: - Image Upload
-
-    /*func uploadProfileImageIfNeeded(_ imageData: Data?) async -> String? {
-        guard let imageData, !profile.id.isEmpty else {
-            return profile.profileImageUrl
-        }
-
-        do {
-            let url = try await profileManager.uploadProfileImage(data: imageData, userId: profile.id)
-            profile.profileImageUrl = url
-            return url
-        } catch {
-            errorMessage = "Profile image upload failed: \(error.localizedDescription)"
-            return nil
-        }
-    }*/
-    
-    /*func uploadProfileImageIfNeeded(_ imageData: Data?) async -> String? {
-        guard let imageData else {
-            return profile.profileImageUrl
-        }
-
-        do {
-            let url = try await profileManager.uploadProfileImage(data: imageData)
-            profile.profileImageUrl = url
-            print(profile.profileImageUrl)
-            print("img")
-            return url
-        } catch {
-            errorMessage = "Profile image upload failed: \(error.localizedDescription)"
-            return nil
-        }
-    }
-    */
-//    func handleSelectedPhoto() async {
-//        guard let selectedPhotoItem else { return }
-//
-//        do {
-//            guard let data = try await selectedPhotoItem.loadTransferable(type: Data.self) else {
-//                errorMessage = "Selected image could not be loaded."
-//                return
-//            }
-//
-//            guard let image = UIImage(data: data) else {
-//                errorMessage = "Selected file is not a valid image."
-//                return
-//            }
-//
-//            guard let compressedData = image.jpegData(compressionQuality: 0.8) else {
-//                errorMessage = "Image compression failed."
-//                return
-//            }
-//
-//            selectedProfileImage = image
-//            profileImageData = compressedData
-//            errorMessage = nil
-//        } catch {
-//            errorMessage = "Image loading failed: \(error.localizedDescription)"
-//        }
-//    }
-    
-    
-//    func handleSelectedPhoto() async {
-//        guard let selectedItem else {
-//            print("selectedItem nil")
-//            return
-//        }
-//
-//        do {
-//            guard let data = try? await selectedItem.loadTransferable(type: Data.self) else {
-//                errorMessage = "Selected image could not be loaded."
-//                print("image data nil")
-//                return
-//            }
-//
-//            print("image data size:", data.count)
-//
-//            guard let image = UIImage(data: data) else {
-//                errorMessage = "Selected file is not a valid image."
-//                print("UIImage conversion failed")
-//                return
-//            }
-//
-//            guard let compressedData = image.jpegData(compressionQuality: 0.8) else {
-//                errorMessage = "Image compression failed."
-//                print("jpeg compression failed")
-//                return
-//            }
-//
-//            selectedProfileImage = image
-//            profileImageData = compressedData
-//            errorMessage = nil
-//
-//            print("profileImageData ready:", compressedData.count)
-//            print(profileImageData)
-//            
-//            
-//        } catch {
-//            errorMessage = "Image loading failed: \(error.localizedDescription)"
-//            print("handleSelectedPhoto error:", error.localizedDescription)
-//        }
-//    }
-//
-    
     func handleSelectedPhoto() async {
         await MainActor.run {
             isLoading = true
