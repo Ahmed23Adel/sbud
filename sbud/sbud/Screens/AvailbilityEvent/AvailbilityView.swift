@@ -12,6 +12,11 @@ internal import FirebaseFirestoreInternal
 struct AvailbilityView: View {
     @StateObject var viewModel: AvailbilityViewModel
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
+    
+    private var isPreviewOpen: Bool {
+        if case .eventPreview = coordinator.activeSheet { return true }
+        return false
+    }
 
     var body: some View {
         ZStack {
@@ -54,7 +59,7 @@ struct AvailbilityView: View {
             .frame(width: UIConstants.bigCardWidth - 100)
             .offset(y: 40)
 
-            // Filter button
+            /*// Filter button
             VStack {
                 Spacer()
                 HStack {
@@ -66,7 +71,49 @@ struct AvailbilityView: View {
                 .padding(.bottom, 100)
                 .padding(.trailing, 16)
             }
+            
+            if case .eventPreview(let event) = coordinator.activeSheet {
+                VStack {
+                    Spacer()
+                    UserCardView(event: event)
+                        .environmentObject(coordinator)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .padding(.bottom, 90) // tab bar'ın üzerinde durur
+                }
+                .animation(.spring(response: 0.35, dampingFraction: 0.85), value: coordinator.activeSheet?.id)
+                .ignoresSafeArea(edges: .bottom)
+            }
+            
+        }*/
+        if !isPreviewOpen {
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    GlassFloatingButton(systemName: "line.3.horizontal.decrease") {
+                        coordinator.showSheet(.filter)
+                    }
+                }
+                .padding(.bottom, 100)
+                .padding(.trailing, 16)
+            }
+            .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .bottomTrailing)))
         }
+
+        if isPreviewOpen,
+           case .eventPreview(let event) = coordinator.activeSheet {
+               VStack {
+                   Spacer()
+                   UserCardView(event: event)
+                       .environmentObject(coordinator)
+                       .transition(.move(edge: .bottom).combined(with: .opacity))
+                       .padding(.bottom, 90) // tab bar'ın üzerinde durur
+               }
+               .animation(.spring(response: 0.35, dampingFraction: 0.85), value: coordinator.activeSheet?.id)
+               .ignoresSafeArea(edges: .bottom)
+           }
+        }
+        .animation(.spring(response: 0.42, dampingFraction: 0.84), value: isPreviewOpen)
         .alert("Error", isPresented: $viewModel.showErrorAlert) {
             Button("Ok", role: .cancel) {}
         } message: {

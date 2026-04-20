@@ -9,10 +9,14 @@ import Foundation
 
 enum AvailabilitySheetType: Identifiable {
     case filter
+    case eventPreview(AvailabilityEvent)
 
     var id: String {
         switch self {
-        case .filter: return "filter"
+        case .filter:
+            return "filter"
+        case .eventPreview(let event):
+            return "eventPreview_\(event.id)"
         }
     }
 }

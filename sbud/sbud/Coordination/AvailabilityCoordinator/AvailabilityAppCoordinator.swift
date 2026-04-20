@@ -10,31 +10,36 @@ import UIKit
 
 struct AvailabilityAppCoordinator: View {
     @StateObject private var coordinator = AvailabilityCoordinator()
-    @State private var availaibilityFiltesrResults = AvailabilityFiltersResults()
+    @StateObject private var availabilityViewModel = AvailbilityViewModel(
+        locationManager: LocationManager.shared,
+        availabilityFiltersResults: AvailabilityFiltersResults()
+    )
 
     private let impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
+
     var body: some View {
-        NavigationStack(path: $coordinator.navigationPath){
-            
-            AvailbilityView(viewModel: AvailbilityViewModel(
-                locationManager: LocationManager.shared,
-                availabilityFiltersResults: availaibilityFiltesrResults
-                
-            ))
-            .ignoresSafeArea()
-            .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: AvailabilityNavigationDestination.self){ destination in
-                destinationView(for: destination)
-            }
-            .environmentObject(coordinator)
-            .sheet(item: $coordinator.activeSheet) { sheetType in
-                sheetContent(for: sheetType)
-            }
-            .onChange(of: coordinator.activeSheet) { _, newValue in
-                if newValue != nil {
-                    impactFeedbackGenerator.impactOccurred(intensity: 0.8)
+        NavigationStack(path: $coordinator.navigationPath) {
+            AvailbilityView(viewModel: availabilityViewModel)
+                .ignoresSafeArea()
+                .toolbar(.hidden, for: .navigationBar)
+                .navigationDestination(for: AvailabilityNavigationDestination.self) { destination in
+                    destinationView(for: destination)
                 }
-            }
+                .environmentObject(coordinator)
+                .sheet(item: Binding(
+                    get: {
+                        if case .filter = coordinator.activeSheet { return coordinator.activeSheet }
+                        return nil
+                    },
+                    set: { coordinator.activeSheet = $0 }
+                )) { sheetType in
+                    sheetContent(for: sheetType)
+                }
+                .onChange(of: coordinator.activeSheet?.id) { _, newValue in
+                    if newValue != nil {
+                        impactFeedbackGenerator.impactOccurred(intensity: 0.8)
+                    }
+                }
         }
         .ignoresSafeArea()
     }
@@ -43,13 +48,14 @@ struct AvailabilityAppCoordinator: View {
     private func sheetContent(for sheetType: AvailabilitySheetType) -> some View {
         switch sheetType {
         case .filter:
-            FiltersView(availabilityFiltersResults: $availaibilityFiltesrResults)
+            FiltersView(availabilityFiltersResults: $availabilityViewModel.availabilityFiltersResults)
+        case .eventPreview:
+            EmptyView() // overlay ile gösteriliyor
         }
     }
+
     @ViewBuilder
-    private func destinationView(
-        for destination: AvailabilityNavigationDestination)
-    -> some View {
+    private func destinationView(for destination: AvailabilityNavigationDestination) -> some View {
         switch destination {
         case .moreInfoEvent(let event):
             ViewMoreInfoEvent(basicEvent: event)

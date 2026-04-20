@@ -13,7 +13,7 @@ import SwiftUI
 class AvailabilityCoordinator: ObservableObject {
     @Published var activeSheet: AvailabilitySheetType?
     @Published var navigationPath = NavigationPath()
-    
+
     func showSheet(_ sheet: AvailabilitySheetType) {
         activeSheet = sheet
     }
@@ -21,16 +21,24 @@ class AvailabilityCoordinator: ObservableObject {
     func dismissSheet() {
         activeSheet = nil
     }
-    
-    func push(_ destination: AvailabilityNavigationDestination){
+
+    func push(_ destination: AvailabilityNavigationDestination) {
         navigationPath.append(destination)
     }
-    
+
     func pop() {
         navigationPath.removeLast()
     }
-    
-    func popToRoot(){
+
+    func popToRoot() {
         navigationPath = NavigationPath()
+    }
+
+    func showPreview(_ event: AvailabilityEvent) {
+        activeSheet = .eventPreview(event)
+    }
+
+    func dismissPreview() {
+        activeSheet = nil
     }
 }

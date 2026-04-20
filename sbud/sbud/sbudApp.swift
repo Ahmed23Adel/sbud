@@ -1,5 +1,3 @@
-//
-//  sbudApp.swift
 //  sbud
 //
 //  Created by ahmed on 05/12/2025.
@@ -26,20 +24,20 @@ struct SbudApp: App {
     let locationManager = LocationManager.shared
     let service = GeohashService.shared
     
-    init(){
+    init() {
         AdelsonFirebaseAuthConfig.shared = AdelsonFirebaseAuthConfig(
             appName: "sBud",
             baseUrl: "https://sbud-backend.onrender.com/api/v1/",
-            fnFirebaseIdToken: FirebaseTokenExtractor().getIDToken)
+            fnFirebaseIdToken: FirebaseTokenExtractor().getIDToken
+        )
     }
+
     var body: some Scene {
         WindowGroup {
             MainAppCoordinator()
-            .onOpenURL { url in
-                GIDSignIn.sharedInstance.handle(url)
-            }
-
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
-
     }
 }

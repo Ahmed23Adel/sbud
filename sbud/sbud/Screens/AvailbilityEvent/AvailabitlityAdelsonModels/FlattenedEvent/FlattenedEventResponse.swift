@@ -38,6 +38,7 @@ struct Event: Decodable, Sendable {
     let isPublic: Bool
     let eventImage: String
     let name: String
+    let creatorUserId: String?
 
     func covertToAnchor() -> AnchorAvailabilityEvent {
         AnchorAvailabilityEvent(event: AvailabilityEvent(
@@ -53,7 +54,9 @@ struct Event: Decodable, Sendable {
             isLocationConfirmed: isLocationConfirmed,
             isPublic: isPublic,
             eventImage: eventImage,
-            creatorName: name
+            creatorName: name,
+            
+            creatorUserId: creatorUserId ?? "KUPJX3vRIhXbvontNJMyboa8TC33"
         )
         )
     }

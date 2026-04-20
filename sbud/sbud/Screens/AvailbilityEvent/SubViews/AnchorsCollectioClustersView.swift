@@ -45,7 +45,8 @@ struct AnchorsCollectioEventsView: MapContent {
                     isLocationConfirmed: false,
                     isPublic: true,
                     eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s",
-                    creatorName: "Ahmed"
+                    creatorName: "Ahmed",
+                    creatorUserId: "dYRAomMgYTUQhaiET8iEu7pegOB2"
                 ))
         ])
     }

@@ -67,6 +67,19 @@ class ProfileManager: IProfileServiceManager {
     func deleteProfileFromDatabase(uid: String) async throws {
     }
     
+    func getProfile(userId: String) async throws -> UserProfile? {
+        try await userRepository.fetchProfile(userId)
+    }
+        
+    func getProfiles(userIds: [String]) async throws -> [UserProfile] {
+        var profiles: [UserProfile] = []
+            
+        for userId in userIds {
+            if let profile = try await userRepository.fetchProfile(userId) {    profiles.append(profile)    }
+        }
+        return profiles
+    }
+    
     func uploadProfileImage(data: Data) async throws -> String {
         guard let currentUser = Auth.auth().currentUser else {
             throw URLError(.userAuthenticationRequired)

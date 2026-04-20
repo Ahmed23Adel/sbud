@@ -33,9 +33,17 @@ struct IndividualAnnotationView: View {
             .popUp()
 
         }
-        .onTapGesture {
+        /*.onTapGesture {
             if allowNavigation{
                 coordinator.push(.moreInfoEvent(event.event as! AvailabilityEvent))
+            }
+        }*/
+        
+        .onTapGesture {
+            if allowNavigation {
+                withAnimation(.spring(response: 0.42, dampingFraction: 0.84)) {
+                            coordinator.showPreview(event.event as! AvailabilityEvent)
+                    }
             }
         }
         
@@ -58,7 +66,8 @@ struct IndividualAnnotationView: View {
                 isLocationConfirmed: false,
                 isPublic: true,
                 eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s",
-                creatorName: "ahmed"
+                creatorName: "ahmed",
+                creatorUserId: "KUPJX3vRIhXbvontNJMyboa8TC33"
             )), allowNavigation: false
     )
 }
