@@ -59,12 +59,27 @@ struct AvailbilityView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    GlassFloatingButton(systemName: "line.3.horizontal.decrease") {
-                        coordinator.showSheet(.filter)
+                    VStack(spacing: 12) {
+                        GlassFloatingButton(systemName: "magnifyingglass") {
+                            coordinator.showSheet(.search)
+                        }
+                        GlassFloatingButton(systemName: "line.3.horizontal.decrease") {
+                            coordinator.showSheet(.filter)
+                        }
                     }
                 }
                 .padding(.bottom, 100)
                 .padding(.trailing, 16)
+            }
+        }
+        .sheet(item: $coordinator.activeSheet) { sheet in
+            switch sheet {
+            case .filter:
+                FiltersView(availabilityFiltersResults: $viewModel.availabilityFiltersResults)
+                    .environmentObject(coordinator)
+            case .search:
+                SearchEventsView(filterResults: viewModel.availabilityFiltersResults)
+                    .environmentObject(coordinator)
             }
         }
         .alert("Error", isPresented: $viewModel.showErrorAlert) {

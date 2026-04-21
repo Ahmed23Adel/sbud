@@ -9,10 +9,12 @@ import Foundation
 
 enum AvailabilitySheetType: Identifiable {
     case filter
+    case search
 
     var id: String {
         switch self {
         case .filter: return "filter"
+        case .search: return "search"
         }
     }
 }
