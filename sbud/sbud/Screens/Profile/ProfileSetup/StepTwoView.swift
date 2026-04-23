@@ -10,7 +10,6 @@ import SwiftUI
 struct StepTwoView: View {
     @EnvironmentObject var vm: ProfileSetupVM
 
-    // Overlay state'leri ProfileSetupView'da yaşar, buradan sadece açılır
     @Binding var showGenderPicker: Bool
     @Binding var showCalendar: Bool
 
@@ -18,7 +17,7 @@ struct StepTwoView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 20) {
                 headerSection
                 phoneSection
                 HStack(alignment: .top, spacing: 12) {
@@ -36,7 +35,7 @@ struct StepTwoView: View {
                     Text(err)
                         .font(.caption)
                         .foregroundColor(Color("palelime"))
-                        .padding(.top, 2)
+                        .padding(.top, -2)
                 }
             }
             .padding(.bottom, 40)
@@ -52,8 +51,8 @@ struct StepTwoView: View {
                 .foregroundColor(.white)
                 .lineSpacing(2)
 
-            Text("Configure your details to reach your best experience.")
-                .font(.system(size: 13))
+            Text("Configure your details to reach the best experience.")
+               .font(.system(size: 13))
                 .foregroundColor(.gray)
                 .lineSpacing(4)
         }
@@ -74,6 +73,7 @@ struct StepTwoView: View {
                 .padding(.horizontal, 14)
                 .background(cardBG)
                 .frame(height: 54)
+                .cornerRadius(4)
                 .onChange(of: vm.phoneNumber) { _ in vm.clearError() }
         }
     }
@@ -101,7 +101,7 @@ struct StepTwoView: View {
                 .padding(.horizontal, 14)
                 .frame(height: 54)
                 .background(cardBG)
-                .cornerRadius(6)
+                .cornerRadius(4)
             }
         }
         .frame(maxWidth: .infinity)
@@ -137,7 +137,7 @@ struct StepTwoView: View {
                 .padding(.horizontal, 14)
                 .frame(height: 54)
                 .background(cardBG)
-                .cornerRadius(6)
+                .cornerRadius(4)
             }
         }
         .frame(maxWidth: .infinity)
@@ -201,12 +201,14 @@ private struct ActivityRow: View {
                 }
             }
             .padding(.horizontal, 18)
-            .frame(height: 68)
+            .frame(height: 58)
             .background(Color.white.opacity(0.05))
+            .cornerRadius(4)
             .overlay(
-                RoundedRectangle(cornerRadius: 0)
+                RoundedRectangle(cornerRadius: 4)
                     .stroke(isSelected ? Color("turquoise").opacity(0.3) : Color.clear, lineWidth: 1)
             )
+            .animation(nil, value: isSelected)
         }
         .buttonStyle(PlainButtonStyle())
     }

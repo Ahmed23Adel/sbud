@@ -32,6 +32,12 @@ struct ProfileSetupView: View {
                 Color("lightblack").ignoresSafeArea()
                 VStack(alignment: .leading, spacing: 0) {
                     
+                    if !isFinalStep {
+                        navigationBar {
+                            coordinator.logout()
+                        }
+                    }
+                    
                     
                     if !isFinalStep {
                         headerProgressBar
@@ -53,10 +59,10 @@ struct ProfileSetupView: View {
                             case 2: StepThreeView().transition(.move(edge: .trailing))
                             default: StepOneView()
                             }
-                        }
+                        }.animation(.spring(response: 0.4, dampingFraction: 0.8), value: vm.currentStep)
                         .environmentObject(vm)
                         .padding(.horizontal, 24)
-                        .padding(.top, 30)
+                        .padding(.top, 20)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     }
                 }
@@ -99,7 +105,7 @@ struct ProfileSetupView: View {
                             }
                         }
                         .background(Color(white: 0.08))
-                        .cornerRadius(16)
+                        .cornerRadius(4)//BURAYI DEĞİŞTİRDİM.
                         .padding(.horizontal, 12)
                         .padding(.bottom, 80)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -132,13 +138,13 @@ struct ProfileSetupView: View {
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 50)
                                     .background(Color("palelime"))
-                                    .cornerRadius(8)
+                                    .cornerRadius(4)//BURAYI
                             }
                             .padding([.horizontal, .bottom], 15)
                             .padding(.top, 8)
                         }
                         .background(Color(white: 0.08))
-                        .cornerRadius(16)
+                        .cornerRadius(4)//BURAYII
                         .padding(.horizontal, 12)
                         .padding(.bottom, 80)
                         .transition(.move(edge: .bottom).combined(with: .opacity))

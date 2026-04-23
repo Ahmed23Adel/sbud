@@ -12,10 +12,10 @@ struct StepOneView: View {
     @EnvironmentObject var vm: ProfileSetupVM
     
     var body: some View {
-        // En dıştaki VStack'te padding'i kaldırıyoruz çünkü ScrollView içinde yöneteceğiz
+
         VStack(alignment: .leading, spacing: 0) {
             
-            // Başlık sabit kalıyor
+
             VStack(alignment: .leading, spacing: 15) {
                 Text("TELL US ABOUT\nYOURSELF")
                     .font(.system(size: 32, weight: .black))
@@ -25,7 +25,7 @@ struct StepOneView: View {
             .padding(.bottom, 20)
 
             ScrollView(showsIndicators: false) {
-                // İçerik alanı
+
                 VStack(alignment: .leading, spacing: 25) {
                     
                     profilePhotoPicker
@@ -42,20 +42,20 @@ struct StepOneView: View {
                             Text(errorMessage1)
                                 .font(.caption)
                                 .foregroundColor(Color("palelime"))
-                                .padding(.top, 4)
+                                .padding(.top,-2)
                         }
                     }
                     
-                    // Klavyenin veya Continue butonunun içeriği kapatmaması için güvenli boşluk
+
                     Color.clear.frame(height: 120)
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
-                // fixedSize içeriğin dikeyde kesilmesini engeller
+
                 .fixedSize(horizontal: false, vertical: true)
             }
-            .onTapGesture {
-                hideKeyboard()
-            }
+        }
+        .onTapGesture {
+            hideKeyboard()
         }
     }
 }
