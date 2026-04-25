@@ -35,10 +35,16 @@ class AvailabilityCoordinator: ObservableObject {
     }
 
     func showPreview(_ event: AvailabilityEvent) {
-        activeSheet = .eventPreview(event)
+        if let userId = event.creatorUserId {
+            ProfileManager.shared.prefetchProfile(userId: userId)
+        }
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.84)) {
+            activeSheet = .eventPreview(event)
+        }
     }
 
     func dismissPreview() {
-        activeSheet = nil
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.84)) {
+            activeSheet = nil}
     }
 }

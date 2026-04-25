@@ -14,6 +14,31 @@ struct UserCardView: View {
 
     @StateObject private var vm = UserCardVM()
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
+    
+    private var activityColor: Color {
+        switch event.activityType.lowercased() {
+        case "running": return Color("palelime")
+        case "cycling": return Color("turquoise")
+        case "gym":     return Color("lightblack")
+        default:        return Color.mainColor
+        }
+    }
+
+    private var activityIcon: String {
+        switch event.activityType.lowercased() {
+        case "running": return "figure.run"
+        case "cycling": return "figure.outdoor.cycle"
+        case "gym":     return "dumbbell.fill"
+        default:        return "star.fill"
+        }
+    }
+    
+    private var activityTextColor: Color {
+        switch event.activityType.lowercased() {
+        case "gym": return .white
+        default:    return .black
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -35,14 +60,26 @@ struct UserCardView: View {
                         .frame(width: 140)
                         .clipped()
 
-                    Text(event.activityType.uppercased())
+                    /*Text(event.activityType.uppercased())
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(Color.mainColor)
                         .clipShape(Capsule())
-                        .padding(15)
+                        .padding(15)*/
+                    HStack(spacing: 4) {
+                        Image(systemName: activityIcon)
+                            .font(.system(size: 9, weight: .bold))
+                        Text(event.activityType.uppercased())
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundColor(activityTextColor)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(activityColor)
+                    .clipShape(Capsule())
+                    .padding(15)
                 }
                 .frame(width: 140)
 

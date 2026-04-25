@@ -56,7 +56,7 @@ struct Event: Decodable, Sendable {
             eventImage: eventImage,
             creatorName: name,
             
-            creatorUserId: creatorUserId ?? "KUPJX3vRIhXbvontNJMyboa8TC33"
+            creatorUserId: creatorUserId ?? "2NbORC8IFcfu5EpAosocUOpTDd73"
         )
         )
     }

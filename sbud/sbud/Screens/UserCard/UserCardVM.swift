@@ -28,10 +28,19 @@ final class UserCardVM: ObservableObject {
         isLoading = false
     }
 
+//    func displayName(fallback: String) -> String {
+//        if let profile = userProfile,
+//           !profile.name.isEmpty {
+//            return "\(profile.name) \(profile.surName)".trimmingCharacters(in: .whitespaces)
+//        }
+//        return fallback
+//    }
+    
     func displayName(fallback: String) -> String {
         if let profile = userProfile,
            !profile.name.isEmpty {
-            return "\(profile.name) \(profile.surName)".trimmingCharacters(in: .whitespaces)
+            let lastInitial = profile.surName.first.map { "\($0)." } ?? ""
+            return "\(profile.name) \(lastInitial)".trimmingCharacters(in: .whitespaces)
         }
         return fallback
     }

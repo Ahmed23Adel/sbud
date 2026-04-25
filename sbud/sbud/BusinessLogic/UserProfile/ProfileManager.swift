@@ -15,6 +15,7 @@ class ProfileManager: IProfileServiceManager {
     private let localStorage = LocalUserStorage()
     private let authManager = AuthenticationManager.shared
     private let userRepository = UserRepository()
+    private var profileCache: [String: UserProfile] = [:]
     
     private init() {}
 
@@ -25,6 +26,23 @@ class ProfileManager: IProfileServiceManager {
     
     func getLocalProfile() -> UserProfile? {
         localStorage.load()
+    }
+    
+    func getProfile(userId: String) async throws -> UserProfile? {
+        if let cached = profileCache[userId] {
+            return cached
+        }
+        let profile = try await userRepository.fetchProfile(userId)
+        if let profile { profileCache[userId] = profile }
+        return profile
+    }
+
+    // Prefetch — yeni ekle
+    func prefetchProfile(userId: String) {
+        guard !userId.isEmpty, profileCache[userId] == nil else { return }
+        Task {
+            _ = try? await getProfile(userId: userId)
+        }
     }
     
     func syncProfileAfterLogin() async throws {
@@ -67,9 +85,9 @@ class ProfileManager: IProfileServiceManager {
     func deleteProfileFromDatabase(uid: String) async throws {
     }
     
-    func getProfile(userId: String) async throws -> UserProfile? {
+    /*func getProfile(userId: String) async throws -> UserProfile? {
         try await userRepository.fetchProfile(userId)
-    }
+    }*/
         
     func getProfiles(userIds: [String]) async throws -> [UserProfile] {
         var profiles: [UserProfile] = []
