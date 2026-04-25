@@ -48,11 +48,31 @@ struct SignUpView: View {
                         .modifier(TextModifierSignUp())
                         .popUp()
                         .overlay(alignment: .trailing) {
-
                             Button {
                                 viewModel.showPassword.toggle()
                             } label: {
                                 Image(systemName: viewModel.showPassword ? "eye" : "eye.slash")
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, 25)
+                            }
+                        }
+
+                        HStack {
+                            if viewModel.showConfirmPassword {
+                                TextField("Confirm Password", text: $viewModel.confirmPassword)
+                                    .autocapitalization(.none)
+                            } else {
+                                SecureField("Confirm Password", text: $viewModel.confirmPassword)
+                                    .autocapitalization(.none)
+                            }
+                        }
+                        .modifier(TextModifierSignUp())
+                        .popUp()
+                        .overlay(alignment: .trailing) {
+                            Button {
+                                viewModel.showConfirmPassword.toggle()
+                            } label: {
+                                Image(systemName: viewModel.showConfirmPassword ? "eye" : "eye.slash")
                                     .foregroundColor(.gray)
                                     .padding(.trailing, 25)
                             }
@@ -63,7 +83,6 @@ struct SignUpView: View {
                     Button {
                         Task {
                             try await viewModel.signUpWithEmail()
-
                         }
                     } label: {
                         Text("Sign Up")
@@ -71,10 +90,9 @@ struct SignUpView: View {
                             .fontWeight(.semibold)
                             .foregroundColor(.black)
                             .frame(width: 330, height: 44)
-                            .background(Color.mainColor )
+                            .background(Color.mainColor)
                             .cornerRadius(20)
                             .shadow(radius: 10)
-
                     }
                     .padding(.vertical)
                     .popUp()
@@ -110,7 +128,25 @@ struct SignUpView: View {
                     LoadingView()
                 }
             }
-
+            .scrollDismissesKeyboard(.interactively)
+            .toolbar {                                    // ← Single toolbar here
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("✓") {
+                        // UIKIT organizes the views
+                        // first responder is the one that has focus now
+                        // to dismiss, whoever the first responder is, resign
+                        // UIApplication.shared: running instance of app
+                        // #selector(UIResponder.resignFirstResponder) — the action to perform.
+                        // to: nil — the target. nil means "don't send it to a specific object" — instead, walk the responder chain and let whoever can handle it respond
+                        // from: nil — the sender. Who is triggering this action. nil means anonymous/unspecified
+                        UIApplication.shared.sendAction(
+                                #selector(UIResponder.resignFirstResponder),
+                                to: nil, from: nil, for: nil
+                            )
+                    }
+                }
+            }
         .onAppear {
             viewModel.setCoordinator(coordinator: coordinator)
         }

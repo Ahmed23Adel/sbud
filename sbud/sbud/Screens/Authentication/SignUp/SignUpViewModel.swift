@@ -15,7 +15,8 @@ import AdelsonValidator
 @MainActor
 class SignUpViewModel: ObservableObject {
     @Published var email: String = ""
-    @Published var password: String =  ""
+    @Published var password: String = ""
+    @Published var confirmPassword: String = ""
     @Published var emailIsValid = false // to ensure
     @Published var isLoading = false
     @Published var emailValidationFailed = false
@@ -27,6 +28,7 @@ class SignUpViewModel: ObservableObject {
     var coordinator: MainCoordinator?
     @Published var isSigningIn = false
     @Published var showPassword = false
+    @Published var showConfirmPassword = false
 
     init() {
 
@@ -51,6 +53,10 @@ class SignUpViewModel: ObservableObject {
 
     // MARK: auth email
     func signUpWithEmail() async throws {
+        guard password == confirmPassword else {
+            PopUpGenerator.shared.show(msg: "Passwords do not match", type: .error)
+            return
+        }
         if !InputValidators().validateInputs(
             email: email,
             password: password,
