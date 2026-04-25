@@ -19,6 +19,7 @@ class CreateNewEventRequester {
         requestParams: CreateNewEventRequest
     ) async throws -> CreateNewEventResponse {
         let apicaller = createApiCaller()
+        print("AdelsonFirebaseAuthConfig.shared", AdelsonFirebaseAuthConfig.shared.baseUrl)
         return try await apicaller.call(
             url: "events",
             params: requestParams,

@@ -29,7 +29,7 @@ struct ViewSheetForDateLocationsSelection: View {
             .padding()
             
             DatePicker("End date time",
-                       selection: $startDate,
+                       selection: $endDate,
                        displayedComponents: [.date, .hourAndMinute]
             )
             .font(.headline)

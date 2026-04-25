@@ -6,12 +6,13 @@
 //
 
 import Foundation
+import OSLog
 
 @Observable
 class NewEventBuilder{
     // MARK: Step1
     // TODO: To be replaced with user profile image
-    var coverImgURL: String = "https://images.unsplash.com/photo-1654110455429-cf322b40a906?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D"
+    var coverImgURL: String = (ProfileManager.shared.getLocalProfile()?.profileImageUrl!)!
     var title: String = ""
     var activityType: ActivityType = .running
     var description: String = ""
@@ -21,7 +22,7 @@ class NewEventBuilder{
     var isEventPublic = true
     var joiningCondition: JoinCondition = .requestFromHost
     var eventCapacity = 150
-    
+    let logger = Logger(subsystem: "sBud", category: "NewEventBuilder")
     
     func areFieldsValid() -> Bool {
         if coverImgURL.count != 0 &&
@@ -52,7 +53,7 @@ class NewEventBuilder{
         
     }
     
-    func sendRequest() async {
+    func sendRequest() async  -> Bool{
         let request = CreateNewEventRequest(
             activityDetails: activityExtraArgs.extraArgs.createEncodableRequest(),
             title: title,
@@ -65,8 +66,11 @@ class NewEventBuilder{
         let requester = CreateNewEventRequester()
         do {
             let _ = try await requester.createNewEvent(requestParams: request)
+            return true
         } catch {
             PopUpGenerator.shared.show(msg: "Error, please try again", type: .error)
+            logger.error("Error with creating event: \(error.localizedDescription)")
+            return false
         }
     }
 }
