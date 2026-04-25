@@ -61,10 +61,9 @@ struct ViewMoreInfoEvent: View {
                             iconString: "pencil",
                             text: details.notes!)
                         
+                        CreatorContactDetailed(creatorInfo: details.creator)
                         
-                        DateLocationRow(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
-                        StatusRow(isPublic: viewModel.event.isPublic)
-                        SuggestedTimeRow(startDate: viewModel.event.startDateTime, endDate: viewModel.event.endDateTime)
+                        
                         LocationMapCard(event: viewModel.event)
                         
                         // Attending people list
