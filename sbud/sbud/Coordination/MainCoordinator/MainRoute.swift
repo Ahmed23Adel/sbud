@@ -8,6 +8,8 @@
 import Foundation
 
 enum MainRoute {
+    case loadingPage
+    case profileSetup
     case signUp
     case signIn
     case homePage

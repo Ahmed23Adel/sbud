@@ -23,3 +23,8 @@ enum ActivityType: String, Codable, CaseIterable {
         }
     }
 }
+
+struct ActivityMetrics: Codable, Equatable {
+    var averagePace: String?      // running
+}
+

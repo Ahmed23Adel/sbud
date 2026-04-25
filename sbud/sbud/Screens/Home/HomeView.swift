@@ -14,7 +14,7 @@ struct HomeView: View {
         Button {
             Task {
                 try await authManager.signOut()
-                coordinator.goToSignUp()
+                coordinator.logout()
             }
         } label: {
             Text("sign out")

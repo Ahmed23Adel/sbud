@@ -11,14 +11,12 @@ import Combine
 class MainCoordinator: ObservableObject {
     @Published var currentRoute: MainRoute
 
+    let authManager = AuthenticationManager.shared
+    let profManager = ProfileManager.shared
+    
     init() {
-        let authManager = AuthenticationManager.shared
-        if authManager.checkAuthStatus() {
-            currentRoute = .homePage
-        } else {
-            currentRoute = .signUp
-        }
-
+        self.currentRoute = .loadingPage
+        checkAppFlow()
     }
 
     func navigateTo(_ route: MainRoute) {
@@ -36,5 +34,34 @@ class MainCoordinator: ObservableObject {
     func goToHome() {
         navigateTo(.homePage)
     }
+    
+    func logout(){
+        profManager.deleteProfileFromLocale()
+        goToSignUp()
+    }
+    
+    func refreshAppFlow() {
+            checkAppFlow()
+        }
 
+    
+    func checkAppFlow() {
+            Task { @MainActor in
+                let target = await checkProfileStatus()
+                navigateTo(target)
+            }
+        }
+
+    private func checkProfileStatus() async -> MainRoute {
+    
+        guard authManager.checkAuthStatus() else {  return .signUp  }
+        if profManager.isProfileSetupComplete { return .homePage    }
+    
+        do {
+            try await profManager.syncProfileAfterLogin()
+            return profManager.isProfileSetupComplete ? .homePage : .profileSetup
+        } catch {
+            return .profileSetup
+        }
+    }
 }
