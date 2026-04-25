@@ -95,7 +95,7 @@ nonisolated struct LocationPoint: Decodable, Sendable {
 
 // MARK: - DateLocation
 
-nonisolated struct DateLocationEntry: Decodable, Sendable {
+nonisolated struct DateLocationEntry: Decodable, Sendable, Identifiable {
     var id: String
     var startDateTime: Date
     var endDateTime: Date

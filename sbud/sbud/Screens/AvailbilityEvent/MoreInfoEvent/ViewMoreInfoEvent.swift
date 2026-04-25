@@ -64,7 +64,8 @@ struct ViewMoreInfoEvent: View {
                         CreatorContactDetailed(creatorInfo: details.creator)
                         
                         
-                        LocationMapCard(event: viewModel.event)
+                        LocationMapCard(dateLocations: details.dateLocations)
+                            .padding()
                         
                         // Attending people list
                         LazyVStack(spacing: 0) {
