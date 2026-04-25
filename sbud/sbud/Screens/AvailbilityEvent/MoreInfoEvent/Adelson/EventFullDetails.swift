@@ -19,25 +19,39 @@ nonisolated struct CreatorInfo: Decodable, Sendable {
 // MARK: - Activity Details
 
 protocol ResponseActivityDetails: Decodable, Sendable {
-    var activityType: String { get }
+    var activityType: ActivityType { get }
 }
 
 nonisolated struct ResponseActivityDetailsRunning: ResponseActivityDetails, Decodable, Sendable {
-    var activityType: String
+    var activityType: ActivityType = .running
     var targetDistanceInKm: Double?
     var targetPace: Double?
-}
 
+    private enum CodingKeys: String, CodingKey {
+        case targetDistanceInKm
+        case targetPace
+    }
+}
 nonisolated struct ResponseActivityDetailsCycling: ResponseActivityDetails, Decodable, Sendable {
-    var activityType: String
+    var activityType: ActivityType = .cycling
     var targetDistanceInKm: Double?
     var powerInWatt: Double?
     var cadenceInRpm: Int?
+
+    private enum CodingKeys: String, CodingKey {
+        case targetDistanceInKm
+        case powerInWatt
+        case cadenceInRpm
+    }
 }
 
 nonisolated struct ResponseActivityDetailsGym: ResponseActivityDetails, Decodable, Sendable {
-    var activityType: String
+    var activityType: ActivityType = .gym
     var dayType: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case dayType
+    }
 }
 
 // MARK: - Activity Details wrapper (handles polymorphic decoding)
@@ -64,6 +78,13 @@ nonisolated struct AnyActivityDetails: Decodable, Sendable {
     }
 }
 
+// Add this init to AnyActivityDetails
+extension AnyActivityDetails {
+    init(value: any ResponseActivityDetails) {
+        self.value = value
+    }
+}
+
 // MARK: - Location
 
 nonisolated struct LocationPoint: Decodable, Sendable {
@@ -85,6 +106,7 @@ nonisolated struct DateLocationEntry: Decodable, Sendable {
 
 nonisolated struct EventFullDetails: Decodable, Sendable {
     var id: String
+    var title: String
     var creator: CreatorInfo
     var activityDetails: AnyActivityDetails
     var eventImage: String?
@@ -96,4 +118,55 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
     var notes: String?
     var createdAt: Date
     var dateLocations: [DateLocationEntry]
+
+    var activityType: ActivityType { activityDetails.value.activityType }
+}
+
+// MARK: - Samples
+extension CreatorInfo {
+    static let sample = CreatorInfo(
+        id: "WKSidc5m3ff36toyy8X7z9xjJWz2",
+        name: "Ahmed",
+        surName: "Hussein",
+        profileImageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s"
+    )
+}
+
+extension LocationPoint {
+    static let sample = LocationPoint(
+        latitude: 45.4642,
+        longitude: 9.1900,
+        geohash: "u0ndx37j"
+    )
+}
+
+extension DateLocationEntry {
+    static let sample = DateLocationEntry(
+        id: "r112Nq2rLWVrOhujLcaL",
+        startDateTime: Date().addingTimeInterval(3600),
+        endDateTime: Date().addingTimeInterval(7200),
+        locations: [.sample, .sample]
+    )
+}
+
+extension EventFullDetails {
+    static let sample = EventFullDetails(
+        id: "xN6ncT0Foa0UdFy06GSL",
+        title: "Morning Run",
+        creator: .sample,
+        activityDetails: AnyActivityDetails(value: ResponseActivityDetailsRunning(
+            activityType: .running,
+            targetDistanceInKm: 6.5,
+            targetPace: 8.5
+        )),
+        eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s",
+        isDateConfirmed: false,
+        isLocationConfirmed: false,
+        isPublic: true,
+        joiningCondition: "requestFromHost",
+        maxAllowedToJoin: 150,
+        notes: "Come join me",
+        createdAt: Date(),
+        dateLocations: [.sample, .sample]
+    )
 }

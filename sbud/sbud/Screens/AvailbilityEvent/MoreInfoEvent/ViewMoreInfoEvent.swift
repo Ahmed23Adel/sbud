@@ -28,10 +28,26 @@ struct ViewMoreInfoEvent: View {
                 VStack{
                     if viewModel.event.isLoading{
                         LoadingView()
-                    } else{
+                    }  else if viewModel.isErrorLoading{
+                        VStack{
+                            Spacer()
+                            Text("Error loading full details of event, pleaes try again")
+                                .font(.title)
+                                .fontWeight(.bold)
+                            Spacer()
+                        }
+                    }  else if let details = viewModel.fullDetails{
                         ProposalVsDeterminedPhase(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
+                        HStack{
+                            Text(details.title)
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .italic()
+                                .padding(.horizontal)
+                            Spacer()
+                        }
                         
-//                        Text(viewModel.event.ti)
+                        ViewActivityTypeForDetails(activityType: details.activityType)
                         
                         DateLocationRow(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
                         StatusRow(isPublic: viewModel.event.isPublic)
@@ -54,22 +70,6 @@ struct ViewMoreInfoEvent: View {
         .ignoresSafeArea()
     }
 }
-
 #Preview {
-    ViewMoreInfoEvent(basicEvent: AvailabilityEvent(
-        id: "cf5f3e6b-a62b-4c43-85f5-e47ca287419f",
-        eventId: "xN6ncT0Foa0UdFy06GSL",
-        geoPoint: GeoPoint(latitude: 45.4642, longitude: 9.1900),
-        dateLocationId: "milano_centro_001",
-        activityType: "Coffee",
-        startDateTime: Date().addingTimeInterval(3600),
-        endDateTime: Date().addingTimeInterval(7200),
-        createdAt: Date(),
-        g: GeoLocation(geopoint: Coordinate(latitude: 43, longitude: 9.4), geohash: "u0ndx37j"),
-        isDateConfirmed: true,
-        isLocationConfirmed: false,
-        isPublic: true,
-        eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s",
-        creatorName: "ahmed"
-    ))
+    ViewMoreInfoEvent(basicEvent: .preview)
 }

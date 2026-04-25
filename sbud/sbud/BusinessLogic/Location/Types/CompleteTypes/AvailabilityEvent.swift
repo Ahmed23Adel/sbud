@@ -14,16 +14,16 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
     var id: String
     var eventId: String
     var geoPoint: GeoPoint
-    let dateLocationId: String //
-    let activityType: String //
-    let startDateTime: Date //
-    let endDateTime: Date //
-    let createdAt: Date //
-    let g: GeoLocation //
-    let isDateConfirmed: Bool //
-    let isLocationConfirmed: Bool //
+    let dateLocationId: String
+    let activityType: String
+    let startDateTime: Date
+    let endDateTime: Date
+    let createdAt: Date
+    let g: GeoLocation
+    let isDateConfirmed: Bool
+    let isLocationConfirmed: Bool
     let isPublic: Bool //
-    let eventImage: String //
+    let eventImage: String
     let creatorName: String
     let logger = Logger(subsystem: "sBud", category: "AvailabilityEvent")
     var fullDatailedEvent: EventFullDetails?
@@ -92,3 +92,30 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
     }
 
 }
+
+// AvailabilityEvent+Preview.swift
+
+#if DEBUG
+extension AvailabilityEvent {
+    static var preview: AvailabilityEvent {
+        let event = AvailabilityEvent(
+            id: "cf5f3e6b-a62b-4c43-85f5-e47ca287419f",
+            eventId: "xN6ncT0Foa0UdFy06GSL",
+            geoPoint: GeoPoint(latitude: 45.4642, longitude: 9.1900),
+            dateLocationId: "milano_centro_001",
+            activityType: "Running",
+            startDateTime: Date().addingTimeInterval(3600),
+            endDateTime: Date().addingTimeInterval(7200),
+            createdAt: Date(),
+            g: GeoLocation(geopoint: Coordinate(latitude: 43, longitude: 9.4), geohash: "u0ndx37j"),
+            isDateConfirmed: true,
+            isLocationConfirmed: false,
+            isPublic: true,
+            eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s",
+            creatorName: "ahmed"
+        )
+        event.fullDatailedEvent = .sample
+        return event
+    }
+}
+#endif

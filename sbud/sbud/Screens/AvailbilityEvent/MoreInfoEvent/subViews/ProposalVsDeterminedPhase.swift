@@ -22,8 +22,10 @@ struct ProposalVsDeterminedPhase: View {
                     
             } else{
                 Text("Proposal phase")
+                    .font(.system(size: 10))
                     .foregroundColor(.black)
-                    .padding(10)
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 5)
                     .background(Color.mainColor)
                     .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
                     
