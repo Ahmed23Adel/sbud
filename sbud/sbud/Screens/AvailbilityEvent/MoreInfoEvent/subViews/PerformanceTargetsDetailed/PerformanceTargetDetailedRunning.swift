@@ -15,13 +15,13 @@ struct PerformanceTargetDetailedRunning: View {
                 targetHeader: "Distance",
                 unitHeader: "Km",
                 targetValue: String(performanceTargets.targetDistanceInKm!))
-            .padding(.leading, 10)
+            .padding(.leading, 13)
             
             SinglePerformanceTargetDetailed(
                 targetHeader: "Pace",
                 unitHeader: "Min/Km",
                 targetValue: String(performanceTargets.targetPace!))
-            .padding(.trailing, 10)
+            .padding(.trailing, 13)
         }
     }
 }

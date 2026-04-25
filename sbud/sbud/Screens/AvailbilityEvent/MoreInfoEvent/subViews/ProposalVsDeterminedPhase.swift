@@ -34,7 +34,7 @@ struct ProposalVsDeterminedPhase: View {
             Spacer()
         }
         .padding(.horizontal)
-        .padding(.vertical, 10)
+        .padding(.vertical, 5)
         
     }
 }

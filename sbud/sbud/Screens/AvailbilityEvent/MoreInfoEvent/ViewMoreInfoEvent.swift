@@ -43,7 +43,7 @@ struct ViewMoreInfoEvent: View {
                             VisibilityDetailed(isPublic: details.isPublic)
                             Spacer()
                         }
-                        .padding(.leading, 10)
+                        .padding(.leading, 14)
                         HStack{
                             Text(details.title)
                                 .font(.title)
@@ -52,10 +52,16 @@ struct ViewMoreInfoEvent: View {
                                 .padding(.horizontal)
                             Spacer()
                         }
-                        
                         ViewActivityTypeForDetails(activityType: details.activityType)
-                        
                         PerformanceTargetDetailedConditional(activityDetails: details.activityDetails)
+                        
+                        GenericMultilineTextView(
+                            fieldName: "Description",
+                            placeholder: "Ex: Come join us",
+                            iconString: "pencil",
+                            text: details.notes!)
+                        
+                        
                         DateLocationRow(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
                         StatusRow(isPublic: viewModel.event.isPublic)
                         SuggestedTimeRow(startDate: viewModel.event.startDateTime, endDate: viewModel.event.endDateTime)
