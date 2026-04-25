@@ -14,11 +14,12 @@ class ViewModelMoreInfoEvent: ObservableObject{
     let logger = Logger(subsystem: "sBud", category: "MoreInfo")
     
     init(event: AvailabilityEvent) {
-        self.event = event
         logger.info("Selected activity: \(event.id)")
+        self.event = event
+        Task{
+            await event.loadRestOfDetails()
+        }
     }
     
-    func loadRestOfDetails(){
-        event.loadRestOfDetails()
-    }
+    
 }

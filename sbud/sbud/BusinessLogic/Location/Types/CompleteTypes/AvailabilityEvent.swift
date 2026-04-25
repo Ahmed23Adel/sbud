@@ -8,27 +8,31 @@
 import Foundation
 import FirebaseFirestore
 import Combine
+import OSLog
 
 class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
     var id: String
+    var eventId: String
     var geoPoint: GeoPoint
-    let dateLocationId: String
-    let activityType: String
-    let startDateTime: Date
-    let endDateTime: Date
-    let createdAt: Date
-    let g: GeoLocation
-    let isDateConfirmed: Bool
-    let isLocationConfirmed: Bool
-    let isPublic: Bool
-    let eventImage: String
+    let dateLocationId: String //
+    let activityType: String //
+    let startDateTime: Date //
+    let endDateTime: Date //
+    let createdAt: Date //
+    let g: GeoLocation //
+    let isDateConfirmed: Bool //
+    let isLocationConfirmed: Bool //
+    let isPublic: Bool //
+    let eventImage: String //
     let creatorName: String
-
+    let logger = Logger(subsystem: "sBud", category: "AvailabilityEvent")
+    var fullDatailedEvent: EventFullDetails?
     @Published var isLoading: Bool = false
     
 
     init(
         id: String,
+        eventId: String,
         geoPoint: GeoPoint,
         dateLocationId: String,
         activityType: String,
@@ -42,6 +46,8 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
         eventImage: String,
         creatorName: String
     ) {
+        logger.info("id: \(id)")
+        logger.info("eventId: \(eventId)")
         self.id = id
         self.geoPoint = geoPoint
         self.dateLocationId = dateLocationId
@@ -55,6 +61,7 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
         self.isPublic = isPublic
         self.eventImage = eventImage
         self.creatorName = creatorName
+        self.eventId = eventId
     }
 
        
@@ -63,10 +70,20 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
         lhs.id == rhs.id
     }
     
-    func loadRestOfDetails(){
+    func loadRestOfDetails() async {
         isLoading = true
+        do {
+            
+            let requester = EventByIdRequester()
+            fullDatailedEvent = try await requester.fetchEvent(eventId: eventId)
+            await MainActor.run {
+                isLoading = false
+            }
+        } catch {
+            logger.error("Error: \(error)")
+            PopUpGenerator.shared.show(msg: "Error laoding the event", type: .error)
+        }
         
-        isLoading = false
     }
     
     func convertToAnchor() -> AnchorAvailabilityEvent{

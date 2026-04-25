@@ -42,6 +42,7 @@ struct Event: Decodable, Sendable {
     func covertToAnchor() -> AnchorAvailabilityEvent {
         AnchorAvailabilityEvent(event: AvailabilityEvent(
             id: id,
+            eventId: eventId,
             geoPoint: GeoPoint(latitude: g.geopoint.latitude, longitude: g.geopoint.longitude),
             dateLocationId: dateLocationId,
             activityType: activityType,

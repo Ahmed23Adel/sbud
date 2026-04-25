@@ -92,6 +92,7 @@ struct FullMapView: View {
     LocationMapCard(
         event: AvailabilityEvent(
             id: "cf5f3e6b-a62b-4c43-85f5-e47ca287419f",
+            eventId: "xN6ncT0Foa0UdFy06GSL",
             geoPoint: GeoPoint(latitude: 43.2, longitude: 9.3),
             dateLocationId: "milano_centro_001",
             activityType: "Coffee",

@@ -17,23 +17,22 @@ struct ViewMoreInfoEvent: View {
         _viewModel = StateObject(wrappedValue: ViewModelMoreInfoEvent(event: basicEvent))
     }
     var body: some View {
-        
         ZStack{
             Color.darkBackground
+            VStack{
+                FadingEventImage(coverImgURL: viewModel.event.eventImage)
+                    .ignoresSafeArea()
+                Spacer()
+            }
             ScrollView {
                 VStack{
-                    KFImage(URL(string: viewModel.event.eventImage))
-                        .placeholder{
-                            ProgressView()
-                        }
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 250)
-                        .cornerRadius(16)
-                    
                     if viewModel.event.isLoading{
                         LoadingView()
                     } else{
+                        ProposalVsDeterminedPhase(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
+                        
+//                        Text(viewModel.event.ti)
+                        
                         DateLocationRow(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
                         StatusRow(isPublic: viewModel.event.isPublic)
                         SuggestedTimeRow(startDate: viewModel.event.startDateTime, endDate: viewModel.event.endDateTime)
@@ -49,7 +48,7 @@ struct ViewMoreInfoEvent: View {
                         }
                     }
                 }
-                .padding(.bottom) // Add bottom padding if needed
+                .padding(.top, 200)
             }
         }
         .ignoresSafeArea()
@@ -59,6 +58,7 @@ struct ViewMoreInfoEvent: View {
 #Preview {
     ViewMoreInfoEvent(basicEvent: AvailabilityEvent(
         id: "cf5f3e6b-a62b-4c43-85f5-e47ca287419f",
+        eventId: "xN6ncT0Foa0UdFy06GSL",
         geoPoint: GeoPoint(latitude: 45.4642, longitude: 9.1900),
         dateLocationId: "milano_centro_001",
         activityType: "Coffee",
