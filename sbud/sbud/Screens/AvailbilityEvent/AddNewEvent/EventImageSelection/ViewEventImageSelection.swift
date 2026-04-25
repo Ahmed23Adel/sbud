@@ -16,40 +16,30 @@ struct ViewEventImageSelection: View {
     }
     
     var body: some View {
-        VStack{
-     
-            KFImage(URL(string: viewModel.eventBuilder.coverImgURL))
-                .placeholder{
-                    ProgressView()
+        ZStack{
+            FadingEventImage(coverImgURL: viewModel.eventBuilder.coverImgURL)
+            VStack{
+                
+                PhotosPicker(selection: $viewModel.selectedImgs,
+                             maxSelectionCount: 1,
+                             matching: .images
+                ){
+                    if viewModel.isUploading{
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(Color.mainColor)
+                    } else{
+                        Text("Change")
+                    }
                 }
-                .onFailureView{
-                    Image(systemName: "exclamationmark.triangle")
-                }
-                .resizable()
-                .scaledToFit()
-                .frame(width: 130, height: 130)
-                .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
-                .padding(.top)
-            
-            PhotosPicker(selection: $viewModel.selectedImgs,
-                         maxSelectionCount: 1,
-                         matching: .images
-            ){
-                if viewModel.isUploading{
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(Color.mainColor)
-                } else{
-                    Text("Change")
-                }
-            }
-            .buttonStyle(.borderless)
-            .foregroundColor(Color.mainColor)
-            .disabled(viewModel.isUploading)
-            .padding()
-            .onChange(of: viewModel.selectedImg){
-                Task{
-                    await viewModel.uploadSelectedImg()
+                .buttonStyle(.borderless)
+                .foregroundColor(Color.mainColor)
+                .disabled(viewModel.isUploading)
+                .padding()
+                .onChange(of: viewModel.selectedImg){
+                    Task{
+                        await viewModel.uploadSelectedImg()
+                    }
                 }
             }
         }
