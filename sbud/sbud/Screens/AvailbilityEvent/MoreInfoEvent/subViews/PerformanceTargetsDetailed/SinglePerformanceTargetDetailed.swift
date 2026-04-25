@@ -8,11 +8,45 @@
 import SwiftUI
 
 struct SinglePerformanceTargetDetailed: View {
+    let targetHeader: String
+    let unitHeader: String
+    let targetValue: String
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            HStack {
+                Text(targetHeader)
+                    .font(.title3)
+                    .foregroundColor(Color(
+                        red: 0.0,
+                        green: 227.0/255.0,
+                        blue: 253.0/255.0
+                    ))
+                Spacer()
+            }
+            .padding()
+
+            HStack {
+                Text(String(targetValue))
+                    .foregroundColor(.white)
+                    .font(.title)
+                    .padding(.horizontal)
+                Spacer()
+            }
+            HStack {
+                Text(unitHeader)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal)
+                    .padding(.bottom, 10)
+                Spacer()
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color.backgroundColor)
+        .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
     }
 }
 
 #Preview {
-    SinglePerformanceTargetDetailed()
+    SinglePerformanceTargetDetailed(targetHeader: "Pace", unitHeader: "Min/Km", targetValue: "5.5")
 }

@@ -38,6 +38,12 @@ struct ViewMoreInfoEvent: View {
                         }
                     }  else if let details = viewModel.fullDetails{
                         ProposalVsDeterminedPhase(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
+                        HStack(){
+                            JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
+                            VisibilityDetailed(isPublic: details.isPublic)
+                            Spacer()
+                        }
+                        .padding(.leading, 10)
                         HStack{
                             Text(details.title)
                                 .font(.title)
@@ -49,6 +55,7 @@ struct ViewMoreInfoEvent: View {
                         
                         ViewActivityTypeForDetails(activityType: details.activityType)
                         
+                        PerformanceTargetDetailedConditional(activityDetails: details.activityDetails)
                         DateLocationRow(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
                         StatusRow(isPublic: viewModel.event.isPublic)
                         SuggestedTimeRow(startDate: viewModel.event.startDateTime, endDate: viewModel.event.endDateTime)

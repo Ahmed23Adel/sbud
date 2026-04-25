@@ -13,9 +13,11 @@ struct PerformanceTargetDetailedConditional: View {
         HStack{
             switch activityDetails.value.activityType{
             case .running:
-                
+                PerformanceTargetDetailedRunning(performanceTargets: activityDetails.value as! ResponseActivityDetailsRunning)
             case .cycling:
+                PerformanceTargetDetailedRunning(performanceTargets: activityDetails.value as! ResponseActivityDetailsRunning)
             case .gym:
+                PerformanceTargetDetailedRunning(performanceTargets: activityDetails.value as! ResponseActivityDetailsRunning)
             }
         }
     }

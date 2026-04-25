@@ -8,11 +8,16 @@
 import SwiftUI
 
 struct PerformanceTargetDetailedGym: View {
+    let performanceTargets: ResponseActivityDetailsGym
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        SinglePerformanceTargetDetailed(
+            targetHeader: "Day type",
+            unitHeader: "",
+            targetValue: performanceTargets.dayType!)
+        .padding(.horizontal, 15)
     }
 }
 
 #Preview {
-    PerformanceTargetDetailedGym()
+    PerformanceTargetDetailedGym(performanceTargets: ResponseActivityDetailsGym())
 }

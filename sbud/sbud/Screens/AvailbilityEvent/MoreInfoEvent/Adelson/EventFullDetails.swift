@@ -113,13 +113,72 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
     var isDateConfirmed: Bool
     var isLocationConfirmed: Bool
     var isPublic: Bool
-    var joiningCondition: String
+    var joinCondition: JoinCondition
     var maxAllowedToJoin: Int?
     var notes: String?
     var createdAt: Date
     var dateLocations: [DateLocationEntry]
 
     var activityType: ActivityType { activityDetails.value.activityType }
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, creator, activityDetails, eventImage
+        case isDateConfirmed, isLocationConfirmed, isPublic
+        case joiningCondition, maxAllowedToJoin, notes, createdAt, dateLocations
+    }
+
+    init(
+        id: String,
+        title: String,
+        creator: CreatorInfo,
+        activityDetails: AnyActivityDetails,
+        eventImage: String? = nil,
+        isDateConfirmed: Bool,
+        isLocationConfirmed: Bool,
+        isPublic: Bool,
+        joinCondition: JoinCondition,
+        maxAllowedToJoin: Int? = nil,
+        notes: String? = nil,
+        createdAt: Date,
+        dateLocations: [DateLocationEntry]
+    ) {
+        self.id = id
+        self.title = title
+        self.creator = creator
+        self.activityDetails = activityDetails
+        self.eventImage = eventImage
+        self.isDateConfirmed = isDateConfirmed
+        self.isLocationConfirmed = isLocationConfirmed
+        self.isPublic = isPublic
+        self.joinCondition = joinCondition
+        self.maxAllowedToJoin = maxAllowedToJoin
+        self.notes = notes
+        self.createdAt = createdAt
+        self.dateLocations = dateLocations
+    }
+    
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        creator = try container.decode(CreatorInfo.self, forKey: .creator)
+        activityDetails = try container.decode(AnyActivityDetails.self, forKey: .activityDetails)
+        eventImage = try container.decodeIfPresent(String.self, forKey: .eventImage)
+        isDateConfirmed = try container.decode(Bool.self, forKey: .isDateConfirmed)
+        isLocationConfirmed = try container.decode(Bool.self, forKey: .isLocationConfirmed)
+        isPublic = try container.decode(Bool.self, forKey: .isPublic)
+        maxAllowedToJoin = try container.decodeIfPresent(Int.self, forKey: .maxAllowedToJoin)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        dateLocations = try container.decode([DateLocationEntry].self, forKey: .dateLocations)
+
+        let rawJoiningCondition = try container.decode(String.self, forKey: .joiningCondition)
+        switch rawJoiningCondition {
+        case "autoJoin": joinCondition = .autoJoin
+        case "requestFromHost": joinCondition = .requestFromHost
+        default: joinCondition = .requestFromHost
+        }
+    }
 }
 
 // MARK: - Samples
@@ -163,10 +222,27 @@ extension EventFullDetails {
         isDateConfirmed: false,
         isLocationConfirmed: false,
         isPublic: true,
-        joiningCondition: "requestFromHost",
+        joinCondition: .requestFromHost,
         maxAllowedToJoin: 150,
         notes: "Come join me",
         createdAt: Date(),
         dateLocations: [.sample, .sample]
     )
+}
+
+extension AnyActivityDetails {
+    static let sampleRunning = AnyActivityDetails(value: ResponseActivityDetailsRunning(
+        targetDistanceInKm: 6.5,
+        targetPace: 5.5
+    ))
+
+    static let sampleCycling = AnyActivityDetails(value: ResponseActivityDetailsCycling(
+        targetDistanceInKm: 30.0,
+        powerInWatt: 250.0,
+        cadenceInRpm: 90
+    ))
+
+    static let sampleGym = AnyActivityDetails(value: ResponseActivityDetailsGym(
+        dayType: "Push"
+    ))
 }
