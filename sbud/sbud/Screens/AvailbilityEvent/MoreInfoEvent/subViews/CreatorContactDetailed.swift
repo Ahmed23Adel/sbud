@@ -7,48 +7,71 @@
 
 import SwiftUI
 import Kingfisher
+import SwiftUI
+import Kingfisher
+
 struct CreatorContactDetailed: View {
     var creatorInfo: CreatorInfo
+    
+    var chatUser: UserProfile {
+        var profile = UserProfile(id: creatorInfo.id)
+        profile.name = creatorInfo.name
+        profile.surName = creatorInfo.surName
+        profile.profileImageUrl = creatorInfo.profileImageUrl
+        return profile
+    }
+
     var body: some View {
-        HStack{
-            KFImage(URL(string: creatorInfo.profileImageUrl!))
-                .placeholder { ProgressView() }
-                .resizable()
-                .scaledToFill()
-                .frame(width: 50, height: 50)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .stroke(Color.mainColor, lineWidth: 2)
-                )
+        HStack {
+            if let imageUrl = creatorInfo.profileImageUrl, let url = URL(string: imageUrl) {
+                KFImage(url)
+                    .placeholder { ProgressView() }
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(Color.mainColor, lineWidth: 2)
+                    )
+            } else {
+                
+                Image(systemName: "person.circle.fill")
+                    .resizable()
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(.gray)
+            }
+            
             Spacer()
-            VStack{
-                HStack{
+            
+            VStack {
+                HStack {
                     Text("Creator")
                         .font(.title3)
                         .foregroundColor(Color.mainColor)
                     Spacer()
                 }
-                HStack{
-                    Text("\(creatorInfo.name) \(creatorInfo.surName) ")
+                HStack {
+                    Text("\(creatorInfo.name) \(creatorInfo.surName)")
                         .font(.title3)
                         .foregroundColor(.black)
                     Spacer()
                 }
             }
+            
             Spacer()
             
-            Button("Contact"){
-                
+            NavigationLink(destination: ChatView(user: chatUser)) {
+                Text("Contact")
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 18)
+                    .background(Color.mainColor)
+                    .foregroundColor(.black)
+                    .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
             }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 18)
-            .background(Color.mainColor)
-            .foregroundColor(.black)
-            .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
-            
             
         }
+        .padding()
         .background(Color.backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
         .padding(.horizontal)
