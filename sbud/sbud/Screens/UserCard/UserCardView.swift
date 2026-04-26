@@ -14,6 +14,7 @@ struct UserCardView: View {
 
     @StateObject private var vm = UserCardVM()
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
+    @EnvironmentObject private var mainCoordinator: MainCoordinator
     
     private var activityColor: Color {
         switch event.activityType.lowercased() {
@@ -103,7 +104,7 @@ struct UserCardView: View {
                         }
                     }
 
-                    HStack(spacing: 8) {
+/*                    HStack(spacing: 8) {
                         Group {
                             if let urlStr = vm.userProfile?.profileImageUrl,
                                let url = URL(string: urlStr) {
@@ -122,6 +123,34 @@ struct UserCardView: View {
                         Text(vm.displayName(fallback: event.creatorName).uppercased())
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
                             .foregroundColor(.gray)
+                    }*/
+                    
+                    Button {
+                        coordinator.dismissPreview()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            mainCoordinator.goToProfile(userId: event.creatorUserId ?? "")
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Group {
+                                if let urlStr = vm.userProfile?.profileImageUrl,
+                                   let url = URL(string: urlStr) {
+                                    KFImage(url)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .clipShape(Circle())
+                                } else {
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            .frame(width: 20, height: 20)
+
+                            Text(vm.displayName(fallback: event.creatorName).uppercased())
+                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .foregroundColor(.gray)
+                        }
                     }
                     Spacer()
                     Divider()
@@ -173,9 +202,9 @@ struct UserCardView: View {
             }
         }
         
-        .clipShape(RoundedRectangle(cornerRadius: 25))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
-            RoundedRectangle(cornerRadius: 25)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
         )
         .padding(.horizontal, 12)

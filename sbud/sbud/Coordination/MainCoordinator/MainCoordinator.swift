@@ -35,6 +35,14 @@ class MainCoordinator: ObservableObject {
         navigateTo(.homePage)
     }
     
+    func goToProfile(userId: String) {
+        navigateTo(.profilePage(userId: userId))
+    }
+
+    func goBack() {
+        navigateTo(.homePage)
+    }
+    
     func logout(){
         profManager.deleteProfileFromLocale()
         goToSignUp()
@@ -43,14 +51,20 @@ class MainCoordinator: ObservableObject {
     func refreshAppFlow() {
             checkAppFlow()
         }
-
     
     func checkAppFlow() {
             Task { @MainActor in
                 let target = await checkProfileStatus()
                 navigateTo(target)
+                lastSeenUpdate()
             }
         }
+    
+    func lastSeenUpdate() {
+        Task {
+            await profManager.updateLastSeen()
+        }
+    }
 
     private func checkProfileStatus() async -> MainRoute {
     

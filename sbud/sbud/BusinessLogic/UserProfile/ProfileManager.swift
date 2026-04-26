@@ -98,6 +98,14 @@ class ProfileManager: IProfileServiceManager {
         return profiles
     }
     
+    func updateLastSeen() async {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        try? await userRepository.updateUserProfileFields(
+            uid: uid,
+            fields: ["lastSeenAt": Date()]
+        )
+    }
+    
     func uploadProfileImage(data: Data) async throws -> String {
         guard let currentUser = Auth.auth().currentUser else {
             throw URLError(.userAuthenticationRequired)

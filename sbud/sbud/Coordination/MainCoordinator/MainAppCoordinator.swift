@@ -40,6 +40,11 @@ struct MainAppCoordinator: View {
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)))
+                case .profilePage(let userId):
+                    ProfileView(userId: userId)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)))
                 }
             }
             .ignoresSafeArea()
