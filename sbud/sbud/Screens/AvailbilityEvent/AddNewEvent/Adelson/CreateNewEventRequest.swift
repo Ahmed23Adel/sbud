@@ -8,11 +8,15 @@
 import Foundation
 import FirebaseFirestore
 
-enum GymDayType: String, Encodable, CaseIterable{
-    case push = "Push"
-    case pull = "Pull"
-    case leg = "Leg"
-    case arm = "Arm"
+enum GymDayType: String, Encodable, CaseIterable {
+    case push      = "Push"
+    case pull      = "Pull"
+    case leg       = "Leg"
+    case arm       = "Arm"
+    case upper     = "Upper"
+    case lower     = "Lower"
+    case fullBody  = "Full Body"
+    case core      = "Core"
 }
 
 // TODO: change the backend to accept only requestFromHost
@@ -30,27 +34,6 @@ enum JoinCondition: String, Encodable, CaseIterable {
             try container.encode("requestFromHost")
         }
     }
-}
-protocol RequestActivityDetails: Encodable, Sendable{
-    var activityType: String { get set }
-}
-
-nonisolated struct RequestActivityDetailsRunning: RequestActivityDetails{
-    var activityType = "Running"
-    var targetDistanceInKm: Double
-    var targetPace: Double
-}
-
-nonisolated struct RequestActivityDetailsCycling: RequestActivityDetails{
-    var activityType = "Cycling"
-    var powerInWatt: Double
-    var cadenceInRPM: Double
-    
-}
-
-nonisolated struct RequestActivityDetailsGym: RequestActivityDetails{
-    var activityType = "Gym"
-    var dayTyp: GymDayType
 }
 
 nonisolated struct DateLocations: Encodable, Sendable {
@@ -76,7 +59,7 @@ nonisolated struct DateLocations: Encodable, Sendable {
 
 nonisolated struct CreateNewEventRequest: Encodable, Sendable {
     // bcz this is protocol, it need encode func
-    var activityDetails: any RequestActivityDetails
+    var activityDetails: any ExtraArgsHolderForSport
     var title: String
     var eventImage: String
     var isDateConfirmed = false
