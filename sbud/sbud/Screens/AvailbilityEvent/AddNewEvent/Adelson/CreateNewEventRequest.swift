@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-enum GymDayType: String, Encodable, CaseIterable {
+enum GymDayType: String, Codable, CaseIterable {
     case push      = "Push"
     case pull      = "Pull"
     case leg       = "Leg"

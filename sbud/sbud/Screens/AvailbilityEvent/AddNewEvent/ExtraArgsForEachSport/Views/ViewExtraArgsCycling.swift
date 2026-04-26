@@ -14,7 +14,7 @@ struct ViewExtraArgsCycling: View {
         VStack(spacing: 16) {
             TextOptionSelector(
                 header: "Cycling Type",
-                selected: $args.cyclingType
+                selected: $args.proposedCyclingType
             )
             GenericPerformanceTarget(
                 targetHeader: "Target Power",
