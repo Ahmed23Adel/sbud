@@ -7,10 +7,12 @@
 
 import Foundation
 
-enum MainRoute {
+enum MainRoute: Equatable {
     case loadingPage
     case profileSetup
     case signUp
     case signIn
     case homePage
+    case profilePage(userId: String)
+    case settingsPage
 }
