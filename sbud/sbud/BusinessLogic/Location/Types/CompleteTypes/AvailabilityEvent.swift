@@ -10,7 +10,8 @@ import FirebaseFirestore
 import Combine
 import OSLog
 
-class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
+@Observable
+class AvailabilityEvent: IAvailabilityEvent, CustomStringConvertible {
     var id: String
     var eventId: String
     var geoPoint: GeoPoint
@@ -27,9 +28,30 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
     let creatorName: String
     let logger = Logger(subsystem: "sBud", category: "AvailabilityEvent")
     var fullDatailedEvent: EventFullDetails?
-    @Published var isLoading: Bool = false
+    var isLoading: Bool = false
     
 
+    var description: String {
+        """
+        AvailabilityEvent(
+            id: \(id),
+            eventId: \(eventId),
+            geoPoint: \(geoPoint),
+            dateLocationId: \(dateLocationId),
+            activityType: \(activityType),
+            startDateTime: \(startDateTime),
+            endDateTime: \(endDateTime),
+            createdAt: \(createdAt),
+            g: \(g),
+            isDateConfirmed: \(isDateConfirmed),
+            isLocationConfirmed: \(isLocationConfirmed),
+            isPublic: \(isPublic),
+            eventImage: \(eventImage),
+            creatorName: \(creatorName),
+            isLoading: \(isLoading)
+        )
+        """
+    }
     init(
         id: String,
         eventId: String,
@@ -87,8 +109,7 @@ class AvailabilityEvent: IAvailabilityEvent, ObservableObject {
     }
     
     func convertToAnchor() -> AnchorAvailabilityEvent{
-        AnchorAvailabilityEvent(
-            event: self)
+        AnchorAvailabilityEvent(eventId: self.eventId, event: self)
     }
 
 }

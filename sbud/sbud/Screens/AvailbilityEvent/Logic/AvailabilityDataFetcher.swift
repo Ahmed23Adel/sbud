@@ -36,6 +36,7 @@ class AvailabilityDataFetcher {
         let requester = FlattenedEventsRequester()
         let results = try await requester.fetchIndividuals(requestParams: requestParams)
         let anchors = results.events.map { $0.covertToAnchor() }
+//        logger.info("Individual sample results: \(anchors[0])")
         return anchors
     }
 
