@@ -9,12 +9,14 @@ import SwiftUI
 
 struct ChatView: View {
     let user: UserProfile
+    let eventId: String?
     @StateObject var viewModel: ChatViewModel
     @State var messageText: String = ""
     
-    init(user: UserProfile) {
+    init(user: UserProfile, eventId: String? = nil) {
         self.user = user
-        self._viewModel = StateObject(wrappedValue: ChatViewModel(user: user))
+        self.eventId = eventId
+        self._viewModel = StateObject(wrappedValue: ChatViewModel(user: user, eventId: eventId))
     }
     
     var body: some View {

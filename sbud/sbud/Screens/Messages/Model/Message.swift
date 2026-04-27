@@ -16,6 +16,8 @@ struct Message: Identifiable, Hashable, Decodable {
     let timestamp: Timestamp
     let text: String
     
+    var eventId: String?
+    
     var user: UserProfile?
     
     var chatPartnerId: String { return fromId == Auth.auth().currentUser?.uid ? toId : fromId }

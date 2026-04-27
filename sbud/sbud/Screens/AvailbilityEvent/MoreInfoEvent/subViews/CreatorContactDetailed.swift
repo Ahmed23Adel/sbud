@@ -12,6 +12,7 @@ import Kingfisher
 
 struct CreatorContactDetailed: View {
     var creatorInfo: CreatorInfo
+    var eventId: String
     
     var chatUser: UserProfile {
         var profile = UserProfile(id: creatorInfo.id)
@@ -61,7 +62,7 @@ struct CreatorContactDetailed: View {
             
             Spacer()
             
-            NavigationLink(destination: ChatView(user: chatUser)) {
+            NavigationLink(destination: ChatView(user: chatUser, eventId: eventId)) {
                 Text("Contact")
                     .padding(.horizontal, 18)
                     .padding(.vertical, 18)
@@ -79,5 +80,5 @@ struct CreatorContactDetailed: View {
 }
 
 #Preview {
-    CreatorContactDetailed(creatorInfo: CreatorInfo(id: "WKSidc5m3ff36toyy8X7z9xjJWz2", name: "Hussein", surName: "Hussein", profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/sbud-e5bdd.firebasestorage.app/o/uploads%2FWKSidc5m3ff36toyy8X7z9xjJWz2%2F28e3f3f5-5138-48e3-84f9-8d0d611f87ae.jpg?alt=media&token=c410e75f-6877-4e9f-8d3d-f57fa3e259c5"))
+    CreatorContactDetailed(creatorInfo: CreatorInfo(id: "WKSidc5m3ff36toyy8X7z9xjJWz2", name: "Hussein", surName: "Hussein", profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/sbud-e5bdd.firebasestorage.app/o/uploads%2FWKSidc5m3ff36toyy8X7z9xjJWz2%2F28e3f3f5-5138-48e3-84f9-8d0d611f87ae.jpg?alt=media&token=c410e75f-6877-4e9f-8d3d-f57fa3e259c5"), eventId: "dummyEvent123")
 }

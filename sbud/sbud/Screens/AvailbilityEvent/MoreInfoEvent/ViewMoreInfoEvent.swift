@@ -13,6 +13,7 @@ import Lottie
 struct ViewMoreInfoEvent: View {
     @StateObject var viewModel: ViewModelMoreInfoEvent
     
+    
     init(basicEvent: AvailabilityEvent){
         _viewModel = StateObject(wrappedValue: ViewModelMoreInfoEvent(event: basicEvent))
     }
@@ -61,20 +62,23 @@ struct ViewMoreInfoEvent: View {
                             iconString: "pencil",
                             text: details.notes!)
                         
-                        CreatorContactDetailed(creatorInfo: details.creator)
+                        CreatorContactDetailed(creatorInfo: details.creator, eventId: viewModel.event.eventId)
                         
                         
                         LocationMapCard(dateLocations: details.dateLocations)
                             .padding()
                         
                         // Attending people list
-                        LazyVStack(spacing: 0) {
-                            ForEach(1...100, id: \.self){ num in
-                                Text("num \(num)")
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding()
-                            }
+                        VStack(alignment: .leading) {
+                            Text("People interested in this event:")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal)
+                                .padding(.top)
+
+                            EventContactsListView(eventId: viewModel.event.eventId)
                         }
+                        .padding(.bottom, 50)
                     }
                 }
                 .padding(.top, 200)
@@ -83,6 +87,7 @@ struct ViewMoreInfoEvent: View {
         .ignoresSafeArea()
     }
 }
+
 #Preview {
     ViewMoreInfoEvent(basicEvent: .preview)
 }

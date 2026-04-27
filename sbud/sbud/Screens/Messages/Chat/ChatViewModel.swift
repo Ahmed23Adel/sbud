@@ -14,10 +14,12 @@ import FirebaseFirestore
 
 class ChatViewModel: ObservableObject {
     let user: UserProfile
+    let eventId: String?
     @Published var messages = [Message]()
     
-    init(user: UserProfile) {
+    init(user: UserProfile, eventId: String? = nil) {
         self.user = user
+        self.eventId = eventId
         fetchMessages()
     }
     
@@ -60,12 +62,14 @@ class ChatViewModel: ObservableObject {
                                    "id": messageID,
                                    "fromId": currentUid,
                                    "toId": uid,
+                                   "eventId": eventId ?? "",
                                    "timestamp": Timestamp(date: Date())]
         
         let recipientData: [String: Any] = ["text": messageText,
                                             "id": messageID,
                                             "fromId": currentUid,
                                             "toId": uid,
+                                            "eventId": eventId ?? "",
                                             "timestamp": Timestamp(date: Date())]
         
         currentUserRef.setData(data)

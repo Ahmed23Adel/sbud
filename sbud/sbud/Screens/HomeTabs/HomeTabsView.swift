@@ -28,9 +28,9 @@ struct HomeTabsView: View {
                     Label("Events", systemImage: "person.3")
                 }
                 .tag(2)
-            AllEventsView()
+            PersonalView()
                 .tabItem {
-                    Label("Settings", systemImage: "gearshape")
+                    Label("PersonalView", systemImage: "person")
                 }
                 .tag(3)
         }
