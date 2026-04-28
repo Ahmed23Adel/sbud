@@ -12,7 +12,7 @@ import OSLog
 class NewEventBuilder{
     // MARK: Step1
     // TODO: To be replaced with user profile image
-    var coverImgURL: String = (ProfileManager.shared.getLocalProfile()?.profileImageUrl!)!
+    var coverImgURL: String = (ProfileManager.shared.getLocalProfile()?.profileImageUrl!) ?? ""
     var title: String = ""
     var activityType: ActivityType = .running
     var description: String = ""
