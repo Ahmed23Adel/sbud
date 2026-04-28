@@ -21,14 +21,18 @@ class MainCoordinator: ObservableObject {
         checkAppFlow()
     }
 
+    var canGoBack: Bool {
+        !routeStack.isEmpty
+    }
+
     func navigateTo(_ route: MainRoute) {
         switch route {
-        case .settingsPage, .profilePage:
+        case .settingsPage, .profilePage, .followerList, .followingList, .friendRequests:
             routeStack.append(currentRoute)
         default:
             routeStack.removeAll()
         }
-            currentRoute = route
+        currentRoute = route
     }
 
     func goBack() {
@@ -49,6 +53,18 @@ class MainCoordinator: ObservableObject {
 
     func goToSettings() {
         navigateTo(.settingsPage)
+    }
+
+    func goToFollowerList(userId: String) {
+        navigateTo(.followerList(userId: userId))
+    }
+
+    func goToFollowingList(userId: String) {
+        navigateTo(.followingList(userId: userId))
+    }
+
+    func goToFriendRequests() {
+        navigateTo(.friendRequests)
     }
 
     func logout() {
