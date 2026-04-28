@@ -31,6 +31,20 @@ struct UserProfile: Codable, Identifiable {
     var bio: String = ""
     var isProfileCompleted: Bool = false
     var pushToken: String? = nil
+    
+    // MARK: - Social
+    var followersCount: Int = 0
+    var followingCount: Int = 0
+    var trustScore: Double = 0.00
+
+    // MARK: - Performance
+    var totalSessions: Int = 0
+    var totalDistanceKm: Double = 0
+    var avgIntensity: Int = 0
+    var lastActivityDate: Date? = nil
+    var lastActivityName: String? = nil
+
+    var isPrivate: Bool = false
 
     var age: Int? {
         guard let birthDate else { return nil }
