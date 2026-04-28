@@ -437,46 +437,46 @@ final class NewEventBuilderValidationTests: XCTestCase {
 // MARK: - ViewModelCoordinatorAddNewEvent Tests
 
 final class ViewModelCoordinatorAddNewEventTests: XCTestCase {
-
+    
     var sut: ViewModelCoordinatorAddNewEvent!
-
+    
     override func setUp() {
         super.setUp()
         sut = ViewModelCoordinatorAddNewEvent()
     }
-
+    
     override func tearDown() {
         sut = nil
         super.tearDown()
     }
-
+    
     // MARK: Step navigation
-
+    
     func test_initialStep_isStep1() {
         XCTAssertEqual(sut.currentStep, .step1)
     }
-
+    
     func test_moveToStep2_changesStep() {
         sut.moveToStep2()
         XCTAssertEqual(sut.currentStep, .step2)
     }
-
+    
     func test_moveToStep1_fromStep2_returnsToStep1() {
         sut.moveToStep2()
         sut.moveToStep1()
         XCTAssertEqual(sut.currentStep, .step1)
     }
-
+    
     func test_initialIsDismissed_isFalse() {
         XCTAssertFalse(sut.isDismissed)
     }
-
+    
     func test_initialIsLoading_isFalse() {
         XCTAssertFalse(sut.isLoading)
     }
-
+    
     // MARK: createEvent with invalid fields
-
+    
     func test_createEvent_withInvalidFields_doesNotDismiss() {
         // Builder has empty title/description by default → invalid
         sut.newEventBuilder.title = ""
@@ -484,201 +484,201 @@ final class ViewModelCoordinatorAddNewEventTests: XCTestCase {
         // isDismissed must remain false; no network call should be made
         XCTAssertFalse(sut.isDismissed)
     }
-
+    
     func test_createEvent_withInvalidFields_doesNotSetLoading() {
         sut.newEventBuilder.title = ""
         sut.createEvent()
         // isLoading should stay false (no async task started for invalid input)
         XCTAssertFalse(sut.isLoading)
     }
-
-
-
-// MARK: - Testable subclass / mock seam
-
-/// Subclass that overrides the async send so we don't hit the real network.
-@Observable
-final class ViewModelCoordinatorAddNewEventMockable: ViewModelCoordinatorAddNewEvent {
-
-    var mockSuccess = true
-
-    func seedValidBuilder() {
-        newEventBuilder.coverImgURL = "https://example.com/img.png"
-        newEventBuilder.title = "Test Event"
-        newEventBuilder.description = "A great test event"
-        newEventBuilder.eventCapacity = 20
-        newEventBuilder.dateLocationsHolder.append(makeValidDateLocation())
-    }
-
-    override func createEvent() {
-        if !newEventBuilder.areFieldsValid() {
-            newEventBuilder.generateErrorMsg()
-            return
+    
+    
+    
+    // MARK: - Testable subclass / mock seam
+    
+    /// Subclass that overrides the async send so we don't hit the real network.
+    @Observable
+    final class ViewModelCoordinatorAddNewEventMockable: ViewModelCoordinatorAddNewEvent {
+        
+        var mockSuccess = true
+        
+        func seedValidBuilder() {
+            newEventBuilder.coverImgURL = "https://example.com/img.png"
+            newEventBuilder.title = "Test Event"
+            newEventBuilder.description = "A great test event"
+            newEventBuilder.eventCapacity = 20
+            newEventBuilder.dateLocationsHolder.append(makeValidDateLocation())
         }
-        Task {
-            isLoading = true
-            // Simulate async network work
-            try? await Task.sleep(nanoseconds: 10_000_000)
-            if mockSuccess {
-                isDismissed = true
+        
+        override func createEvent() {
+            if !newEventBuilder.areFieldsValid() {
+                newEventBuilder.generateErrorMsg()
+                return
             }
-            isLoading = false
+            Task {
+                isLoading = true
+                // Simulate async network work
+                try? await Task.sleep(nanoseconds: 10_000_000)
+                if mockSuccess {
+                    isDismissed = true
+                }
+                isLoading = false
+            }
         }
     }
-}
-
-// MARK: - CreateNewEventRequest Encoding Tests
-
-final class CreateNewEventRequestEncodingTests: XCTestCase {
-
-    func makeRequest() -> CreateNewEventRequest {
-        let dl = makeValidDateLocation()
-        return CreateNewEventRequest(
-            activityDetails: ExtraArgsHolderRunning(),
-            title: "Morning Run",
-            eventImage: "https://example.com/img.png",
-            isPublic: true,
-            joiningCondition: .requestFromHost,
-            maxAllowedToJoin: 50,
-            notes: "Come ready to sweat",
-            dateLocations: [dl]
-        )
+    
+    // MARK: - CreateNewEventRequest Encoding Tests
+    
+    final class CreateNewEventRequestEncodingTests: XCTestCase {
+        
+        func makeRequest() -> CreateNewEventRequest {
+            let dl = makeValidDateLocation()
+            return CreateNewEventRequest(
+                activityDetails: ExtraArgsHolderRunning(),
+                title: "Morning Run",
+                eventImage: "https://example.com/img.png",
+                isPublic: true,
+                joiningCondition: .requestFromHost,
+                maxAllowedToJoin: 50,
+                notes: "Come ready to sweat",
+                dateLocations: [dl]
+            )
+        }
+        
+        func test_encoding_doesNotThrow() {
+            let request = makeRequest()
+            XCTAssertNoThrow(try JSONEncoder().encode(request))
+        }
+        
+        func test_encoding_containsTitle() throws {
+            let data = try JSONEncoder().encode(makeRequest())
+            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            XCTAssertEqual(json["title"] as? String, "Morning Run")
+        }
+        
+        func test_encoding_containsIsPublic() throws {
+            let data = try JSONEncoder().encode(makeRequest())
+            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            XCTAssertEqual(json["isPublic"] as? Bool, true)
+        }
+        
+        func test_encoding_containsJoiningCondition() throws {
+            let data = try JSONEncoder().encode(makeRequest())
+            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            XCTAssertEqual(json["joiningCondition"] as? String, "requestFromHost")
+        }
+        
+        func test_encoding_containsMaxAllowedToJoin() throws {
+            let data = try JSONEncoder().encode(makeRequest())
+            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            XCTAssertEqual(json["maxAllowedToJoin"] as? Int, 50)
+        }
+        
+        func test_encoding_dateLocations_areISO8601() throws {
+            let data = try JSONEncoder().encode(makeRequest())
+            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            let dateLocations = json["dateLocations"] as? [[String: Any]]
+            XCTAssertNotNil(dateLocations)
+            XCTAssertFalse(dateLocations!.isEmpty)
+            let first = dateLocations!.first!
+            XCTAssertNotNil(first["startDateTime"] as? String)
+            XCTAssertNotNil(first["endDateTime"] as? String)
+        }
+        
+        func test_autoJoin_encodesCorrectly() throws {
+            var request = makeRequest()
+            // Can't mutate let, so build a new one
+            let request2 = CreateNewEventRequest(
+                activityDetails: ExtraArgsHolderRunning(),
+                title: "Test",
+                eventImage: "img",
+                isPublic: false,
+                joiningCondition: .autoJoin,
+                maxAllowedToJoin: 10,
+                notes: "",
+                dateLocations: []
+            )
+            let data = try JSONEncoder().encode(request2)
+            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            XCTAssertEqual(json["joiningCondition"] as? String, "autoJoin")
+        }
     }
-
-    func test_encoding_doesNotThrow() {
-        let request = makeRequest()
-        XCTAssertNoThrow(try JSONEncoder().encode(request))
+    
+    // MARK: - DateLocations Encoding Tests
+    
+    final class DateLocationsEncodingTests: XCTestCase {
+        
+        func test_encoding_startDateIsISO8601String() throws {
+            let dl = makeValidDateLocation()
+            let data = try JSONEncoder().encode(dl)
+            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            let startStr = json["startDateTime"] as? String
+            XCTAssertNotNil(startStr)
+            // ISO8601 strings contain a 'T'
+            XCTAssertTrue(startStr!.contains("T"))
+        }
+        
+        func test_encoding_endDateIsISO8601String() throws {
+            let dl = makeValidDateLocation()
+            let data = try JSONEncoder().encode(dl)
+            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            let endStr = json["endDateTime"] as? String
+            XCTAssertNotNil(endStr)
+            XCTAssertTrue(endStr!.contains("T"))
+        }
+        
+        func test_encoding_containsLocations() throws {
+            let dl = makeValidDateLocation()
+            let data = try JSONEncoder().encode(dl)
+            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            XCTAssertNotNil(json["locations"])
+        }
+        
+        func test_uniqueIDs_forDifferentInstances() {
+            let dl1 = makeValidDateLocation()
+            let dl2 = makeValidDateLocation()
+            XCTAssertNotEqual(dl1.id, dl2.id)
+        }
     }
-
-    func test_encoding_containsTitle() throws {
-        let data = try JSONEncoder().encode(makeRequest())
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        XCTAssertEqual(json["title"] as? String, "Morning Run")
+    
+    // MARK: - JoinCondition Tests
+    
+    final class JoinConditionTests: XCTestCase {
+        
+        func test_allCases_count() {
+            XCTAssertEqual(JoinCondition.allCases.count, 2)
+        }
+        
+        func test_requestFromHost_rawValue() {
+            XCTAssertEqual(JoinCondition.requestFromHost.rawValue, "Manual Approval by event hosts")
+        }
+        
+        func test_autoJoin_rawValue() {
+            XCTAssertEqual(JoinCondition.autoJoin.rawValue, "Auto join")
+        }
     }
-
-    func test_encoding_containsIsPublic() throws {
-        let data = try JSONEncoder().encode(makeRequest())
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        XCTAssertEqual(json["isPublic"] as? Bool, true)
+    
+    // MARK: - GymDayType Tests
+    
+    final class GymDayTypeTests: XCTestCase {
+        
+        func test_allCases_count() {
+            XCTAssertEqual(GymDayType.allCases.count, 8)
+        }
+        
+        func test_rawValues_areCorrect() {
+            XCTAssertEqual(GymDayType.push.rawValue, "Push")
+            XCTAssertEqual(GymDayType.pull.rawValue, "Pull")
+            XCTAssertEqual(GymDayType.fullBody.rawValue, "Full Body")
+        }
     }
-
-    func test_encoding_containsJoiningCondition() throws {
-        let data = try JSONEncoder().encode(makeRequest())
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        XCTAssertEqual(json["joiningCondition"] as? String, "requestFromHost")
-    }
-
-    func test_encoding_containsMaxAllowedToJoin() throws {
-        let data = try JSONEncoder().encode(makeRequest())
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        XCTAssertEqual(json["maxAllowedToJoin"] as? Int, 50)
-    }
-
-    func test_encoding_dateLocations_areISO8601() throws {
-        let data = try JSONEncoder().encode(makeRequest())
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        let dateLocations = json["dateLocations"] as? [[String: Any]]
-        XCTAssertNotNil(dateLocations)
-        XCTAssertFalse(dateLocations!.isEmpty)
-        let first = dateLocations!.first!
-        XCTAssertNotNil(first["startDateTime"] as? String)
-        XCTAssertNotNil(first["endDateTime"] as? String)
-    }
-
-    func test_autoJoin_encodesCorrectly() throws {
-        var request = makeRequest()
-        // Can't mutate let, so build a new one
-        let request2 = CreateNewEventRequest(
-            activityDetails: ExtraArgsHolderRunning(),
-            title: "Test",
-            eventImage: "img",
-            isPublic: false,
-            joiningCondition: .autoJoin,
-            maxAllowedToJoin: 10,
-            notes: "",
-            dateLocations: []
-        )
-        let data = try JSONEncoder().encode(request2)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        XCTAssertEqual(json["joiningCondition"] as? String, "autoJoin")
-    }
-}
-
-// MARK: - DateLocations Encoding Tests
-
-final class DateLocationsEncodingTests: XCTestCase {
-
-    func test_encoding_startDateIsISO8601String() throws {
-        let dl = makeValidDateLocation()
-        let data = try JSONEncoder().encode(dl)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        let startStr = json["startDateTime"] as? String
-        XCTAssertNotNil(startStr)
-        // ISO8601 strings contain a 'T'
-        XCTAssertTrue(startStr!.contains("T"))
-    }
-
-    func test_encoding_endDateIsISO8601String() throws {
-        let dl = makeValidDateLocation()
-        let data = try JSONEncoder().encode(dl)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        let endStr = json["endDateTime"] as? String
-        XCTAssertNotNil(endStr)
-        XCTAssertTrue(endStr!.contains("T"))
-    }
-
-    func test_encoding_containsLocations() throws {
-        let dl = makeValidDateLocation()
-        let data = try JSONEncoder().encode(dl)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-        XCTAssertNotNil(json["locations"])
-    }
-
-    func test_uniqueIDs_forDifferentInstances() {
-        let dl1 = makeValidDateLocation()
-        let dl2 = makeValidDateLocation()
-        XCTAssertNotEqual(dl1.id, dl2.id)
-    }
-}
-
-// MARK: - JoinCondition Tests
-
-final class JoinConditionTests: XCTestCase {
-
-    func test_allCases_count() {
-        XCTAssertEqual(JoinCondition.allCases.count, 2)
-    }
-
-    func test_requestFromHost_rawValue() {
-        XCTAssertEqual(JoinCondition.requestFromHost.rawValue, "Manual Approval by event hosts")
-    }
-
-    func test_autoJoin_rawValue() {
-        XCTAssertEqual(JoinCondition.autoJoin.rawValue, "Auto join")
-    }
-}
-
-// MARK: - GymDayType Tests
-
-final class GymDayTypeTests: XCTestCase {
-
-    func test_allCases_count() {
-        XCTAssertEqual(GymDayType.allCases.count, 8)
-    }
-
-    func test_rawValues_areCorrect() {
-        XCTAssertEqual(GymDayType.push.rawValue, "Push")
-        XCTAssertEqual(GymDayType.pull.rawValue, "Pull")
-        XCTAssertEqual(GymDayType.fullBody.rawValue, "Full Body")
-    }
-}
-
-// MARK: - CreateNewEventResponse Decoding Tests
-
-final class CreateNewEventResponseDecodingTests: XCTestCase {
-
-    func test_decoding_validJSON() throws {
-        let json = """
+    
+    // MARK: - CreateNewEventResponse Decoding Tests
+    
+    final class CreateNewEventResponseDecodingTests: XCTestCase {
+        
+        func test_decoding_validJSON() throws {
+            let json = """
         {
           "eventId": "evt123",
           "flattenedEvents": [
@@ -687,29 +687,30 @@ final class CreateNewEventResponseDecodingTests: XCTestCase {
           "message": "Event created successfully"
         }
         """.data(using: .utf8)!
-
-        let response = try JSONDecoder().decode(CreateNewEventResponse.self, from: json)
-        XCTAssertEqual(response.eventId, "evt123")
-        XCTAssertEqual(response.flattenedEvents.count, 1)
-        XCTAssertEqual(response.flattenedEvents.first?.flattenedEventId, "fe1")
-        XCTAssertEqual(response.flattenedEvents.first?.dateLocationId, "dl1")
-        XCTAssertEqual(response.message, "Event created successfully")
-    }
-
-    func test_decoding_emptyFlattenedEvents() throws {
-        let json = """
+            
+            let response = try JSONDecoder().decode(CreateNewEventResponse.self, from: json)
+            XCTAssertEqual(response.eventId, "evt123")
+            XCTAssertEqual(response.flattenedEvents.count, 1)
+            XCTAssertEqual(response.flattenedEvents.first?.flattenedEventId, "fe1")
+            XCTAssertEqual(response.flattenedEvents.first?.dateLocationId, "dl1")
+            XCTAssertEqual(response.message, "Event created successfully")
+        }
+        
+        func test_decoding_emptyFlattenedEvents() throws {
+            let json = """
         { "eventId": "x", "flattenedEvents": [], "message": "ok" }
         """.data(using: .utf8)!
-        let response = try JSONDecoder().decode(CreateNewEventResponse.self, from: json)
-        XCTAssertTrue(response.flattenedEvents.isEmpty)
+            let response = try JSONDecoder().decode(CreateNewEventResponse.self, from: json)
+            XCTAssertTrue(response.flattenedEvents.isEmpty)
+        }
     }
-}
-
-// MARK: - AddNewEventSteps Tests
-
-final class AddNewEventStepsTests: XCTestCase {
-
-    func test_step1_andStep2_areDistinct() {
-        XCTAssertNotEqual(AddNewEventSteps.step1, AddNewEventSteps.step2)
+    
+    // MARK: - AddNewEventSteps Tests
+    
+    final class AddNewEventStepsTests: XCTestCase {
+        
+        func test_step1_andStep2_areDistinct() {
+            XCTAssertNotEqual(AddNewEventSteps.step1, AddNewEventSteps.step2)
+        }
     }
 }

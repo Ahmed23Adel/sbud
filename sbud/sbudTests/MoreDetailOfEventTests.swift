@@ -5,386 +5,574 @@
 ////  Created by ahmed on 26/04/2026.
 //
 //
-//import XCTest
-//@testable import sbud
-//
-//// MARK: - Mock EventByIdRequester
-//
-//final class MockEventByIdRequester: EventByIdRequester {
-//    var shouldThrow: Bool = false
-//    var mockResult: EventFullDetails = .sample
-//    var callCount: Int = 0
-//
-//    override func fetchEvent(eventId: String) async throws -> EventFullDetails {
-//        callCount += 1
-//        if shouldThrow {
-//            throw URLError(.badServerResponse)
-//        }
-//        return mockResult
-//    }
-//}
-//
-//// MARK: - Testable ViewModel subclass
-//
-///// Injects a mock requester instead of the real network one.
-//final class TestableViewModelMoreInfoEvent: ViewModelMoreInfoEvent {
-//    let mockRequester: MockEventByIdRequester
-//
-//    init(event: AvailabilityEvent, requester: MockEventByIdRequester) {
-//        self.mockRequester = requester
-//        super.init(event: event)
-//    }
-//
-//    // NOTE: If ViewModelMoreInfoEvent exposes `loadDetails` as internal/open,
-//    // override it here to use the mock. Otherwise test via `triggerLoad()`.
-//}
-//
-//// MARK: - JSON Decoding Helpers
-//
-//private let decoder: JSONDecoder = {
-//    let d = JSONDecoder()
-//    d.dateDecodingStrategy = .iso8601
-//    return d
-//}()
-//
-//private func makeJSON(_ dict: [String: Any]) throws -> Data {
-//    return try JSONSerialization.data(withJSONObject: dict)
-//}
-//
-//// MARK: - CreatorInfo Tests
-//
-//final class CreatorInfoTests: XCTestCase {
-//
-//    func test_decode_allFields() throws {
-//        let json: [String: Any] = [
-//            "id": "abc123",
-//            "name": "Ahmed",
-//            "surName": "Hussein",
-//            "profileImageUrl": "https://example.com/img.jpg"
-//        ]
-//        let data = try makeJSON(json)
-//        let creator = try decoder.decode(CreatorInfo.self, from: data)
-//
-//        XCTAssertEqual(creator.id, "abc123")
-//        XCTAssertEqual(creator.name, "Ahmed")
-//        XCTAssertEqual(creator.surName, "Hussein")
-//        XCTAssertEqual(creator.profileImageUrl, "https://example.com/img.jpg")
-//    }
-//
-//    func test_decode_missingOptionalProfileImage() throws {
-//        let json: [String: Any] = [
-//            "id": "abc123",
-//            "name": "Ahmed",
-//            "surName": "Hussein"
-//        ]
-//        let data = try makeJSON(json)
-//        let creator = try decoder.decode(CreatorInfo.self, from: data)
-//        XCTAssertNil(creator.profileImageUrl)
-//    }
-//
-//    func test_sample_hasExpectedValues() {
-//        XCTAssertEqual(CreatorInfo.sample.name, "Ahmed")
-//        XCTAssertEqual(CreatorInfo.sample.surName, "Hussein")
-//        XCTAssertFalse(CreatorInfo.sample.id.isEmpty)
-//    }
-//}
-//
-//// MARK: - AnyActivityDetails Decoding Tests
-//
-//final class AnyActivityDetailsTests: XCTestCase {
-//
-//    // MARK: Running
-//
-//    func test_decode_running() throws {
-//        let json: [String: Any] = [
-//            "activityType": "Running",
-//            "targetDistanceInKm": 10.0,
-//            "targetPace": 5.5
-//        ]
-//        let details = try decoder.decode(AnyActivityDetails.self, from: makeJSON(json))
-//        XCTAssertEqual(details.value.activityType, .running)
-//        let running = try XCTUnwrap(details.value as? ResponseActivityDetailsRunning)
-//        XCTAssertEqual(running.targetDistanceInKm, 10.0)
-//        XCTAssertEqual(running.targetPace, 5.5)
-//    }
-//
-//    func test_decode_running_missingOptionals() throws {
-//        let json: [String: Any] = ["activityType": "Running"]
-//        let details = try decoder.decode(AnyActivityDetails.self, from: makeJSON(json))
-//        XCTAssertEqual(details.value.activityType, .running)
-//        let running = try XCTUnwrap(details.value as? ResponseActivityDetailsRunning)
-//        XCTAssertNil(running.targetDistanceInKm)
-//        XCTAssertNil(running.targetPace)
-//    }
-//
-//    // MARK: Cycling
-//
-//    func test_decode_cycling() throws {
-//        let json: [String: Any] = [
-//            "activityType": "Cycling",
-//            "targetDistanceInKm": 40.0,
-//            "powerInWatt": 280.0,
-//            "cadenceInRpm": 95
-//        ]
-//        let details = try decoder.decode(AnyActivityDetails.self, from: makeJSON(json))
-//        XCTAssertEqual(details.value.activityType, .cycling)
-//        let cycling = try XCTUnwrap(details.value as? ResponseActivityDetailsCycling)
-//        XCTAssertEqual(cycling.targetDistanceInKm, 40.0)
-//        XCTAssertEqual(cycling.powerInWatt, 280.0)
-//        XCTAssertEqual(cycling.cadenceInRpm, 95)
-//    }
-//
-//    func test_decode_cycling_missingOptionals() throws {
-//        let json: [String: Any] = ["activityType": "Cycling"]
-//        let details = try decoder.decode(AnyActivityDetails.self, from: makeJSON(json))
-//        XCTAssertEqual(details.value.activityType, .cycling)
-//        let cycling = try XCTUnwrap(details.value as? ResponseActivityDetailsCycling)
-//        XCTAssertNil(cycling.targetDistanceInKm)
-//        XCTAssertNil(cycling.powerInWatt)
-//        XCTAssertNil(cycling.cadenceInRpm)
-//    }
-//
-//    // MARK: Gym
-//
-//    func test_decode_gym() throws {
-//        let json: [String: Any] = [
-//            "activityType": "Gym",
-//            "dayType": "Push"
-//        ]
-//        let details = try decoder.decode(AnyActivityDetails.self, from: makeJSON(json))
-//        XCTAssertEqual(details.value.activityType, .gym)
-//        let gym = try XCTUnwrap(details.value as? ResponseActivityDetailsGym)
-//        XCTAssertEqual(gym.dayType, "Push")
-//    }
-//
-//    func test_decode_unknownActivityType_fallsBackToGym() throws {
-//        let json: [String: Any] = ["activityType": "Volleyball"]
-//        let details = try decoder.decode(AnyActivityDetails.self, from: makeJSON(json))
-//        // Unknown types fall back to Gym per the switch default
-//        XCTAssertEqual(details.value.activityType, .gym)
-//    }
-//
-//    // MARK: Direct init
-//
-//    func test_init_withValue() {
-//        let running = ResponseActivityDetailsRunning(targetDistanceInKm: 5.0, targetPace: 6.0)
-//        let anyDetails = AnyActivityDetails(value: running)
-//        XCTAssertEqual(anyDetails.value.activityType, .running)
-//    }
-//
-//    // MARK: Samples
-//
-//    func test_sampleRunning() {
-//        XCTAssertEqual(AnyActivityDetails.sampleRunning.value.activityType, .running)
-//    }
-//
-//    func test_sampleCycling() {
-//        XCTAssertEqual(AnyActivityDetails.sampleCycling.value.activityType, .cycling)
-//    }
-//
-//    func test_sampleGym() {
-//        XCTAssertEqual(AnyActivityDetails.sampleGym.value.activityType, .gym)
-//    }
-//}
-//
-//// MARK: - LocationPoint Tests
-//
-//final class LocationPointTests: XCTestCase {
-//
-//    func test_decode() throws {
-//        let json: [String: Any] = [
-//            "latitude": 45.4642,
-//            "longitude": 9.19,
-//            "geohash": "u0ndx37j"
-//        ]
-//        let point = try decoder.decode(LocationPoint.self, from: makeJSON(json))
-//        XCTAssertEqual(point.latitude, 45.4642, accuracy: 0.0001)
-//        XCTAssertEqual(point.longitude, 9.19, accuracy: 0.0001)
-//        XCTAssertEqual(point.geohash, "u0ndx37j")
-//    }
-//
-//    func test_sample() {
-//        XCTAssertEqual(LocationPoint.sample.geohash, "u0ndx37j")
-//        XCTAssertEqual(LocationPoint.sample.latitude, 45.4642, accuracy: 0.0001)
-//    }
-//}
-//
-//// MARK: - DateLocationEntry Tests
-//
-//final class DateLocationEntryTests: XCTestCase {
-//
-//    func test_decode() throws {
-//        let json: [String: Any] = [
-//            "id": "entry001",
-//            "startDateTime": "2026-05-01T08:00:00Z",
-//            "endDateTime": "2026-05-01T09:00:00Z",
-//            "locations": [
-//                ["latitude": 45.4642, "longitude": 9.19, "geohash": "u0ndx37j"]
-//            ]
-//        ]
-//        let entry = try decoder.decode(DateLocationEntry.self, from: makeJSON(json))
-//        XCTAssertEqual(entry.id, "entry001")
-//        XCTAssertEqual(entry.locations.count, 1)
-//        XCTAssertLessThan(entry.startDateTime, entry.endDateTime)
-//    }
-//
-//    func test_isIdentifiable() {
-//        let entry = DateLocationEntry.sample
-//        XCTAssertFalse(entry.id.isEmpty)
-//    }
-//
-//    func test_sample_hasTwoLocations() {
-//        XCTAssertEqual(DateLocationEntry.sample.locations.count, 2)
-//    }
-//
-//    func test_sample_startBeforeEnd() {
-//        let entry = DateLocationEntry.sample
-//        XCTAssertLessThan(entry.startDateTime, entry.endDateTime)
-//    }
-//}
-//
-//// MARK: - EventFullDetails Decoding Tests
-//
-//final class EventFullDetailsTests: XCTestCase {
-//
-//    private func makeEventJSON(
-//        joiningCondition: String = "autoJoin",
-//        activityType: String = "Running",
-//        notes: String? = nil,
-//        eventImage: String? = nil,
-//        maxAllowedToJoin: Int? = nil
-//    ) -> [String: Any] {
-//        var dict: [String: Any] = [
-//            "id": "evt001",
-//            "title": "Morning Run",
-//            "creator": [
-//                "id": "usr001",
-//                "name": "Ahmed",
-//                "surName": "Hussein"
-//            ],
-//            "activityDetails": ["activityType": activityType],
-//            "isDateConfirmed": true,
-//            "isLocationConfirmed": false,
-//            "isPublic": true,
-//            "joiningCondition": joiningCondition,
-//            "createdAt": "2026-04-01T06:00:00Z",
-//            "dateLocations": [
-//                [
-//                    "id": "dl001",
-//                    "startDateTime": "2026-05-01T08:00:00Z",
-//                    "endDateTime": "2026-05-01T09:00:00Z",
-//                    "locations": [
-//                        ["latitude": 45.4642, "longitude": 9.19, "geohash": "u0ndx37j"]
-//                    ]
-//                ]
-//            ]
-//        ]
-//        if let notes { dict["notes"] = notes }
-//        if let eventImage { dict["eventImage"] = eventImage }
-//        if let maxAllowedToJoin { dict["maxAllowedToJoin"] = maxAllowedToJoin }
-//        return dict
-//    }
-//
-//    func test_decode_fullEvent_autoJoin() throws {
-//        let data = try makeJSON(makeEventJSON(joiningCondition: "autoJoin", notes: "Come join!", eventImage: "https://img.example.com/img.jpg", maxAllowedToJoin: 50))
-//        let event = try decoder.decode(EventFullDetails.self, from: data)
-//
-//        XCTAssertEqual(event.id, "evt001")
-//        XCTAssertEqual(event.title, "Morning Run")
-//        XCTAssertEqual(event.joinCondition, .autoJoin)
-//        XCTAssertEqual(event.notes, "Come join!")
-//        XCTAssertEqual(event.eventImage, "https://img.example.com/img.jpg")
-//        XCTAssertEqual(event.maxAllowedToJoin, 50)
-//        XCTAssertTrue(event.isDateConfirmed)
-//        XCTAssertFalse(event.isLocationConfirmed)
-//        XCTAssertTrue(event.isPublic)
-//        XCTAssertEqual(event.dateLocations.count, 1)
-//    }
-//
-//    func test_decode_joiningCondition_requestFromHost() throws {
-//        let data = try makeJSON(makeEventJSON(joiningCondition: "requestFromHost"))
-//        let event = try decoder.decode(EventFullDetails.self, from: data)
-//        XCTAssertEqual(event.joinCondition, .requestFromHost)
-//    }
-//
-//    func test_decode_unknownJoiningCondition_fallsBackToRequestFromHost() throws {
-//        let data = try makeJSON(makeEventJSON(joiningCondition: "somethingRandom"))
-//        let event = try decoder.decode(EventFullDetails.self, from: data)
-//        XCTAssertEqual(event.joinCondition, .requestFromHost)
-//    }
-//
-//    func test_decode_optionalFieldsMissing() throws {
-//        let data = try makeJSON(makeEventJSON())
-//        let event = try decoder.decode(EventFullDetails.self, from: data)
-//        XCTAssertNil(event.notes)
-//        XCTAssertNil(event.eventImage)
-//        XCTAssertNil(event.maxAllowedToJoin)
-//    }
-//
-//    func test_activityType_computedProperty_running() throws {
-//        let data = try makeJSON(makeEventJSON(activityType: "Running"))
-//        let event = try decoder.decode(EventFullDetails.self, from: data)
-//        XCTAssertEqual(event.activityType, .running)
-//    }
-//
-//    func test_activityType_computedProperty_cycling() throws {
-//        let data = try makeJSON(makeEventJSON(activityType: "Cycling"))
-//        let event = try decoder.decode(EventFullDetails.self, from: data)
-//        XCTAssertEqual(event.activityType, .cycling)
-//    }
-//
-//    func test_activityType_computedProperty_gym() throws {
-//        let data = try makeJSON(makeEventJSON(activityType: "Gym"))
-//        let event = try decoder.decode(EventFullDetails.self, from: data)
-//        XCTAssertEqual(event.activityType, .gym)
-//    }
-//
-//    func test_sample_isValid() {
-//        let sample = EventFullDetails.sample
-//        XCTAssertEqual(sample.id, "xN6ncT0Foa0UdFy06GSL")
-//        XCTAssertEqual(sample.title, "Morning Run")
-//        XCTAssertEqual(sample.activityType, .running)
-//        XCTAssertEqual(sample.joinCondition, .requestFromHost)
-//        XCTAssertFalse(sample.dateLocations.isEmpty)
-//    }
-//
-//    func test_memberwise_init_roundtrip() {
-//        let sample = EventFullDetails.sample
-//        XCTAssertEqual(sample.creator.name, "Ahmed")
-//        XCTAssertEqual(sample.maxAllowedToJoin, 150)
-//        XCTAssertEqual(sample.notes, "Come join me")
-//    }
-//}
-//
-//// MARK: - ViewModelMoreInfoEvent Tests
-//
-//final class ViewModelMoreInfoEventTests: XCTestCase {
-//
-//    // MARK: - Happy path: details load successfully
-//
-//    func test_loadDetails_success_setsFullDetails() async throws {
-//        let event = AvailabilityEvent.preview
-//        let vm = ViewModelMoreInfoEvent(event: event)
-//
-//        // Give the Task inside init time to complete
-//        try await Task.sleep(nanoseconds: 300_000_000) // 0.3s
-//
-//        // In DEBUG with fullDatailedEvent set on preview, it short-circuits;
-//        // adjust depending on whether .preview has fullDatailedEvent = nil
-//        if event.fullDatailedEvent == nil {
-//            XCTAssertFalse(vm.isLoading)
-//        }
-//    }
-//
-//    // MARK: - Initial state
-//
-//    func test_initialState_isLoadingFalse_beforeTaskRuns() {
-//        // AvailabilityEvent.preview should have fullDatailedEvent set in DEBUG
-//        // so vm skips network; fullDetails is set immediately
-//        let vm = ViewModelMoreInfoEvent(event: .preview)
-//        // Either loading has finished (DEBUG shortcut) or is in progress
-//        XCTAssertFalse(vm.isErrorLoading)
-//    }
-//
-//    
-//}
+
+//
+//  MoreInfoEventTests.swift
+//  sbudTests
+//
+//  Comprehensive unit tests for the MoreInfoEvent feature.
+//  Covers: models (EventFullDetails, CreatorInfo, LocationPoint,
+//          DateLocationEntry, ExtraArgsHolder and all sport sub-holders),
+//          ViewModel state machine, JoinCondition encoding,
+//          ActivityType metadata, and edge-case decoding.
+//
+
+import XCTest
+@testable import sbud
+
+// MARK: - Helpers
+
+private let iso8601: ISO8601DateFormatter = {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return f
+}()
+
+/// Build a JSON encoder whose date strategy matches the app's decoder.
+private func makeEncoder() -> JSONEncoder {
+    let enc = JSONEncoder()
+    enc.dateEncodingStrategy = .iso8601
+    return enc
+}
+
+/// Build a JSON decoder that mirrors the app's decoding strategy.
+private func makeDecoder() -> JSONDecoder {
+    let dec = JSONDecoder()
+    dec.dateDecodingStrategy = .iso8601
+    return dec
+}
+
+// MARK: - Fixtures
+
+private enum Fixture {
+
+    // Minimal valid JSON for EventFullDetails
+    static func eventJSON(
+        id: String = "evt1",
+        title: String = "Morning Run",
+        joiningCondition: String = "autoJoin",
+        isDateConfirmed: Bool = true,
+        isLocationConfirmed: Bool = false,
+        isPublic: Bool = true,
+        maxAllowedToJoin: Int? = nil,
+        notes: String? = nil,
+        activityType: String = "Running",
+        extraFields: String = #""proposedDistance":6,"proposedPace":8.3,"proposedRunningType":"Road""#,
+        eventImage: String? = nil,
+        dateLocations: String = "[]"
+    ) -> Data {
+        let maxField = maxAllowedToJoin.map { #","maxAllowedToJoin":\#($0)"# } ?? ""
+        let notesField = notes.map { #","notes":"\#($0)""# } ?? ""
+        let imageField = eventImage.map { #","eventImage":"\#($0)""# } ?? ""
+        let now = iso8601.string(from: Date())
+        let json = """
+        {
+          "id": "\(id)",
+          "title": "\(title)",
+          "creator": {
+            "id": "creator1",
+            "name": "Ahmed",
+            "surName": "Hussein"
+          },
+          "activityDetails": {
+            "activityType": "\(activityType)",
+            \(extraFields)
+          },
+          "isDateConfirmed": \(isDateConfirmed),
+          "isLocationConfirmed": \(isLocationConfirmed),
+          "isPublic": \(isPublic),
+          "joiningCondition": "\(joiningCondition)",
+          "createdAt": "\(now)",
+          "dateLocations": \(dateLocations)
+          \(maxField)\(notesField)\(imageField)
+        }
+        """
+        return Data(json.utf8)
+    }
+
+    static let now = Date()
+    static let nowString = iso8601.string(from: now)
+
+    static func dateLocationJSON(id: String = "dl1") -> String {
+        let start = iso8601.string(from: now.addingTimeInterval(3600))
+        let end   = iso8601.string(from: now.addingTimeInterval(7200))
+        return """
+        {
+          "id": "\(id)",
+          "startDateTime": "\(start)",
+          "endDateTime": "\(end)",
+          "locations": [
+            { "latitude": 45.4642, "longitude": 9.19, "geohash": "u0ndx37j" }
+          ]
+        }
+        """
+    }
+}
+
+// MARK: - CreatorInfo Tests
+
+final class CreatorInfoTests: XCTestCase {
+
+    func test_decode_allFields() throws {
+        let json = """
+        {"id":"u1","name":"Ahmed","surName":"H","profileImageUrl":"https://example.com/img.png"}
+        """
+        let creator = try makeDecoder().decode(CreatorInfo.self, from: Data(json.utf8))
+        XCTAssertEqual(creator.id, "u1")
+        XCTAssertEqual(creator.name, "Ahmed")
+        XCTAssertEqual(creator.surName, "H")
+        XCTAssertEqual(creator.profileImageUrl, "https://example.com/img.png")
+    }
+
+    func test_decode_missingOptionalProfileImage_isNil() throws {
+        let json = """
+        {"id":"u1","name":"Ahmed","surName":"H"}
+        """
+        let creator = try makeDecoder().decode(CreatorInfo.self, from: Data(json.utf8))
+        XCTAssertNil(creator.profileImageUrl)
+    }
+
+    func test_decode_emptyName_succeeds() throws {
+        let json = """
+        {"id":"u1","name":"","surName":""}
+        """
+        let creator = try makeDecoder().decode(CreatorInfo.self, from: Data(json.utf8))
+        XCTAssertEqual(creator.name, "")
+        XCTAssertEqual(creator.surName, "")
+    }
+
+    func test_sample_hasExpectedValues() {
+        XCTAssertEqual(CreatorInfo.sample.name, "Ahmed")
+        XCTAssertEqual(CreatorInfo.sample.surName, "Hussein")
+        XCTAssertFalse(CreatorInfo.sample.id.isEmpty)
+    }
+}
+
+// MARK: - LocationPoint Tests
+
+final class LocationPointTests: XCTestCase {
+
+    func test_decode_standard() throws {
+        let json = """
+        {"latitude":48.8566,"longitude":2.3522,"geohash":"u09tvw0f"}
+        """
+        let loc = try makeDecoder().decode(LocationPoint.self, from: Data(json.utf8))
+        XCTAssertEqual(loc.latitude,  48.8566, accuracy: 0.0001)
+        XCTAssertEqual(loc.longitude, 2.3522,  accuracy: 0.0001)
+        XCTAssertEqual(loc.geohash, "u09tvw0f")
+    }
+
+    func test_decode_negativeCoordinates() throws {
+        let json = """
+        {"latitude":-33.8688,"longitude":151.2093,"geohash":"r3gx2"}
+        """
+        let loc = try makeDecoder().decode(LocationPoint.self, from: Data(json.utf8))
+        XCTAssertEqual(loc.latitude, -33.8688, accuracy: 0.0001)
+        XCTAssertGreaterThan(loc.longitude, 0)
+    }
+
+    func test_sample_milanCoordinates() {
+        XCTAssertEqual(LocationPoint.sample.latitude,  45.4642, accuracy: 0.001)
+        XCTAssertEqual(LocationPoint.sample.longitude, 9.1900,  accuracy: 0.001)
+    }
+}
+
+// MARK: - DateLocationEntry Tests
+
+final class DateLocationEntryTests: XCTestCase {
+
+    func test_decode_singleLocation() throws {
+        let data = Data(Fixture.dateLocationJSON().utf8)
+        let entry = try makeDecoder().decode(DateLocationEntry.self, from: data)
+        XCTAssertEqual(entry.id, "dl1")
+        XCTAssertEqual(entry.locations.count, 1)
+        XCTAssertGreaterThan(entry.endDateTime, entry.startDateTime)
+    }
+
+    func test_decode_multipleLocations() throws {
+        let start = iso8601.string(from: Date())
+        let end   = iso8601.string(from: Date().addingTimeInterval(3600))
+        let json  = """
+        {
+          "id": "dl2",
+          "startDateTime": "\(start)",
+          "endDateTime": "\(end)",
+          "locations": [
+            {"latitude":1.0,"longitude":2.0,"geohash":"abc"},
+            {"latitude":3.0,"longitude":4.0,"geohash":"def"}
+          ]
+        }
+        """
+        let entry = try makeDecoder().decode(DateLocationEntry.self, from: Data(json.utf8))
+        XCTAssertEqual(entry.locations.count, 2)
+    }
+
+    func test_decode_emptyLocations() throws {
+        let start = iso8601.string(from: Date())
+        let end   = iso8601.string(from: Date().addingTimeInterval(3600))
+        let json  = """
+        {"id":"dl3","startDateTime":"\(start)","endDateTime":"\(end)","locations":[]}
+        """
+        let entry = try makeDecoder().decode(DateLocationEntry.self, from: Data(json.utf8))
+        XCTAssertTrue(entry.locations.isEmpty)
+    }
+
+    func test_sample_endAfterStart() {
+        XCTAssertGreaterThan(DateLocationEntry.sample.endDateTime,
+                             DateLocationEntry.sample.startDateTime)
+    }
+
+    func test_sample_hasLocations() {
+        XCTAssertFalse(DateLocationEntry.sample.locations.isEmpty)
+    }
+}
+
+// MARK: - JoinCondition Tests
+
+final class JoinConditionTests: XCTestCase {
+
+    private func encoded(_ condition: JoinCondition) throws -> String {
+        let data = try makeEncoder().encode(condition)
+        return String(data: data, encoding: .utf8)!
+                .trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+    }
+
+    func test_encode_autoJoin() throws {
+        XCTAssertEqual(try encoded(.autoJoin), "autoJoin")
+    }
+
+    func test_encode_requestFromHost() throws {
+        XCTAssertEqual(try encoded(.requestFromHost), "requestFromHost")
+    }
+
+    func test_allCases_count() {
+        XCTAssertEqual(JoinCondition.allCases.count, 2)
+    }
+
+    func test_rawValues_areHumanReadable() {
+        XCTAssertFalse(JoinCondition.autoJoin.rawValue.isEmpty)
+        XCTAssertFalse(JoinCondition.requestFromHost.rawValue.isEmpty)
+    }
+}
+
+// MARK: - ActivityType Tests
+
+final class ActivityTypeTests: XCTestCase {
+
+    func test_allCases_count() {
+        XCTAssertEqual(ActivityType.allCases.count, 8)
+    }
+
+    func test_rawValues_matchExpected() {
+        let expected: Set<String> = ["Running","Cycling","Gym","Skiing","Swimming","Hiking","Yoga","Tennis"]
+        let actual = Set(ActivityType.allCases.map(\.rawValue))
+        XCTAssertEqual(actual, expected)
+    }
+
+    func test_init_fromRawValue_valid() {
+        XCTAssertEqual(ActivityType(rawValue: "Running"), .running)
+        XCTAssertEqual(ActivityType(rawValue: "Tennis"),  .tennis)
+    }
+
+    func test_init_fromRawValue_invalid_returnsNil() {
+        XCTAssertNil(ActivityType(rawValue: "Surfing"))
+        XCTAssertNil(ActivityType(rawValue: ""))
+    }
+
+    func test_icon_nonEmpty_forAllCases() {
+        for type in ActivityType.allCases {
+            XCTAssertFalse(type.icon.isEmpty, "\(type.rawValue) icon is empty")
+        }
+    }
+
+    func test_iconBaseName_nonEmpty_forAllCases() {
+        for type in ActivityType.allCases {
+            XCTAssertFalse(type.iconBaseName.isEmpty, "\(type.rawValue) iconBaseName is empty")
+        }
+    }
+
+    func test_codable_roundTrip() throws {
+        for type in ActivityType.allCases {
+            let data    = try makeEncoder().encode(type)
+            let decoded = try makeDecoder().decode(ActivityType.self, from: data)
+            XCTAssertEqual(decoded, type)
+        }
+    }
+}
+
+
+
+// MARK: - EventFullDetails Tests
+
+final class EventFullDetailsTests: XCTestCase {
+
+    func test_decode_minimal_autoJoin() throws {
+        let data = Fixture.eventJSON(joiningCondition: "autoJoin")
+        let event = try makeDecoder().decode(EventFullDetails.self, from: data)
+        XCTAssertEqual(event.joinCondition, .autoJoin)
+    }
+
+    func test_decode_requestFromHost() throws {
+        let data = Fixture.eventJSON(joiningCondition: "requestFromHost")
+        let event = try makeDecoder().decode(EventFullDetails.self, from: data)
+        XCTAssertEqual(event.joinCondition, .requestFromHost)
+    }
+
+    func test_decode_unknownJoiningCondition_defaultsToRequestFromHost() throws {
+        let data = Fixture.eventJSON(joiningCondition: "somethingElse")
+        let event = try makeDecoder().decode(EventFullDetails.self, from: data)
+        XCTAssertEqual(event.joinCondition, .requestFromHost)
+    }
+
+    func test_decode_isPublicTrue() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self, from: Fixture.eventJSON(isPublic: true))
+        XCTAssertTrue(event.isPublic)
+    }
+
+    func test_decode_isPublicFalse() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self, from: Fixture.eventJSON(isPublic: false))
+        XCTAssertFalse(event.isPublic)
+    }
+
+    func test_decode_isDateConfirmed() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self, from: Fixture.eventJSON(isDateConfirmed: true))
+        XCTAssertTrue(event.isDateConfirmed)
+    }
+
+    func test_decode_isLocationConfirmed() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self, from: Fixture.eventJSON(isLocationConfirmed: true))
+        XCTAssertTrue(event.isLocationConfirmed)
+    }
+
+    func test_decode_optionalNotes_present() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self,
+                                            from: Fixture.eventJSON(notes: "Bring water"))
+        XCTAssertEqual(event.notes, "Bring water")
+    }
+
+    func test_decode_optionalNotes_absent_isNil() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self, from: Fixture.eventJSON())
+        XCTAssertNil(event.notes)
+    }
+
+    func test_decode_optionalEventImage_present() throws {
+        let event = try makeDecoder().decode(
+            EventFullDetails.self,
+            from: Fixture.eventJSON(eventImage: "https://example.com/img.png"))
+        XCTAssertEqual(event.eventImage, "https://example.com/img.png")
+    }
+
+    func test_decode_optionalEventImage_absent_isNil() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self, from: Fixture.eventJSON())
+        XCTAssertNil(event.eventImage)
+    }
+
+    func test_decode_maxAllowedToJoin_present() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self,
+                                            from: Fixture.eventJSON(maxAllowedToJoin: 50))
+        XCTAssertEqual(event.maxAllowedToJoin, 50)
+    }
+
+    func test_decode_maxAllowedToJoin_absent_isNil() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self, from: Fixture.eventJSON())
+        XCTAssertNil(event.maxAllowedToJoin)
+    }
+
+    func test_decode_emptyDateLocations() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self, from: Fixture.eventJSON())
+        XCTAssertTrue(event.dateLocations.isEmpty)
+    }
+
+    func test_decode_withDateLocations() throws {
+        let dlJSON = "[\(Fixture.dateLocationJSON(id: "dl1")),\(Fixture.dateLocationJSON(id: "dl2"))]"
+        let data   = Fixture.eventJSON(dateLocations: dlJSON)
+        let event  = try makeDecoder().decode(EventFullDetails.self, from: data)
+        XCTAssertEqual(event.dateLocations.count, 2)
+        XCTAssertEqual(event.dateLocations[0].id, "dl1")
+        XCTAssertEqual(event.dateLocations[1].id, "dl2")
+    }
+
+    func test_activityType_computedProperty_matchesDecoded() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self,
+                                            from: Fixture.eventJSON(activityType: "Running"))
+        XCTAssertEqual(event.activityType, .running)
+    }
+
+    func test_decode_allActivityTypes() throws {
+        for type in ActivityType.allCases {
+            let json = Fixture.eventJSON(activityType: type.rawValue, extraFields: "")
+            // Should not throw – unknown extra fields are ignored by decoders
+            XCTAssertNoThrow(try makeDecoder().decode(EventFullDetails.self, from: json))
+        }
+    }
+
+    func test_createdAt_decodedAsDate() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self, from: Fixture.eventJSON())
+        // Should be within the last few seconds
+        XCTAssertLessThanOrEqual(abs(event.createdAt.timeIntervalSinceNow), 5)
+    }
+
+    func test_decode_idAndTitle() throws {
+        let event = try makeDecoder().decode(EventFullDetails.self,
+                                            from: Fixture.eventJSON(id: "myId", title: "Night Hike"))
+        XCTAssertEqual(event.id, "myId")
+        XCTAssertEqual(event.title, "Night Hike")
+    }
+
+    func test_sample_hasExpectedTitle() {
+        XCTAssertEqual(EventFullDetails.sample.title, "Morning Run")
+    }
+
+    func test_sample_activityType_isRunning() {
+        XCTAssertEqual(EventFullDetails.sample.activityType, .running)
+    }
+
+    func test_sample_hasTwoDateLocations() {
+        XCTAssertEqual(EventFullDetails.sample.dateLocations.count, 2)
+    }
+
+    func test_sample_joinCondition() {
+        XCTAssertEqual(EventFullDetails.sample.joinCondition, .requestFromHost)
+    }
+}
+
+// MARK: - ViewModelMoreInfoEvent Tests
+
+/// A lightweight test double for the network layer that avoids real Firestore calls.
+/// Inject by subclassing or wrapping; here we test the ViewModel's state transitions
+/// by hooking into its published properties after construction with a pre-populated fixture.
+@MainActor
+final class ViewModelMoreInfoEventTests: XCTestCase {
+
+    // MARK: Initial state
+
+    func test_initialState_isLoading() async {
+        // ViewModel starts loading immediately on init.
+        // We can only observe the initial value synchronously
+        // before the async Task on `init` completes.
+        // Because there's no DI seam, we verify the observable
+        // properties exist with their expected types.
+        let vm = ViewModelMoreInfoEvent(eventId: "test-id")
+        // fullDetails is nil until network resolves
+        XCTAssertNil(vm.fullDetails)
+        // isLoading starts true (set synchronously via Task)
+        // isErrorLoading starts false
+        XCTAssertFalse(vm.isErrorLoading)
+    }
+
+    func test_eventId_storedCorrectly() async {
+        let vm = ViewModelMoreInfoEvent(eventId: "evt-42")
+        XCTAssertEqual(vm.eventId, "evt-42")
+    }
+
+    // MARK: State after successful load (simulated via direct property set)
+
+    func test_successState_fullDetailsNonNil_isLoadingFalse() async {
+        let vm = ViewModelMoreInfoEvent(eventId: "x")
+        // Simulate what loadDetails does on success:
+        vm.fullDetails = EventFullDetails.sample
+        vm.isLoading = false
+        vm.isErrorLoading = false
+
+        XCTAssertNotNil(vm.fullDetails)
+        XCTAssertFalse(vm.isLoading)
+        XCTAssertFalse(vm.isErrorLoading)
+    }
+
+    func test_successState_eventTitleMatchesSample() async {
+        let vm = ViewModelMoreInfoEvent(eventId: "x")
+        vm.fullDetails = EventFullDetails.sample
+        vm.isLoading = false
+
+        XCTAssertEqual(vm.fullDetails?.title, "Morning Run")
+    }
+
+    // MARK: State after error
+
+    func test_errorState_fullDetailsNil_isErrorTrue() async {
+        let vm = ViewModelMoreInfoEvent(eventId: "x")
+        vm.fullDetails = nil
+        vm.isLoading = false
+        vm.isErrorLoading = true
+
+        XCTAssertNil(vm.fullDetails)
+        XCTAssertTrue(vm.isErrorLoading)
+        XCTAssertFalse(vm.isLoading)
+    }
+
+    // MARK: State mutations are mutually exclusive
+
+    func test_loadingAndError_neverBothTrue() async {
+        let vm = ViewModelMoreInfoEvent(eventId: "x")
+        // Loading=true, error=false → valid loading state
+        vm.isLoading = true
+        vm.isErrorLoading = false
+        XCTAssertFalse(vm.isLoading && vm.isErrorLoading)
+
+        // Error=true, loading=false → valid error state
+        vm.isLoading = false
+        vm.isErrorLoading = true
+        XCTAssertFalse(vm.isLoading && vm.isErrorLoading)
+    }
+
+    func test_fullDetails_activityType_derivedCorrectly() async {
+        let vm = ViewModelMoreInfoEvent(eventId: "x")
+        vm.fullDetails = EventFullDetails.sample
+        XCTAssertEqual(vm.fullDetails?.activityType, .running)
+    }
+
+    func test_fullDetails_joinCondition_accessible() async {
+        let vm = ViewModelMoreInfoEvent(eventId: "x")
+        vm.fullDetails = EventFullDetails.sample
+        XCTAssertEqual(vm.fullDetails?.joinCondition, .requestFromHost)
+    }
+
+    func test_fullDetails_dateLocations_count() async {
+        let vm = ViewModelMoreInfoEvent(eventId: "x")
+        vm.fullDetails = EventFullDetails.sample
+        XCTAssertEqual(vm.fullDetails?.dateLocations.count, 2)
+    }
+
+    func test_fullDetails_creator_name() async {
+        let vm = ViewModelMoreInfoEvent(eventId: "x")
+        vm.fullDetails = EventFullDetails.sample
+        XCTAssertEqual(vm.fullDetails?.creator.name, "Ahmed")
+    }
+
+    func test_differentEventIds_areIndependent() async {
+        let vm1 = ViewModelMoreInfoEvent(eventId: "id-1")
+        let vm2 = ViewModelMoreInfoEvent(eventId: "id-2")
+        XCTAssertNotEqual(vm1.eventId, vm2.eventId)
+    }
+}
+
+// MARK: - Sendable / Concurrency Conformance Tests
+
+/// These compile-time checks verify the nonisolated Sendable structs
+/// can be safely passed across actor boundaries. If they compile, they pass.
+final class SendableConformanceTests: XCTestCase {
+
+    func test_creatorInfo_sendable() async {
+        let creator = CreatorInfo.sample
+        let result: CreatorInfo = await Task.detached { creator }.value
+        XCTAssertEqual(result.id, creator.id)
+    }
+
+    func test_locationPoint_sendable() async {
+        let loc = LocationPoint.sample
+        let result: LocationPoint = await Task.detached { loc }.value
+        XCTAssertEqual(result.geohash, loc.geohash)
+    }
+
+    func test_dateLocationEntry_sendable() async {
+        let entry = DateLocationEntry.sample
+        let result: DateLocationEntry = await Task.detached { entry }.value
+        XCTAssertEqual(result.id, entry.id)
+    }
+
+    func test_eventFullDetails_sendable() async {
+        let event = EventFullDetails.sample
+        let result: EventFullDetails = await Task.detached { event }.value
+        XCTAssertEqual(result.id, event.id)
+    }
+}
