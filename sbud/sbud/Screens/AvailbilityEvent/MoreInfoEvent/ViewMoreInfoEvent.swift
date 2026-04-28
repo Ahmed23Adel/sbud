@@ -13,31 +13,67 @@ import Lottie
 struct ViewMoreInfoEvent: View {
     @StateObject var viewModel: ViewModelMoreInfoEvent
     
-    init(basicEvent: AvailabilityEvent){
-        _viewModel = StateObject(wrappedValue: ViewModelMoreInfoEvent(event: basicEvent))
+    init(eventId: String){
+        _viewModel = StateObject(wrappedValue: ViewModelMoreInfoEvent(eventId: eventId))
     }
     var body: some View {
-        
         ZStack{
+            
             Color.darkBackground
+            VStack{
+                if let coverImgURL = viewModel.fullDetails?.eventImage{
+                    FadingEventImage(coverImgURL: coverImgURL)
+                    .ignoresSafeArea()
+                    Spacer()
+                }
+                    
+                
+            }
+            if viewModel.isLoading{
+                LoadingView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea()
+            } 
             ScrollView {
                 VStack{
-                    KFImage(URL(string: viewModel.event.eventImage))
-                        .placeholder{
-                            ProgressView()
+                    if viewModel.isErrorLoading{
+                        VStack{
+                            Spacer()
+                            Text("Error loading full details of event, pleaes try again")
+                                .font(.title)
+                                .fontWeight(.bold)
+                            Spacer()
                         }
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 250)
-                        .cornerRadius(16)
-                    
-                    if viewModel.event.isLoading{
-                        LoadingView()
-                    } else{
-                        DateLocationRow(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
-                        StatusRow(isPublic: viewModel.event.isPublic)
-                        SuggestedTimeRow(startDate: viewModel.event.startDateTime, endDate: viewModel.event.endDateTime)
-                        LocationMapCard(event: viewModel.event)
+                    }  else if let details = viewModel.fullDetails{
+                        ProposalVsDeterminedPhase(isDateConfirmed: details.isDateConfirmed, isLocationConfirmed: details.isLocationConfirmed)
+                        HStack(){
+                            JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
+                            VisibilityDetailed(isPublic: details.isPublic)
+                            Spacer()
+                        }
+                        .padding(.leading, 14)
+                        HStack{
+                            Text(details.title)
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .italic()
+                                .padding(.horizontal)
+                            Spacer()
+                        }
+                        ViewActivityTypeForDetails(activityType: details.activityType)
+                        PerformanceTargetDetailedConditional(activityDetails: details.activityDetails)
+                        
+                        GenericMultilineTextView(
+                            fieldName: "Description",
+                            placeholder: "Ex: Come join us",
+                            iconString: "pencil",
+                            text: details.notes!)
+                        
+                        CreatorContactDetailed(creatorInfo: details.creator)
+                        
+                        
+                        LocationMapCard(dateLocations: details.dateLocations)
+                            .padding()
                         
                         // Attending people list
                         LazyVStack(spacing: 0) {
@@ -49,28 +85,12 @@ struct ViewMoreInfoEvent: View {
                         }
                     }
                 }
-                .padding(.bottom) // Add bottom padding if needed
+                .padding(.top, 200)
             }
         }
         .ignoresSafeArea()
     }
 }
-
-#Preview {
-    ViewMoreInfoEvent(basicEvent: AvailabilityEvent(
-        id: "cf5f3e6b-a62b-4c43-85f5-e47ca287419f",
-        geoPoint: GeoPoint(latitude: 45.4642, longitude: 9.1900),
-        dateLocationId: "milano_centro_001",
-        activityType: "Coffee",
-        startDateTime: Date().addingTimeInterval(3600),
-        endDateTime: Date().addingTimeInterval(7200),
-        createdAt: Date(),
-        g: GeoLocation(geopoint: Coordinate(latitude: 43, longitude: 9.4), geohash: "u0ndx37j"),
-        isDateConfirmed: true,
-        isLocationConfirmed: false,
-        isPublic: true,
-        eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s",
-        creatorName: "ahmed",
-        creatorUserId: "dYRAomMgYTUQhaiET8iEu7pegOB2"
-    ))
-}
+//#Preview {
+//    ViewMoreInfoEvent(basicEvent: .preview)
+//}

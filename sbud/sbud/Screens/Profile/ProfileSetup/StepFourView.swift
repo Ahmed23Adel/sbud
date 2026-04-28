@@ -13,7 +13,7 @@ struct StepFourView: View {
     @EnvironmentObject var coordinator: MainCoordinator
     @State private var cameraPosition: MapCameraPosition = .automatic
 
-    // Ekran yüksekliğinin %48'i — GeometryReader'a gerek yok
+
     private let mapHeight: CGFloat = UIScreen.main.bounds.height * 0.48
 
     var body: some View {
@@ -45,7 +45,7 @@ struct StepFourView: View {
                     .allowsHitTesting(false)
                 }
 
-                // LOC yazısı
+
                 Text(locText)
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
                     .foregroundColor(Color("turquoise"))
@@ -53,9 +53,9 @@ struct StepFourView: View {
                     .padding(.bottom, 16)
             }
             .frame(height: mapHeight)
-            // Haritayı status bar'a kadar taşı
+
             .padding(.top, -UIApplication.safeAreaTop)
-            // Ama ZStack'in geri kalanı etkilenmesin diye aynı miktarı geri ekle
+
             .clipped()
 
             // MARK: - İçerik
@@ -80,7 +80,10 @@ struct StepFourView: View {
 
                 Spacer(minLength: 24)
 
-                allowButton
+                VStack(spacing: 8) {
+                    allowButton
+                    notAllowButton
+                }
             }
             .padding(.horizontal, 28)
             .padding(.top, 24)
@@ -137,6 +140,24 @@ private extension StepFourView {
         }
         .padding(.bottom, 8)
     }
+    
+    var notAllowButton: some View{
+            Button {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    vm.goBack()
+                }
+            } label: {
+                Text("NOT NOW")
+                    .font(.system(size: 17, weight: .heavy))
+                    .foregroundColor(.white.opacity(0.5))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 70)
+                    .background(Color.white.opacity(0.05))
+                    .clipShape(Rectangle())
+            }
+            .padding(.bottom, 8)
+    }
+
 
     func updateMap() {
         guard vm.profile.location.latitude != 0 else { return }

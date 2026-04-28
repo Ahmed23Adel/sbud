@@ -8,21 +8,16 @@
 import Foundation
 
 enum AvailabilityNavigationDestination: Hashable {
-    case moreInfoEvent(AvailabilityEvent)
+    case moreInfoEvent(String)
+    case addNewEvent
 
-    static func == (lhs: AvailabilityNavigationDestination,
-                    rhs: AvailabilityNavigationDestination)
-    -> Bool {
-        switch (lhs, rhs) {
-        case (.moreInfoEvent(let a), .moreInfoEvent(let b)):
-            return a.id == b.id
-        }
-    }
 
     func hash(into hasher: inout Hasher) {
         switch self {
-        case .moreInfoEvent(let event):
-            hasher.combine(event.id)
+        case .moreInfoEvent(let eventId):
+            hasher.combine(eventId)
+        case .addNewEvent:
+            hasher.combine("addNewEvent")
         }
     }
 }

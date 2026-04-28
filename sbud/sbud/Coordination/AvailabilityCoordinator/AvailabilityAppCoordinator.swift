@@ -48,17 +48,19 @@ struct AvailabilityAppCoordinator: View {
     private func sheetContent(for sheetType: AvailabilitySheetType) -> some View {
         switch sheetType {
         case .filter:
-            FiltersView(availabilityFiltersResults: $availabilityViewModel.availabilityFiltersResults)
+            FiltersView(availabilityFiltersResults: $availaibilityFiltesrResults)
         case .eventPreview:
-            EmptyView() // overlay ile gösteriliyor
+            EmptyView()
         }
     }
 
     @ViewBuilder
     private func destinationView(for destination: AvailabilityNavigationDestination) -> some View {
         switch destination {
-        case .moreInfoEvent(let event):
-            ViewMoreInfoEvent(basicEvent: event)
+        case .moreInfoEvent(let eventId):
+            ViewMoreInfoEvent(eventId: eventId)
+        case .addNewEvent:
+            CoordinatorAddNewEvent()
         }
     }
 }

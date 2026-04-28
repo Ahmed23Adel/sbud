@@ -15,8 +15,7 @@ struct Coordinate: Codable, Sendable {
     let latitude: Double
     let longitude: Double
 }
-
-struct AvailabilityClusterModelRequest: Encodable, Sendable {
+struct AvailabilityClusterModelRequest: Encodable, Sendable, CustomStringConvertible {
     let topLeft: GeoPoint
     let bottomRight: GeoPoint
     let selectedActivityType: String
@@ -28,18 +27,23 @@ struct AvailabilityClusterModelRequest: Encodable, Sendable {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
-        let startString = formatter.string(from: selectedStartTime)
-        let endString = formatter.string(from: selectedEndTime)
         return [
             "topLeftLatitude": String(topLeft.latitude),
             "topLeftLongitude": String(topLeft.longitude),
             "bottomRightLatitude": String(bottomRight.latitude),
             "bottomRightLongitude": String(bottomRight.longitude),
             "selectedActivityType": selectedActivityType,
-            "selectedStartTime": startString,
-            "selectedEndTime": endString,
+            "selectedStartTime": formatter.string(from: selectedStartTime),
+            "selectedEndTime": formatter.string(from: selectedEndTime),
             "precision": String(precision)
-
         ]
+    }
+
+    // MARK: - CustomStringConvertible
+    var description: String {
+        let dict = toDict()
+        return dict
+            .map { "\($0.key): \($0.value)" }
+            .joined(separator: ", ")
     }
 }
