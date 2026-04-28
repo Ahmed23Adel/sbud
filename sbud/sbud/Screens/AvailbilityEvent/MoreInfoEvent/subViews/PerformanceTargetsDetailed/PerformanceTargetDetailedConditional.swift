@@ -8,21 +8,30 @@
 import SwiftUI
 
 struct PerformanceTargetDetailedConditional: View {
-    var activityDetails: AnyActivityDetails
+    var activityDetails: ExtraArgsHolder
     var body: some View {
-        HStack{
-            switch activityDetails.value.activityType{
+        HStack {
+            switch activityDetails.selectedActivity {
             case .running:
-                PerformanceTargetDetailedRunning(performanceTargets: activityDetails.value as! ResponseActivityDetailsRunning)
+                PerformanceTargetDetailedRunning(t: activityDetails.extraArgs as! ExtraArgsHolderRunning)
             case .cycling:
-                PerformanceTargetDetailedRunning(performanceTargets: activityDetails.value as! ResponseActivityDetailsRunning)
+                PerformanceTargetDetailedCycling(t: activityDetails.extraArgs as! ExtraArgsHolderCycling)
             case .gym:
-                PerformanceTargetDetailedRunning(performanceTargets: activityDetails.value as! ResponseActivityDetailsRunning)
+                PerformanceTargetDetailedGym(t: activityDetails.extraArgs as! ExtraArgsHolderGym)
+            case .skiing:
+                PerformanceTargetDetailedSkiing(t: activityDetails.extraArgs as! ExtraArgsHolderSkiing)
+            case .swimming:
+                PerformanceTargetDetailedSwimming(t: activityDetails.extraArgs as! ExtraArgsHolderSwimming)
+            case .hiking:
+                PerformanceTargetDetailedHiking(t: activityDetails.extraArgs as! ExtraArgsHolderHiking)
+            case .yoga:
+                PerformanceTargetDetailedYoga(t: activityDetails.extraArgs as! ExtraArgsHolderYoga)
+            case .tennis:
+                PerformanceTargetDetailedTennis(t: activityDetails.extraArgs as! ExtraArgsHolderTennis)
             }
         }
     }
 }
-
 #Preview {
-    PerformanceTargetDetailedConditional(activityDetails: .sampleRunning)
+    PerformanceTargetDetailedConditional(activityDetails: ExtraArgsHolder())
 }

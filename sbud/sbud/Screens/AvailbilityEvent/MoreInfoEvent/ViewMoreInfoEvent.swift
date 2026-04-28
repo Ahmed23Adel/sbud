@@ -13,22 +13,30 @@ import Lottie
 struct ViewMoreInfoEvent: View {
     @StateObject var viewModel: ViewModelMoreInfoEvent
     
-    init(basicEvent: AvailabilityEvent){
-        _viewModel = StateObject(wrappedValue: ViewModelMoreInfoEvent(event: basicEvent))
+    init(eventId: String){
+        _viewModel = StateObject(wrappedValue: ViewModelMoreInfoEvent(eventId: eventId))
     }
     var body: some View {
         ZStack{
+            
             Color.darkBackground
             VStack{
-                FadingEventImage(coverImgURL: viewModel.event.eventImage)
+                if let coverImgURL = viewModel.fullDetails?.eventImage{
+                    FadingEventImage(coverImgURL: coverImgURL)
                     .ignoresSafeArea()
-                Spacer()
+                    Spacer()
+                }
+                    
+                
             }
+            if viewModel.isLoading{
+                LoadingView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea()
+            } 
             ScrollView {
                 VStack{
-                    if viewModel.event.isLoading{
-                        LoadingView()
-                    }  else if viewModel.isErrorLoading{
+                    if viewModel.isErrorLoading{
                         VStack{
                             Spacer()
                             Text("Error loading full details of event, pleaes try again")
@@ -37,7 +45,7 @@ struct ViewMoreInfoEvent: View {
                             Spacer()
                         }
                     }  else if let details = viewModel.fullDetails{
-                        ProposalVsDeterminedPhase(isDateConfirmed: viewModel.event.isDateConfirmed, isLocationConfirmed: viewModel.event.isLocationConfirmed)
+                        ProposalVsDeterminedPhase(isDateConfirmed: details.isDateConfirmed, isLocationConfirmed: details.isLocationConfirmed)
                         HStack(){
                             JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
                             VisibilityDetailed(isPublic: details.isPublic)
@@ -83,6 +91,6 @@ struct ViewMoreInfoEvent: View {
         .ignoresSafeArea()
     }
 }
-#Preview {
-    ViewMoreInfoEvent(basicEvent: .preview)
-}
+//#Preview {
+//    ViewMoreInfoEvent(basicEvent: .preview)
+//}

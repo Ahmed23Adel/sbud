@@ -10,17 +10,18 @@ import Combine
 import _MapKit_SwiftUI
 import OSLog
 
-class ViewModelFlattenedEventsList: ObservableObject{
+@Observable
+class ViewModelFlattenedEventsList{
     let region: MKCoordinateRegion
     let filterResults: AvailabilityFiltersResults
-    @Published var isLoading: Bool = true
+    var isLoading: Bool = true
     var currentPage = 1
     var pageSize = 10
-    @Published var events: [AvailabilityEvent] = []
-    @Published var showAlert = false
-    @Published var alertMsg = ""
+    var events: [PaginatedEvent] = []
+    var showAlert = false
+    var alertMsg = ""
     private var canLoadMore = true
-    @Published var isLoadingNewPage = false
+    var isLoadingNewPage = false
     let logger = Logger(subsystem: "sBud", category: "ViewModelFlattenedEventsList")
     
     init(region: MKCoordinateRegion, filterResults: AvailabilityFiltersResults) {
@@ -66,20 +67,19 @@ class ViewModelFlattenedEventsList: ObservableObject{
                 page: currentPage,
                 pageSize: pageSize
             )
-            logger.notice("requestParamslist \(requestParams.toDict())")
+            logger.info("requestParamslist \(requestParams.toDict())")
             let results = try await requester.fetchEvents(requestParams: requestParams)
             
             await MainActor.run {
-                let availabilityEvents: [AvailabilityEvent] = results.events.map { $0.covertToAnchor().event as! AvailabilityEvent}
-                logger.notice("results \(availabilityEvents.count)")
-                events.append(contentsOf: availabilityEvents)
+                logger.notice("results \(results.events.count)")
+                events.append(contentsOf: results.events)
                 incPage()
                 finishLoading()
                 canLoadMore = results.hasNext
             }
             
         } catch {
-            print("error list", error)
+            logger.error("error For requesting list \(error)")
             await MainActor.run {
                 showError()
                 canLoadMore = false

@@ -16,7 +16,7 @@ class NewEventBuilder{
     var title: String = ""
     var activityType: ActivityType = .running
     var description: String = ""
-    var activityExtraArgs = NewEventExtraArgsHoder()
+    var activityExtraArgs = ExtraArgsHolder()
     // MARK: Step2
     var dateLocationsHolder = MultipleDateLocationsHolder()
     var isEventPublic = true
@@ -55,7 +55,7 @@ class NewEventBuilder{
     
     func sendRequest() async  -> Bool{
         let request = CreateNewEventRequest(
-            activityDetails: activityExtraArgs.extraArgs.createEncodableRequest(),
+            activityDetails: activityExtraArgs.extraArgs,
             title: title,
             eventImage: coverImgURL,
             isPublic: isEventPublic,
