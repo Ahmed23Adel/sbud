@@ -14,7 +14,8 @@ struct UserCardView: View {
 
     @StateObject private var vm = UserCardVM()
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
-    
+    @EnvironmentObject private var mainCoordinator: MainCoordinator
+
     private var activityColor: Color {
         switch event.activityType.lowercased() {
         case "running": return Color("palelime")
@@ -32,7 +33,7 @@ struct UserCardView: View {
         default:        return "star.fill"
         }
     }
-    
+
     private var activityTextColor: Color {
         switch event.activityType.lowercased() {
         case "gym": return .white
@@ -44,7 +45,7 @@ struct UserCardView: View {
         VStack(spacing: 0) {
 
             HStack(spacing: 0) {
-                //MARK: LEFT
+                // MARK: LEFT
                 ZStack(alignment: .topLeading) {
                     KFImage(URL(string: event.eventImage))
                         .placeholder {
@@ -60,14 +61,6 @@ struct UserCardView: View {
                         .frame(width: 140)
                         .clipped()
 
-                    /*Text(event.activityType.uppercased())
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Color.mainColor)
-                        .clipShape(Capsule())
-                        .padding(15)*/
                     HStack(spacing: 4) {
                         Image(systemName: activityIcon)
                             .font(.system(size: 9, weight: .bold))
@@ -83,7 +76,7 @@ struct UserCardView: View {
                 }
                 .frame(width: 140)
 
-                //MARK: RIGHT
+                // MARK: RIGHT
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .top) {
                         Text(event.creatorName.uppercased())
@@ -103,26 +96,34 @@ struct UserCardView: View {
                         }
                     }
 
-                    HStack(spacing: 8) {
-                        Group {
-                            if let urlStr = vm.userProfile?.profileImageUrl,
-                               let url = URL(string: urlStr) {
-                                KFImage(url)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .clipShape(Circle())
-                            } else {
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .foregroundColor(.gray)
-                            }
+                    Button {
+                        coordinator.dismissPreview()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            mainCoordinator.goToProfile(userId: event.creatorUserId ?? "")
                         }
-                        .frame(width: 20, height: 20)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Group {
+                                if let urlStr = vm.userProfile?.profileImageUrl,
+                                   let url = URL(string: urlStr) {
+                                    KFImage(url)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .clipShape(Circle())
+                                } else {
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            .frame(width: 20, height: 20)
 
-                        Text(vm.displayName(fallback: event.creatorName).uppercased())
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                            .foregroundColor(.gray)
+                            Text(vm.displayName(fallback: event.creatorName).uppercased())
+                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .foregroundColor(.gray)
+                        }
                     }
+
                     Spacer()
                     Divider()
                         .background(Color.white.opacity(0.2))
@@ -156,12 +157,12 @@ struct UserCardView: View {
             .frame(height: 180)
 
             Button {
-                let selectedEvent = event
+                let eventId = event.eventId
                 withAnimation(.spring(response: 0.42, dampingFraction: 0.84)) {
-                        coordinator.dismissPreview()
+                    coordinator.dismissPreview()
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.42) {
-                    coordinator.push(.moreInfoEvent(selectedEvent))
+                    coordinator.push(.moreInfoEvent(eventId))
                 }
             } label: {
                 Text("DETAILS")
@@ -172,7 +173,6 @@ struct UserCardView: View {
                     .background(Color.mainColor)
             }
         }
-        
         .clipShape(RoundedRectangle(cornerRadius: 25))
         .overlay(
             RoundedRectangle(cornerRadius: 25)
@@ -184,40 +184,3 @@ struct UserCardView: View {
         }
     }
 }
-
-#Preview {
-    ZStack {
-        Color.black.ignoresSafeArea()
-        VStack {
-            Spacer()
-            ZStack(alignment: .bottom) {
-                Color.black
-                    .ignoresSafeArea(edges: .bottom)
-                    .frame(height: 400)
-                UserCardView(
-                    event: AvailabilityEvent(
-                        id: "1",
-                        geoPoint: .init(latitude: 45.4642, longitude: 9.1900),
-                        dateLocationId: "milano",
-                        activityType: "Running",
-                        startDateTime: Date(),
-                        endDateTime: Date().addingTimeInterval(3600),
-                        createdAt: Date(),
-                        g: GeoLocation(
-                            geopoint: Coordinate(latitude: 45.4642, longitude: 9.1900),
-                            geohash: "u0nd"
-                        ),
-                        isDateConfirmed: true,
-                        isLocationConfirmed: true,
-                        isPublic: true,
-                        eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s",
-                        creatorName: "Downtown Sprint",
-                        creatorUserId: "KUPJX3vRIhXbvontNJMyboa8TC33"
-                    )
-                )
-                .environmentObject(AvailabilityCoordinator())
-            }
-        }
-    }
-}
-

@@ -12,7 +12,8 @@ internal import FirebaseFirestoreInternal
 struct AvailbilityView: View {
     @StateObject var viewModel: AvailbilityViewModel
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
-    
+    @EnvironmentObject private var mainCoordinator: MainCoordinator
+
     private var isPreviewOpen: Bool {
         if case .eventPreview = coordinator.activeSheet { return true }
         return false
@@ -20,7 +21,7 @@ struct AvailbilityView: View {
 
     var body: some View {
         ZStack {
-            // Map view - always rendered, hidden when not selected
+            // Map view
             AnchorMapConditionalView(
                 anchorAvailabilityEvents: viewModel.anchorAvailabilityEvents,
                 anchorClusters: viewModel.anchorsClusters,
@@ -31,7 +32,6 @@ struct AvailbilityView: View {
             .environmentObject(coordinator)
             .opacity(viewModel.selectedTab == 0 ? 1 : 0)
 
-            // List view - always rendered, hidden when not selected
             ViewFlattenedEventsList(
                 region: viewModel.currentRegion ?? MKCoordinateRegion(
                     center: CLLocationCoordinate2D(latitude: 43.9, longitude: 9.4),
@@ -43,7 +43,6 @@ struct AvailbilityView: View {
             .opacity(viewModel.selectedTab == 1 ? 1 : 0)
             .environmentObject(coordinator)
 
-            // Segmented picker
             VStack {
                 Picker("View mode", selection: $viewModel.selectedTab) {
                     Text("Map").tag(0)
@@ -59,63 +58,38 @@ struct AvailbilityView: View {
             .frame(width: UIConstants.bigCardWidth - 100)
             .offset(y: 40)
 
-            /*// Filter button
-            VStack {
-                Spacer()
-                HStack {
-                    GlassFloatingButton(systemName: "plus") {
-                        coordinator.push(.addNewEvent)
-                    }
+            if !isPreviewOpen {
+                VStack {
                     Spacer()
-                    GlassFloatingButton(systemName: "line.3.horizontal.decrease") {
-                        coordinator.showSheet(.filter)
+                    HStack {
+                        GlassFloatingButton(systemName: "plus") {
+                            coordinator.push(.addNewEvent)
+                        }
+                        Spacer()
+                        GlassFloatingButton(systemName: "line.3.horizontal.decrease") {
+                            coordinator.showSheet(.filter)
+                        }
                     }
+                    .padding(.bottom, 100)
+                    .padding(.trailing, 16)
+                    .padding(.leading, 16)
                 }
-                .padding(.bottom, 100)
-                .padding(.trailing, 16)
-                .padding(.leading, 16)
+                .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .bottomTrailing)))
             }
-            
-            if case .eventPreview(let event) = coordinator.activeSheet {
+
+            if isPreviewOpen,
+               case .eventPreview(let event) = coordinator.activeSheet {
                 VStack {
                     Spacer()
                     UserCardView(event: event)
                         .environmentObject(coordinator)
+                        .environmentObject(mainCoordinator)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
-                        .padding(.bottom, 90) // tab bar'ın üzerinde durur
+                        .padding(.bottom, 90)
                 }
                 .animation(.spring(response: 0.35, dampingFraction: 0.85), value: coordinator.activeSheet?.id)
                 .ignoresSafeArea(edges: .bottom)
             }
-            
-        }*/
-        if !isPreviewOpen {
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    GlassFloatingButton(systemName: "line.3.horizontal.decrease") {
-                        coordinator.showSheet(.filter)
-                    }
-                }
-                .padding(.bottom, 100)
-                .padding(.trailing, 16)
-            }
-            .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .bottomTrailing)))
-        }
-
-        if isPreviewOpen,
-           case .eventPreview(let event) = coordinator.activeSheet {
-               VStack {
-                   Spacer()
-                   UserCardView(event: event)
-                       .environmentObject(coordinator)
-                       .transition(.move(edge: .bottom).combined(with: .opacity))
-                       .padding(.bottom, 90) // tab bar'ın üzerinde durur
-               }
-               .animation(.spring(response: 0.35, dampingFraction: 0.85), value: coordinator.activeSheet?.id)
-               .ignoresSafeArea(edges: .bottom)
-           }
         }
         .animation(.spring(response: 0.42, dampingFraction: 0.84), value: isPreviewOpen)
         .alert("Error", isPresented: $viewModel.showErrorAlert) {
@@ -126,6 +100,7 @@ struct AvailbilityView: View {
         .ignoresSafeArea()
     }
 }
+
 #Preview {
     AvailbilityView(viewModel: AvailbilityViewModel(
         locationManager: LocationManager.shared,

@@ -41,7 +41,9 @@ struct Event: Decodable, Sendable {
     let creatorUserId: String?
 
     func covertToAnchor() -> AnchorAvailabilityEvent {
-        AnchorAvailabilityEvent(eventId: self.eventId, event: AvailabilityEvent(
+        
+        print("Event:", creatorName, "| creatorUserId:", creatorUserId ?? "NIL")
+        return AnchorAvailabilityEvent(eventId: self.eventId, event: AvailabilityEvent(
             id: id,
             eventId: eventId,
             geoPoint: GeoPoint(latitude: g.geopoint.latitude, longitude: g.geopoint.longitude),

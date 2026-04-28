@@ -48,9 +48,10 @@ struct AvailabilityAppCoordinator: View {
     private func sheetContent(for sheetType: AvailabilitySheetType) -> some View {
         switch sheetType {
         case .filter:
-            FiltersView(availabilityFiltersResults: $availaibilityFiltesrResults)
+            FiltersView(availabilityFiltersResults: $availabilityViewModel.availabilityFiltersResults)
         case .eventPreview:
             EmptyView()
+            
         }
     }
 
