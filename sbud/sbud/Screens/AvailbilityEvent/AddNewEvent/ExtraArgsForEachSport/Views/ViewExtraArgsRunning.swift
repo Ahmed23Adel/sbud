@@ -14,6 +14,11 @@ struct ViewExtraArgsRunning: View {
     
     var body: some View {
         VStack{
+            
+            TextOptionSelector(
+                header: "Cycling Type",
+                selected: $args.proposedRunningType
+            )
           GenericPerformanceTarget(
             targetHeader: "Target Distance",
             unitHeader: "KM",
@@ -22,7 +27,8 @@ struct ViewExtraArgsRunning: View {
             GenericPerformanceTarget(
               targetHeader: "Target Pace",
               unitHeader: "MIN/KM",
-              targetValue: $args.propsosedPace)
+              targetValue: $args.proposedPace)
+            
         }
         
         

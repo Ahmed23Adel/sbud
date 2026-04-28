@@ -42,15 +42,14 @@ class MainCoordinator: ObservableObject {
     
     func refreshAppFlow() {
             checkAppFlow()
-        }
-
+    }
     
     func checkAppFlow() {
-            Task { @MainActor in
-                let target = await checkProfileStatus()
-                navigateTo(target)
-            }
+        Task { @MainActor in
+            let target = await checkProfileStatus()
+            navigateTo(target)
         }
+    }
 
     private func checkProfileStatus() async -> MainRoute {
     

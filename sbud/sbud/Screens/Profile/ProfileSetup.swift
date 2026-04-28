@@ -7,13 +7,15 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
+@MainActor
 struct ProfileSetupView: View {
     @StateObject private var vm = ProfileSetupVM()
     @State private var showLocationPopup = false
     @EnvironmentObject var coordinator: MainCoordinator
     @Namespace private var buttonTransition
-
+    @State private var isEmailVerified: Bool = Auth.auth().currentUser?.isEmailVerified ?? false
     @State private var showGenderPicker = false
     @State private var showCalendar = false
     @State private var birthDate = Date()
@@ -25,6 +27,10 @@ struct ProfileSetupView: View {
     private var isFinalStep: Bool {
         vm.currentStep == 3
     }
+    
+    private var shouldShowEmailBanner: Bool {
+        return !isEmailVerified && AuthenticationManager.shared.signInMethod == AuthType.email.rawValue
+    }
 
     var body: some View {
         NavigationStack {
@@ -35,6 +41,18 @@ struct ProfileSetupView: View {
                     if !isFinalStep {
                         navigationBar {
                             coordinator.logout()
+                        }
+                        
+                        if shouldShowEmailBanner {
+                            EmailVerificationBanner {
+                                
+                                withAnimation(.easeOut) {
+                                    isEmailVerified = true
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                            .padding(.top, 10)
+                            .transition(.move(edge: .top).combined(with: .opacity))
                         }
                     }
                     
@@ -69,6 +87,7 @@ struct ProfileSetupView: View {
                 .blur(radius: isOverlayOpen ? 6 : 0)
                 .allowsHitTesting(!isOverlayOpen)
                 .animation(.easeInOut(duration: 0.25), value: isOverlayOpen)
+                .animation(.easeInOut, value: Auth.auth().currentUser?.isEmailVerified)
 
                 if showGenderPicker {
                     Color.black.opacity(0.5)
@@ -159,6 +178,9 @@ struct ProfileSetupView: View {
                     .allowsHitTesting(!isOverlayOpen)
                     .animation(.easeInOut(duration: 0.25), value: isOverlayOpen)
             }
+        }
+        .onAppear {
+            isEmailVerified = Auth.auth().currentUser?.isEmailVerified ?? false
         }
     }
 

@@ -12,13 +12,14 @@ import FirebaseFirestore
 import _MapKit_SwiftUI
 import Geohash
 import FirebaseCore
+import OSLog
 
 class AvailabilityDataFetcher {
 
     private let individualsPrecision = 6
     private let individualsLimit = 200
     private let clustersLimit = 100
-
+    private let logger = Logger(subsystem: "sBud", category: "AvailabilityDataFetcher")
     // MARK: - Individuals
     func fetchIndividuals(
         in region: MKCoordinateRegion,
@@ -31,7 +32,7 @@ class AvailabilityDataFetcher {
             selectedStartDateTime: selectedStartDateTime,
             selectedEndDateTime: selectedEndDateTime,
             selectedActivityType: selectedActivityType)
-
+        logger.info("Individual request: \(requestParams)")
         let requester = FlattenedEventsRequester()
         let results = try await requester.fetchIndividuals(requestParams: requestParams)
         let anchors = results.events.map { $0.covertToAnchor() }
@@ -53,6 +54,7 @@ class AvailabilityDataFetcher {
             selectedEndTime: selectedEndDateTime
 
        )
+        logger.info("requestParams for individuals: \(request)")
         return request
     }
 
@@ -71,7 +73,7 @@ class AvailabilityDataFetcher {
             bottomRight: bottomRight,
             selectedActivityType: selectedActivityType
         )
-
+        logger.info("requestParams for clusters: \(requestParams)")
         let requester = AvailbilityClusterRequester()
         let results = try await requester.fetchClusters(requestParams: requestParams)
         let anchors = results.clusters.map { $0.convertToAnchorCluster() }
