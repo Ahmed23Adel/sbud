@@ -11,8 +11,8 @@ struct FloatingIconsBackground: View {
     let iconNames: [String]
     let numIconsShown = 15
 
-    init(iconBaseName: IconsBaseName) {
-        iconNames = (1...10).map { "\(iconBaseName.rawValue)\($0)" }
+    init(activityType: ActivityType) {
+        iconNames = (1...10).map { "\(activityType.iconBaseName)\($0)" }
     }
     var body: some View {
         GeometryReader { geometry in
@@ -36,5 +36,5 @@ struct FloatingIconsBackground: View {
 }
 
 #Preview {
-    FloatingIconsBackground(iconBaseName: .running)
+    FloatingIconsBackground(activityType: .running)
 }

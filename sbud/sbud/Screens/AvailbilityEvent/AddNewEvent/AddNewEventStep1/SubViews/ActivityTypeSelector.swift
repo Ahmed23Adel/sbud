@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ActivityTypeSelector: View {
     @Binding var selectedActivityType: ActivityType
-    @Binding var extraArgsHolder: NewEventExtraArgsHoder
+    @Binding var extraArgsHolder: ExtraArgsHolder
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false){
             HStack{
@@ -41,5 +41,5 @@ struct ActivityTypeSelector: View {
 #Preview {
     ActivityTypeSelector(
         selectedActivityType: .constant(.running),
-        extraArgsHolder: .constant(NewEventExtraArgsHoder()))
+        extraArgsHolder: .constant(ExtraArgsHolder()))
 }

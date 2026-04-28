@@ -8,27 +8,34 @@
 import SwiftUI
 
 struct PerformanceTargetDetailedRunning: View {
-    let performanceTargets: ResponseActivityDetailsRunning
+    let t: ExtraArgsHolderRunning
     var body: some View {
-        HStack(spacing: 10){
-            SinglePerformanceTargetDetailed(
-                targetHeader: "Distance",
-                unitHeader: "Km",
-                targetValue: String(performanceTargets.targetDistanceInKm!))
-            .padding(.leading, 13)
-            
-            SinglePerformanceTargetDetailed(
-                targetHeader: "Pace",
-                unitHeader: "Min/Km",
-                targetValue: String(performanceTargets.targetPace!))
-            .padding(.trailing, 13)
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Distance",
+                    unitHeader: "Km",
+                    targetValue: String(t.proposedDistance))
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Pace",
+                    unitHeader: "Min/Km",
+                    targetValue: String(t.proposedPace))
+            }
+            HStack(spacing: 10) {
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Type",
+                    unitHeader: "",
+                    targetValue: t.proposedRunningType.rawValue)
+            }
         }
+        .padding(.horizontal, 10)
     }
 }
 
-#Preview {
-    PerformanceTargetDetailedRunning(performanceTargets: ResponseActivityDetailsRunning(
-        targetDistanceInKm: 6.5,
-        targetPace: 5.5
-    ))
-}
+//
+//#Preview {
+//    PerformanceTargetDetailedRunning(performanceTargets: ResponseActivityDetailsRunning(
+//        targetDistanceInKm: 6.5,
+//        targetPace: 5.5
+//    ))
+//}

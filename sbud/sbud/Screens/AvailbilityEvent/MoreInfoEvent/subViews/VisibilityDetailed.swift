@@ -24,7 +24,7 @@ struct VisibilityDetailed: View {
             } else{
                 Text("Only friends")
                     .font(.system(size: 10))
-                    .foregroundColor(.black)
+                    .foregroundColor(Color.mainColor)
                     .padding(.vertical, 5)
                     .padding(.horizontal, 10)
                     .background(Color.mainColor)

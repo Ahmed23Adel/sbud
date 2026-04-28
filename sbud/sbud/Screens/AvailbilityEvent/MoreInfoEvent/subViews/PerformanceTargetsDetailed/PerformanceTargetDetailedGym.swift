@@ -8,16 +8,18 @@
 import SwiftUI
 
 struct PerformanceTargetDetailedGym: View {
-    let performanceTargets: ResponseActivityDetailsGym
+    let t: ExtraArgsHolderGym
     var body: some View {
-        SinglePerformanceTargetDetailed(
-            targetHeader: "Day type",
-            unitHeader: "",
-            targetValue: performanceTargets.dayType!)
-        .padding(.horizontal, 15)
+        HStack {
+            SinglePerformanceTargetDetailed(
+                targetHeader: "Day Type",
+                unitHeader: "",
+                targetValue: t.proposedDayType.rawValue)
+        }
+        .padding(.horizontal, 10)
     }
 }
 
 #Preview {
-    PerformanceTargetDetailedGym(performanceTargets: ResponseActivityDetailsGym())
+    PerformanceTargetDetailedGym(t: ExtraArgsHolderGym())
 }

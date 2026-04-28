@@ -16,75 +16,6 @@ nonisolated struct CreatorInfo: Decodable, Sendable {
     var profileImageUrl: String?
 }
 
-// MARK: - Activity Details
-
-protocol ResponseActivityDetails: Decodable, Sendable {
-    var activityType: ActivityType { get }
-}
-
-nonisolated struct ResponseActivityDetailsRunning: ResponseActivityDetails, Decodable, Sendable {
-    var activityType: ActivityType = .running
-    var targetDistanceInKm: Double?
-    var targetPace: Double?
-
-    private enum CodingKeys: String, CodingKey {
-        case targetDistanceInKm
-        case targetPace
-    }
-}
-nonisolated struct ResponseActivityDetailsCycling: ResponseActivityDetails, Decodable, Sendable {
-    var activityType: ActivityType = .cycling
-    var targetDistanceInKm: Double?
-    var powerInWatt: Double?
-    var cadenceInRpm: Int?
-
-    private enum CodingKeys: String, CodingKey {
-        case targetDistanceInKm
-        case powerInWatt
-        case cadenceInRpm
-    }
-}
-
-nonisolated struct ResponseActivityDetailsGym: ResponseActivityDetails, Decodable, Sendable {
-    var activityType: ActivityType = .gym
-    var dayType: String?
-
-    private enum CodingKeys: String, CodingKey {
-        case dayType
-    }
-}
-
-// MARK: - Activity Details wrapper (handles polymorphic decoding)
-
-nonisolated struct AnyActivityDetails: Decodable, Sendable {
-    var value: any ResponseActivityDetails
-
-    private enum CodingKeys: String, CodingKey {
-        case activityType
-    }
-
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let activityType = try container.decode(String.self, forKey: .activityType)
-
-        switch activityType {
-        case "Running":
-            value = try ResponseActivityDetailsRunning(from: decoder)
-        case "Cycling":
-            value = try ResponseActivityDetailsCycling(from: decoder)
-        default:
-            value = try ResponseActivityDetailsGym(from: decoder)
-        }
-    }
-}
-
-// Add this init to AnyActivityDetails
-extension AnyActivityDetails {
-    init(value: any ResponseActivityDetails) {
-        self.value = value
-    }
-}
-
 // MARK: - Location
 
 nonisolated struct LocationPoint: Decodable, Sendable {
@@ -108,7 +39,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
     var id: String
     var title: String
     var creator: CreatorInfo
-    var activityDetails: AnyActivityDetails
+    var activityDetails: ExtraArgsHolder
     var eventImage: String?
     var isDateConfirmed: Bool
     var isLocationConfirmed: Bool
@@ -119,7 +50,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
     var createdAt: Date
     var dateLocations: [DateLocationEntry]
 
-    var activityType: ActivityType { activityDetails.value.activityType }
+    var activityType: ActivityType { activityDetails.selectedActivity }
 
     enum CodingKeys: String, CodingKey {
         case id, title, creator, activityDetails, eventImage
@@ -131,7 +62,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
         id: String,
         title: String,
         creator: CreatorInfo,
-        activityDetails: AnyActivityDetails,
+        activityDetails: ExtraArgsHolder,
         eventImage: String? = nil,
         isDateConfirmed: Bool,
         isLocationConfirmed: Bool,
@@ -162,7 +93,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
         id = try container.decode(String.self, forKey: .id)
         title = try container.decode(String.self, forKey: .title)
         creator = try container.decode(CreatorInfo.self, forKey: .creator)
-        activityDetails = try container.decode(AnyActivityDetails.self, forKey: .activityDetails)
+        activityDetails = try container.decode(ExtraArgsHolder.self, forKey: .activityDetails)
         eventImage = try container.decodeIfPresent(String.self, forKey: .eventImage)
         isDateConfirmed = try container.decode(Bool.self, forKey: .isDateConfirmed)
         isLocationConfirmed = try container.decode(Bool.self, forKey: .isLocationConfirmed)
@@ -213,11 +144,7 @@ extension EventFullDetails {
         id: "xN6ncT0Foa0UdFy06GSL",
         title: "Morning Run",
         creator: .sample,
-        activityDetails: AnyActivityDetails(value: ResponseActivityDetailsRunning(
-            activityType: .running,
-            targetDistanceInKm: 6.5,
-            targetPace: 8.5
-        )),
+        activityDetails: ExtraArgsHolder(),
         eventImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtF1Gz_Xsh2r_DfO5JaLspe4oKYcEGo-myBg&s",
         isDateConfirmed: false,
         isLocationConfirmed: false,
@@ -228,21 +155,4 @@ extension EventFullDetails {
         createdAt: Date(),
         dateLocations: [.sample, .sample]
     )
-}
-
-extension AnyActivityDetails {
-    static let sampleRunning = AnyActivityDetails(value: ResponseActivityDetailsRunning(
-        targetDistanceInKm: 6.5,
-        targetPace: 5.5
-    ))
-
-    static let sampleCycling = AnyActivityDetails(value: ResponseActivityDetailsCycling(
-        targetDistanceInKm: 30.0,
-        powerInWatt: 250.0,
-        cadenceInRpm: 90
-    ))
-
-    static let sampleGym = AnyActivityDetails(value: ResponseActivityDetailsGym(
-        dayType: "Push"
-    ))
 }
