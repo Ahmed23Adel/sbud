@@ -4,41 +4,51 @@
 //
 //  Created by Erdal on 28.04.2026.
 //
-
-import SwiftUI
+import Foundation
+import FirebaseAuth
 import Combine
 
 @MainActor
 final class SettingsVM: ObservableObject {
     @Published var isPrivate: Bool = false
-    @Published var isSaving: Bool = false
-    @Published var errorMessage: String?
+    @Published var showEmail: Bool = false
+    @Published var showPhone: Bool = false
+    @Published var showAddress: Bool = false
+
+    @Published var isSaving = false
 
     private let profileManager = ProfileManager.shared
-    private let userRepository = UserRepository()
 
-    init() {
-        isPrivate = profileManager.getLocalProfile()?.isPrivate ?? false
+    func loadFromLocal() {
+        guard let local = profileManager.getLocalProfile() else { return }
+        isPrivate   = local.isPrivate
+        showEmail   = local.showEmail
+        showPhone   = local.showPhone
+        showAddress = local.showAddress
     }
 
-    func togglePrivacy() async {
+    func savePrivacySettings() async {
+        guard let uid = Auth.auth().currentUser?.uid,
+              var local = profileManager.getLocalProfile() else { return }
+
         isSaving = true
         defer { isSaving = false }
 
-        let newValue = !isPrivate
+
+        local.isPrivate   = isPrivate
+        local.showEmail   = showEmail
+        local.showPhone   = showPhone
+
+        let fields: [String: Any] = [
+            "isPrivate":   isPrivate,
+            "showEmail":   showEmail,
+            "showPhone":   showPhone
+        ]
+
         do {
-            guard var profile = profileManager.getLocalProfile() else { return }
-            try await userRepository.updateUserProfileFields(
-                uid: profile.id,
-                fields: ["isPrivate": newValue]
-            )
-            profile.isPrivate = newValue
-            profileManager.saveProfileToLocale(profile: profile)
-            isPrivate = newValue
+            try await profileManager.updateProfileStep(uid: uid, fields: fields, localProfile: local)
         } catch {
-            errorMessage = error.localizedDescription
+            print("Privacy update error:", error.localizedDescription)
         }
     }
 }
-
-

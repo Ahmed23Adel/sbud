@@ -21,7 +21,7 @@ struct SettingsView: View {
             Color(red: 0.05, green: 0.05, blue: 0.05).ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // MARK: NavBar
+                // Navbar
                 HStack {
                     Button { coordinator.goBack() } label: {
                         Image(systemName: "chevron.left")
@@ -45,54 +45,41 @@ struct SettingsView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
 
-                        // MARK: Privacy Section
+                        // MARK: - PRIVACY
                         sectionHeader("PRIVACY")
 
-                        settingsRow {
-                            HStack {
-                                Image(systemName: vm.isPrivate ? "lock.fill" : "lock.open.fill")
-                                    .font(.system(size: 15))
-                                    .foregroundColor(vm.isPrivate ? Color("turquoise") : .gray)
-                                    .frame(width: 28)
+                        privacyRow(
+                            icon: "eye.slash.fill",
+                            title: "Private Profile",
+                            isOn: $vm.isPrivate
+                        )
 
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text("Private Account")
-                                        .font(.system(size: 15))
-                                        .foregroundColor(.white)
-                                    Text(vm.isPrivate
-                                         ? "Only approved followers can see your profile"
-                                         : "Anyone can follow you and see your profile")
-                                        .font(.system(size: 11, design: .monospaced))
-                                        .foregroundColor(.gray)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
+                        Divider().background(Color(white: 0.08)).padding(.leading, 62)
 
-                                Spacer()
+                        sectionHeader("VISIBLE ON PROFILE")
 
-                                if vm.isSaving {
-                                    ProgressView()
-                                        .tint(Color("palelime"))
-                                        .scaleEffect(0.8)
-                                } else {
-                                    Toggle("", isOn: Binding(
-                                        get: { vm.isPrivate },
-                                        set: { _ in Task { await vm.togglePrivacy() } }
-                                    ))
-                                    .labelsHidden()
-                                    .tint(Color("turquoise"))
-                                }
-                            }
-                        }
+                        privacyRow(
+                            icon: "envelope.fill",
+                            title: "Show Email",
+                            isOn: $vm.showEmail
+                        )
+                        Divider().background(Color(white: 0.08)).padding(.leading, 62)
 
-                        Divider().background(Color(white: 0.1)).padding(.leading, 20)
+                        privacyRow(
+                            icon: "phone.fill",
+                            title: "Show Phone",
+                            isOn: $vm.showPhone
+                        )
+                        Divider().background(Color(white: 0.08)).padding(.leading, 62)
 
-                        // MARK: Account Section
-                        sectionHeader("ACCOUNT")
 
-                        settingsRow {
-                            HStack {
+                        // MARK: - LOGOUT
+                        Button {
+                            coordinator.logout()
+                        } label: {
+                            HStack(spacing: 14) {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")
-                                    .font(.system(size: 15))
+                                    .font(.system(size: 16))
                                     .foregroundColor(.red.opacity(0.8))
                                     .frame(width: 28)
                                 Text("Logout Session")
@@ -103,61 +90,70 @@ struct SettingsView: View {
                                     .font(.system(size: 12))
                                     .foregroundColor(.gray)
                             }
-                        } action: {
-                            coordinator.logout()
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
                         }
                     }
                     .padding(.top, 8)
                 }
+
+                if vm.isSaving {
+                    HStack(spacing: 8) {
+                        ProgressView().tint(Color("palelime")).scaleEffect(0.8)
+                        Text("Saving...")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.bottom, 16)
+                }
             }
         }
-        .alert("Error", isPresented: Binding(
-            get: { vm.errorMessage != nil },
-            set: { if !$0 { vm.errorMessage = nil } }
-        )) {
-            Button("OK", role: .cancel) { vm.errorMessage = nil }
-        } message: {
-            Text(vm.errorMessage ?? "")
-        }
+        .task { vm.loadFromLocal() }
     }
-}
 
-
-
-// MARK: - Helpers
-private extension SettingsView {
-
-    func sectionHeader(_ title: String) -> some View {
+    private func sectionHeader(_ title: String) -> some View {
         HStack {
             Text(title)
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundColor(.gray)
-                .kerning(1.5)
+                .kerning(2)
             Spacer()
         }
         .padding(.horizontal, 20)
-        .padding(.top, 20)
-        .padding(.bottom, 6)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
     }
 
-    // tap olmayan satır
-    func settingsRow<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        content()
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .background(Color(white: 0.07))
-    }
+    private func privacyRow(icon: String, title: String, isOn: Binding<Bool>) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(.white)
+                .frame(width: 28)
 
-    // tap olan satır
-    func settingsRow<Content: View>(@ViewBuilder content: () -> Content, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            content()
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
-                .frame(maxWidth: .infinity)
-                .background(Color(white: 0.07))
-                .contentShape(Rectangle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 15))
+                    .foregroundColor(.white)
+                Text(isOn.wrappedValue ? "Visible to friends" : "Hidden from everyone")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundColor(.gray)
+            }
+
+            Spacer()
+
+            Toggle("", isOn: isOn)
+                .labelsHidden()
+                .tint(Color("palelime"))
+                .onChange(of: isOn.wrappedValue) { _, _ in
+                    Task { await vm.savePrivacySettings() }
+                }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
     }
 }
 
+#Preview {
+    SettingsView()
+}

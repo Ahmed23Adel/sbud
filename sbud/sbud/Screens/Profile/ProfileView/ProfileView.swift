@@ -91,12 +91,21 @@ private extension ProfileView {
     
     var detailHeaderContent: some View {
         VStack(alignment: .leading, spacing: 18) {
-            infoRow(icon: "envelope", label: "EMAIL", value: vm.profile?.email ?? "")
-            infoRow(icon: "phone", label: "PHONE", value: vm.profile?.phoneNumber ?? "")
+
+            if vm.isOwnProfile || ((vm.profile?.showEmail ?? false) && vm.isFriend) {
+                infoRow(icon: "envelope", label: "EMAIL", value: vm.profile?.email ?? "")
+            }
+
+            if vm.isOwnProfile || ((vm.profile?.showPhone ?? false) && vm.isFriend) {
+                infoRow(icon: "phone", label: "PHONE", value: vm.profile?.phoneNumber ?? "")
+            }
+            
             infoRow(icon: "calendar",
                     label: "AGE",
                     value: "\(vm.profile?.age ?? 0) YEARS")
+            
             infoRow(icon: "person", label: "GENDER", value: vm.profile?.gender ?? "")
+            
             infoRow(
                 icon: "mappin.and.ellipse",
                 label: "LOCATION",
