@@ -12,6 +12,8 @@ struct ProfileView: View {
     @StateObject private var vm: ProfileVM
     @EnvironmentObject var coordinator: MainCoordinator
     
+    @State private var currentPage = 0
+    
     var onBack: (() -> Void)? = nil
 
     init(userId: String, onBack: (() -> Void)? = nil) {
@@ -33,7 +35,9 @@ struct ProfileView: View {
                 } else {
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
-                            avatarSection
+                            headerTabView
+                            pageIndicator
+
                             if vm.isOwnProfile {    editButton  }
                             else {  followButtons   }
                             statsRow
@@ -49,13 +53,131 @@ struct ProfileView: View {
     }
 }
 
-// MARK: - Subviews
+
 private extension ProfileView {
     
-    // MARK: Navbar
+    var headerTabView: some View {
+        TabView(selection: $currentPage) {
+            mainHeaderContent
+                .tag(0)
+            
+            detailHeaderContent
+                .tag(1)
+        }
+        .frame(height: 280)
+        .tabViewStyle(.page(indexDisplayMode: .never))
+    }
+    
+    var mainHeaderContent: some View {
+        VStack(spacing: 12) {
+            avatarCircle
+            
+            VStack(spacing: 4) {
+                Text("\(vm.profile?.name ?? "") \(vm.profile?.surName ?? "")".uppercased())
+                    .font(.system(size: 28, weight: .black))
+                    .foregroundColor(.white)
+            }
+            
+            if let bio = vm.profile?.bio, !bio.isEmpty {
+                Text(bio)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .lineLimit(3)
+            }
+        }
+    }
+    
+    var detailHeaderContent: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            infoRow(icon: "envelope", label: "EMAIL", value: vm.profile?.email ?? "")
+            infoRow(icon: "phone", label: "PHONE", value: vm.profile?.phoneNumber ?? "")
+            infoRow(icon: "calendar",
+                    label: "AGE",
+                    value: "\(vm.profile?.age ?? 0) YEARS")
+            infoRow(icon: "person", label: "GENDER", value: vm.profile?.gender ?? "")
+            infoRow(
+                icon: "mappin.and.ellipse",
+                label: "LOCATION",
+                value: "\(vm.profile?.city ?? ""), \(vm.profile?.country ?? "")"
+            )
+        }
+        .padding(.horizontal, 40)
+    }
+    
+    func infoRow(icon: String, label: String, value: String) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            Image(systemName: icon)
+                .font(.system(size: 18))
+                .foregroundColor(Color("turquoise"))
+                .frame(width: 28, height: 28)
+                .offset(y: 2)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.gray)
+                Text(value.uppercased())
+                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white)
+            }
+        }
+    }
+    var avatarCircle: some View {
+        ZStack(alignment: .bottom) {
+            ZStack {
+                Circle()
+                    .stroke(Color("turquoise").opacity(0.5), lineWidth: 2)
+                    .frame(width: 120, height: 120)
+                    .shadow(color: Color("turquoise").opacity(0.3), radius: 10)
+
+                Group {
+                    if let urlStr = vm.profile?.profileImageUrl, let url = URL(string: urlStr) {
+                        KFImage(url)
+                            .resizable()
+                            .scaledToFill()
+                    } else {
+                        Image(systemName: "person.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .padding(30)
+                            .foregroundColor(.gray)
+                    }
+                }
+                .frame(width: 110, height: 110)
+                .clipShape(Circle())
+            }
+        }
+        .padding(.bottom, 10)
+    }
+
+    var pageIndicator: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(currentPage == 0 ? Color("palelime") : Color.gray.opacity(0.5))
+                .frame(width: 6, height: 6)
+            Circle()
+                .fill(currentPage == 1 ? Color("palelime") : Color.gray.opacity(0.5))
+                .frame(width: 6, height: 6)
+        }
+    }
+
+    var editButton: some View {
+        Button(action: {}) {
+            Text("EDIT PROFILE")
+                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .background(Color("palelime"))
+                .cornerRadius(12)
+        }
+        .padding(.horizontal, 24)
+    }
+    
     var navBar: some View {
         HStack {
-            // onBack varsa onu kullan, yoksa MainCoordinator
             if onBack != nil {
                 Button { onBack?() } label: {
                     Image(systemName: "chevron.left")
@@ -105,83 +227,6 @@ private extension ProfileView {
         .padding(.horizontal, 20)
         .padding(.vertical, 8)
         .background(Color(red: 0.05, green: 0.05, blue: 0.05))
-    }
-    
-    // MARK: Avatar
-    var avatarSection: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(Color("turquoise").opacity(0.08))
-                    .frame(width: 118, height: 118)
-
-                Circle()
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color("turquoise").opacity(0.6), .clear],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 1.5
-                    )
-                    .frame(width: 118, height: 118)
-
-                Group {
-                    if let urlStr = vm.profile?.profileImageUrl,
-                       let url = URL(string: urlStr) {
-                        KFImage(url)
-                            .placeholder {
-                                Circle().fill(Color(white: 0.15))
-                                    .overlay(ProgressView().tint(.white))
-                            }
-                            .resizable()
-                            .scaledToFill()
-                    } else {
-                        Image(systemName: "person.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .padding(28)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .frame(width: 108, height: 108)
-                .clipShape(Circle())
-            }
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(vm.displayName.isEmpty ? "—" : vm.displayName)
-                    .font(.system(size: 20, weight: .black))
-                    .foregroundColor(.white)
-
-                if let bio = vm.profile?.bio, !bio.isEmpty {
-                    Text(bio)
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(.gray)
-                        .lineLimit(3)
-                }
-            }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top, 6)
-
-            Spacer()
-        }
-        .frame(height: 118)
-        .padding(.horizontal, 20)
-        .padding(.top, 20)
-    }
-    
-    var editButton: some View {
-        Button(action: {}) {
-            Text("EDIT PROFILE")
-                .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(.black)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(Color("palelime"))
-                .clipShape(Rectangle())
-                .cornerRadius(4)
-        }
-        .padding(.horizontal, 24)
     }
     
     var followButtons: some View {
@@ -238,8 +283,7 @@ private extension ProfileView {
         case .notFriend:       return Color("palelime")
         }
     }
-    
-    // MARK: Stats Row
+
     var statsRow: some View {
         HStack(spacing: 0) {
             Button {
@@ -367,6 +411,5 @@ private extension ProfileView {
     }
 }
 
-#Preview {
-    ProfileView(userId: "preview")
-}
+
+

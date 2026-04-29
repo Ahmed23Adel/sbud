@@ -23,7 +23,7 @@ struct AvailabilityAppCoordinator: View {
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: AvailabilityNavigationDestination.self){ destination in
                 destinationView(for: destination)
-                    .environmentObject(coordinator)  // her destination'a inject et
+                    .environmentObject(coordinator)  
             }
             .environmentObject(coordinator)
             .sheet(item: $coordinator.activeSheet) { sheetType in
