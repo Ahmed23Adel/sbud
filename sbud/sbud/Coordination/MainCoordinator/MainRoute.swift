@@ -15,7 +15,6 @@ enum MainRoute: Equatable {
     case homePage
     case profilePage(userId: String)
     case settingsPage
-    case followerList(userId: String)
-    case followingList(userId: String)
+    case friendList(userId: String)
     case friendRequests
 }

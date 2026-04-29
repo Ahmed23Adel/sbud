@@ -27,7 +27,7 @@ class MainCoordinator: ObservableObject {
 
     func navigateTo(_ route: MainRoute) {
         switch route {
-        case .settingsPage, .profilePage, .followerList, .followingList, .friendRequests:
+        case .settingsPage, .profilePage, .friendList, .friendRequests:
             routeStack.append(currentRoute)
         default:
             routeStack.removeAll()
@@ -55,12 +55,10 @@ class MainCoordinator: ObservableObject {
         navigateTo(.settingsPage)
     }
 
-    func goToFollowerList(userId: String) {
-        navigateTo(.followerList(userId: userId))
-    }
+    
 
-    func goToFollowingList(userId: String) {
-        navigateTo(.followingList(userId: userId))
+    func goToFriendList(userId: String) {
+        navigateTo(.friendList(userId: userId))
     }
 
     func goToFriendRequests() {

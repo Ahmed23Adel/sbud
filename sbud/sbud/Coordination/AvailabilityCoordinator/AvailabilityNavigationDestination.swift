@@ -10,7 +10,7 @@ import Foundation
 enum AvailabilityNavigationDestination: Hashable {
     case moreInfoEvent(String)
     case addNewEvent
-
+    case creatorProfile(userId: String)
 
     func hash(into hasher: inout Hasher) {
         switch self {
@@ -18,6 +18,8 @@ enum AvailabilityNavigationDestination: Hashable {
             hasher.combine(eventId)
         case .addNewEvent:
             hasher.combine("addNewEvent")
+        case .creatorProfile(let userId):
+            hasher.combine(userId)
         }
     }
 }

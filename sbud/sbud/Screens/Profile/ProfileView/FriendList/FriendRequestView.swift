@@ -1,5 +1,5 @@
 //
-//  FollowListView.swift
+//  FriendRequestView.swift
 //  sbud
 //
 //  Created by Erdal on 28.04.2026.
@@ -8,13 +8,9 @@
 import SwiftUI
 import Kingfisher
 
-struct FollowListView: View {
-    @StateObject private var vm: FollowListVM
+struct FriendRequestsView: View {
+    @StateObject private var vm = FriendRequestsVM()
     @EnvironmentObject var coordinator: MainCoordinator
-
-    init(userId: String, mode: FollowListMode) {
-        _vm = StateObject(wrappedValue: FollowListVM(userId: userId, mode: mode))
-    }
 
     var body: some View {
         ZStack {
@@ -28,38 +24,37 @@ struct FollowListView: View {
                             .foregroundColor(.white)
                     }
                     Spacer()
-                    Text(vm.mode.title)
+                    Text("FRIEND REQUESTS")
                         .font(.system(size: 14, weight: .black, design: .monospaced))
                         .foregroundColor(.white)
                         .kerning(1.5)
                     Spacer()
-                    Color.clear.frame(width: 24, height: 24)
+                    Color.clear.frame(width: 28, height: 28)
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 14)
-                .background(Color(red: 0.05, green: 0.05, blue: 0.05))
 
                 Divider().background(Color(white: 0.12))
-
-                // MARK: Content
                 if vm.isLoading {
                     Spacer()
                     ProgressView().tint(Color("palelime"))
                     Spacer()
-                } else if vm.users.isEmpty {
+                } else if vm.requests.isEmpty {
                     Spacer()
-                    Text("No \(vm.mode.title.lowercased()) yet.")
-                        .font(.system(size: 13, design: .monospaced))
-                        .foregroundColor(.gray)
+                    VStack(spacing: 12) {
+                        Image(systemName: "person.2.slash")
+                            .font(.system(size: 36))
+                            .foregroundColor(Color(white: 0.25))
+                        Text("No pending requests.")
+                            .font(.system(size: 13, design: .monospaced))
+                            .foregroundColor(.gray)
+                    }
                     Spacer()
                 } else {
                     ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 0) {
-                            ForEach(vm.users) { user in
-                                UserRowCell(user: user)
-                                    .onTapGesture {
-                                        coordinator.goToProfile(userId: user.id)
-                                    }
+                            ForEach(vm.requests) { user in
+                                RequestCell(user: user, vm: vm)
                                 Divider().background(Color(white: 0.1))
                             }
                         }
@@ -68,34 +63,38 @@ struct FollowListView: View {
             }
         }
         .task { await vm.load() }
+        .alert("Error", isPresented: Binding(
+            get: { vm.errorMessage != nil },
+            set: { if !$0 { vm.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { vm.errorMessage = nil }
+        } message: {
+            Text(vm.errorMessage ?? "")
+        }
     }
 }
 
-// MARK: - User Row Cell
-private struct UserRowCell: View {
+private struct RequestCell: View {
     let user: UserProfile
+    @ObservedObject var vm: FriendRequestsVM
+    @EnvironmentObject var coordinator: MainCoordinator
 
     var displayName: String {
         let last = user.surName.first.map { "\($0)." } ?? ""
-        let full = "\(user.name.uppercased())_\(last.uppercased())"
+        return "\(user.name.uppercased())_\(last.uppercased())"
             .trimmingCharacters(in: .init(charactersIn: "_"))
-        return full.isEmpty ? "—" : full
     }
 
     var body: some View {
         HStack(spacing: 14) {
-            // Avatar
             Group {
                 if let urlStr = user.profileImageUrl, let url = URL(string: urlStr) {
                     KFImage(url)
-                        .placeholder {
-                            Circle().fill(Color(white: 0.15))
-                        }
+                        .placeholder { Circle().fill(Color(white: 0.15)) }
                         .resizable()
                         .scaledToFill()
                 } else {
-                    Circle()
-                        .fill(Color(white: 0.15))
+                    Circle().fill(Color(white: 0.15))
                         .overlay(
                             Image(systemName: "person.fill")
                                 .foregroundColor(.gray)
@@ -103,15 +102,12 @@ private struct UserRowCell: View {
                         )
                 }
             }
-            .frame(width: 46, height: 46)
+            .frame(width: 50, height: 50)
             .clipShape(Circle())
-            .overlay(
-                Circle()
-                    .stroke(Color(white: 0.2), lineWidth: 1)
-            )
+            .overlay(Circle().stroke(Color(white: 0.2), lineWidth: 1))
+            .onTapGesture { coordinator.goToProfile(userId: user.id) }
 
-            // Name
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(displayName)
                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                     .foregroundColor(.white)
@@ -125,13 +121,31 @@ private struct UserRowCell: View {
 
             Spacer()
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(Color(white: 0.3))
+            HStack(spacing: 10) {
+                Button {
+                    Task { await vm.decline(user) }
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.gray)
+                        .frame(width: 38, height: 38)
+                        .background(Color(white: 0.12))
+                        .clipShape(Circle())
+                }
+                Button {
+                    Task { await vm.accept(user) }
+                } label: {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.black)
+                        .frame(width: 38, height: 38)
+                        .background(Color("palelime"))
+                        .clipShape(Circle())
+                }
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
-        .background(Color(red: 0.05, green: 0.05, blue: 0.05))
         .contentShape(Rectangle())
     }
 }

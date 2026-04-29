@@ -33,8 +33,7 @@ struct UserProfile: Codable, Identifiable {
     var pushToken: String? = nil
     
     // MARK: - Social
-    var followersCount: Int = 0
-    var followingCount: Int = 0
+    var friendsCount: Int = 0
     var trustScore: Double = 0.00
 
     // MARK: - Performance

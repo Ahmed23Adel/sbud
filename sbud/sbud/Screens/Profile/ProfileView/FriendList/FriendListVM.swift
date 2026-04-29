@@ -1,39 +1,25 @@
 //
-//  FollowListVM.swift
+//  FriendListVM.swift
 //  sbud
 //
-//  Created by Erdal on 28.04.2026.
+//  Created by Erdal on 29.04.2026.
 //
 
 import Foundation
 import Combine
 
-enum FollowListMode {
-    case followers
-    case following
-
-    var title: String {
-        switch self {
-        case .followers: return "FOLLOWERS"
-        case .following: return "FOLLOWING"
-        }
-    }
-}
-
 @MainActor
-final class FollowListVM: ObservableObject {
+final class FriendListVM: ObservableObject {
     @Published var users: [UserProfile] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let followManager = FollowManager.shared
+    private let friendManager = FriendManager.shared
     private let userRepository = UserRepository()
     let userId: String
-    let mode: FollowListMode
 
-    init(userId: String, mode: FollowListMode) {
+    init(userId: String) {
         self.userId = userId
-        self.mode = mode
     }
 
     func load() async {
@@ -41,12 +27,7 @@ final class FollowListVM: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let ids: [String]
-            switch mode {
-            case .followers: ids = try await followManager.fetchFollowers(userId: userId)
-            case .following: ids = try await followManager.fetchFollowing(userId: userId)
-            }
-
+            let ids = try await friendManager.fetchFriends(userId: userId)
             var profiles: [UserProfile] = []
             for id in ids {
                 if let profile = try await userRepository.fetchProfile(id) {
