@@ -15,7 +15,7 @@ final class FriendRequestsVM: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let followManager = FollowManager.shared
+    private let friendManager = FriendManager.shared
     private let userRepository = UserRepository()
 
     func load() async {
@@ -24,7 +24,7 @@ final class FriendRequestsVM: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let ids = try await followManager.fetchPendingRequests(userId: uid)
+            let ids = try await friendManager.fetchPendingRequests(userId: uid)
             var profiles: [UserProfile] = []
             for id in ids {
                 if let profile = try await userRepository.fetchProfile(id) {
@@ -39,7 +39,7 @@ final class FriendRequestsVM: ObservableObject {
 
     func accept(_ user: UserProfile) async {
         do {
-            try await followManager.acceptRequest(requesterId: user.id)
+            try await friendManager.acceptRequest(requesterId: user.id)
             requests.removeAll { $0.id == user.id }
         } catch {
             errorMessage = error.localizedDescription
@@ -48,7 +48,7 @@ final class FriendRequestsVM: ObservableObject {
 
     func decline(_ user: UserProfile) async {
         do {
-            try await followManager.declineRequest(requesterId: user.id)
+            try await friendManager.declineRequest(requesterId: user.id)
             requests.removeAll { $0.id == user.id }
         } catch {
             errorMessage = error.localizedDescription

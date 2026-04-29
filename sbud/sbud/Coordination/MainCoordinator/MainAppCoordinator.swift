@@ -56,13 +56,8 @@ struct MainAppCoordinator: View {
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)))
                         .ignoresSafeArea()
-                case .followerList(let userId):
-                    FollowListView(userId: userId, mode: .followers)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .move(edge: .leading).combined(with: .opacity)))
-                case .followingList(let userId):
-                    FollowListView(userId: userId, mode: .following)
+                case .friendList(let userId):
+                    FriendListView(userId: userId)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)))

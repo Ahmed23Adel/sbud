@@ -11,41 +11,34 @@ internal import FirebaseFirestoreInternal
 
 struct UserCardView: View {
     let event: AvailabilityEvent
-
+    
     @StateObject private var vm = UserCardVM()
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
     @EnvironmentObject private var mainCoordinator: MainCoordinator
-
-    private var activityColor: Color {
-        switch event.activityType.lowercased() {
-        case "running": return Color("palelime")
-        case "cycling": return Color("turquoise")
-        case "gym":     return Color("lightblack")
-        default:        return Color.mainColor
-        }
+    
+    // MARK: - Activity type UI
+    private var activityType: ActivityType {
+        ActivityType(rawValue: event.activityType) ?? .running
     }
-
+    
     private var activityIcon: String {
-        switch event.activityType.lowercased() {
-        case "running": return "figure.run"
-        case "cycling": return "figure.outdoor.cycle"
-        case "gym":     return "dumbbell.fill"
-        default:        return "star.fill"
+        switch activityType {
+        case .running:  return "figure.run"
+        case .cycling:  return "figure.outdoor.cycle"
+        case .gym:      return "dumbbell.fill"
+        case .skiing:   return "figure.skiing.downhill"
+        case .swimming: return "figure.pool.swim"
+        case .hiking:   return "figure.hiking"
+        case .yoga:     return "figure.yoga"
+        case .tennis:   return "figure.tennis"
         }
     }
-
-    private var activityTextColor: Color {
-        switch event.activityType.lowercased() {
-        case "gym": return .white
-        default:    return .black
-        }
-    }
-
+    
+    
     var body: some View {
         VStack(spacing: 0) {
-
+            
             HStack(spacing: 0) {
-                // MARK: LEFT
                 ZStack(alignment: .topLeading) {
                     KFImage(URL(string: event.eventImage))
                         .placeholder {
@@ -58,34 +51,37 @@ struct UserCardView: View {
                         }
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 140)
+                        .frame(width: 140, height: 180)
                         .clipped()
-
+                    
                     HStack(spacing: 4) {
                         Image(systemName: activityIcon)
                             .font(.system(size: 9, weight: .bold))
+                        
                         Text(event.activityType.uppercased())
                             .font(.system(size: 10, weight: .bold))
                     }
-                    .foregroundColor(activityTextColor)
+                    .foregroundColor(.black)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(activityColor)
+                    .background(Color("palelime"))
                     .clipShape(Capsule())
-                    .padding(15)
+                    .padding(.top, 15)
+                    .padding(.leading, 15)
                 }
-                .frame(width: 140)
-
+                .frame(width: 140, height: 180, alignment: .topLeading)
+                
                 // MARK: RIGHT
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 10) {
                     HStack(alignment: .top) {
-                        Text(event.creatorName.uppercased())
-                            .font(.system(size: 20, weight: .black))
+                        Text(event.fullDatailedEvent?.title.uppercased() ?? "zero")
+                            .font(.system(size: 18, weight: .black))
                             .foregroundColor(.white)
                             .fixedSize(horizontal: false, vertical: true)
-
+                            .lineLimit(1)
+                        
                         Spacer()
-
+                        
                         Button {
                             coordinator.dismissPreview()
                         } label: {
@@ -95,7 +91,7 @@ struct UserCardView: View {
                                 .foregroundColor(.gray)
                         }
                     }
-
+                    
                     Button {
                         coordinator.dismissPreview()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -116,46 +112,26 @@ struct UserCardView: View {
                                         .foregroundColor(.gray)
                                 }
                             }
-                            .frame(width: 20, height: 20)
-
+                            .frame(width: 18, height: 18)
+                            
                             Text(vm.displayName(fallback: event.creatorName).uppercased())
-                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
                                 .foregroundColor(.gray)
                         }
                     }
-
+                    
                     Spacer()
-                    Divider()
-                        .background(Color.white.opacity(0.2))
-                        .padding(.vertical, 2)
-
-                    HStack(spacing: 20) {
-                        VStack(alignment: .leading) {
-                            Text("TARGET")
-                                .font(.system(size: 8, weight: .bold))
-                                .foregroundColor(.gray)
-                            Text(vm.targetDistance ?? "—")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(Color.mainColor)
-                        }
-
-                        VStack(alignment: .leading) {
-                            Text("PACE")
-                                .font(.system(size: 8, weight: .bold))
-                                .foregroundColor(.gray)
-                            Text(vm.pace ?? "—")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(Color(red: 0.0, green: 0.89, blue: 0.99))
-                        }
-                    }
-                    .padding(.bottom, 5)
+                    Divider().background(Color.white.opacity(0.15))
+                    
+                    // MARK: Metrikler
+                    metricsRow
                 }
-                .padding(20)
-                .background(.black)
+                .padding(16)
+                .background(Color.black)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
             .frame(height: 180)
-
+            
             Button {
                 let eventId = event.eventId
                 withAnimation(.spring(response: 0.42, dampingFraction: 0.84)) {
@@ -173,6 +149,7 @@ struct UserCardView: View {
                     .background(Color.mainColor)
             }
         }
+        .frame(height: 180)
         .clipShape(RoundedRectangle(cornerRadius: 25))
         .overlay(
             RoundedRectangle(cornerRadius: 25)
@@ -180,7 +157,41 @@ struct UserCardView: View {
         )
         .padding(.horizontal, 12)
         .task {
-            await vm.fetchUser(userId: event.creatorUserId ?? "")
+            async let profile: () = vm.fetchUser(userId: event.creatorUserId ?? "")
+            async let details: () = vm.fetchEventDetails(eventId: event.eventId)
+            _ = await (profile, details)
+        }
+    }
+    
+    
+    // MARK: - Metrics Row
+    @ViewBuilder
+    private var metricsRow: some View {
+        if vm.metrics.isEmpty {
+            // Yükleniyor
+            HStack(spacing: 16) {
+                metricItem(label: "—", value: "—")
+                metricItem(label: "—", value: "—")
+            }
+        } else {
+            HStack(spacing: 16) {
+                ForEach(vm.metrics, id: \.label) { m in
+                    metricItem(label: m.label, value: m.value)
+                }
+                Spacer()
+            }
+        }
+    }
+    
+    private func metricItem(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundColor(.gray)
+            Text(value)
+                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                .foregroundColor(Color("turquoise"))
+                .lineLimit(1)
         }
     }
 }

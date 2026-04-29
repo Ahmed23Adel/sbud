@@ -13,13 +13,13 @@ import Combine
 final class ProfileVM: ObservableObject {
     @Published var profile: UserProfile?
     @Published var isLoading = false
-    @Published var followStatus: FollowStatus = .notFollowing
-    @Published var isFollowLoading = false
+    @Published var friendStatus: FriendStatus = .notFriend
+    @Published var isFriendActionLoading = false
     @Published var errorMessage: String?
     @Published var pendingRequestCount: Int = 0
 
     private let profileManager = ProfileManager.shared
-    private let followManager = FollowManager.shared
+    private let friendManager = FriendManager.shared
     private let userRepository = UserRepository()
     let userId: String
 
@@ -34,15 +34,14 @@ final class ProfileVM: ObservableObject {
             .trimmingCharacters(in: .init(charactersIn: "_"))
     }
 
-    // MARK: - Computed helpers for View
-    var isFollowing: Bool { followStatus == .following }
-    var isPending: Bool   { followStatus == .pending   }
+    var isFriend: Bool          { friendStatus == .friends         }
+    var isRequestSent: Bool     { friendStatus == .requestSent     }
+    var isRequestReceived: Bool { friendStatus == .requestReceived }
 
     init(userId: String) {
         self.userId = userId
     }
 
-    // MARK: - Load
     func load() async {
         if isOwnProfile, let local = profileManager.getLocalProfile() {
             profile = local
@@ -63,54 +62,56 @@ final class ProfileVM: ObservableObject {
         }
 
         if !isOwnProfile {
-            await refreshFollowStatus()
+            await refreshFriendStatus()
         } else {
             if let uid = Auth.auth().currentUser?.uid {
-                let ids = (try? await followManager.fetchPendingRequests(userId: uid)) ?? []
+                let ids = (try? await friendManager.fetchPendingRequests(userId: uid)) ?? []
                 pendingRequestCount = ids.count
             }
         }
     }
 
-    func refreshFollowStatus() async {
+    func refreshFriendStatus() async {
         do {
-            followStatus = try await followManager.getFollowStatus(targetUserId: userId)
+            friendStatus = try await friendManager.getFriendStatus(targetUserId: userId)
         } catch {
-            print("refreshFollowStatus error:", error)
+            print("refreshFriendStatus error:", error)
         }
     }
 
-    // MARK: - Follow / Unfollow / Request
-    func toggleFollow() async {
-        guard !isFollowLoading else { return }
-        isFollowLoading = true
-        defer { isFollowLoading = false }
+    func toggleFriendAction() async {
+        guard !isFriendActionLoading else { return }
+        isFriendActionLoading = true
+        defer { isFriendActionLoading = false }
 
         do {
-            switch followStatus {
-            case .following:
-                try await followManager.unfollow(targetUserId: userId)
-                followStatus = .notFollowing
-                profile?.followersCount = max(0, (profile?.followersCount ?? 1) - 1)
-
-            case .pending:
-                // Bekleyen isteği iptal et
-                try await followManager.cancelRequest(targetUserId: userId)
-                followStatus = .notFollowing
-
-            case .notFollowing:
+            switch friendStatus {
+            case .notFriend:
                 let isPrivate = profile?.isPrivate ?? false
-                try await followManager.follow(targetUserId: userId, isTargetPrivate: isPrivate)
+                try await friendManager.addFriend(targetUserId: userId, isTargetPrivate: isPrivate)
                 if isPrivate {
-                    followStatus = .pending
+                    friendStatus = .requestSent
                 } else {
-                    followStatus = .following
-                    profile?.followersCount = (profile?.followersCount ?? 0) + 1
+                    friendStatus = .friends
+                    profile?.friendsCount = (profile?.friendsCount ?? 0) + 1
                 }
+
+            case .requestSent:
+                try await friendManager.cancelRequest(targetUserId: userId)
+                friendStatus = .notFriend
+
+            case .requestReceived:
+                try await friendManager.acceptRequest(requesterId: userId)
+                friendStatus = .friends
+                profile?.friendsCount = (profile?.friendsCount ?? 0) + 1
+
+            case .friends:
+                try await friendManager.removeFriend(targetUserId: userId)
+                friendStatus = .notFriend
+                profile?.friendsCount = max(0, (profile?.friendsCount ?? 1) - 1)
             }
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 }
-

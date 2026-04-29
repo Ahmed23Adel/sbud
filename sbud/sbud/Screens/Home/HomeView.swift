@@ -21,7 +21,7 @@ struct HomeView: View {
                 Text("sign out")
             }
             Button {
-                coordinator.goToProfile(userId: "gsj59OkbLXbT3dIOweJ1zrXqglX2")
+                coordinator.goToProfile(userId: "Ab68s84r9IZMGtbKt16rnCUt5KS2")
             } label: {
                 Text("Test Profile")
             }

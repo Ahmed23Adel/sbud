@@ -24,6 +24,7 @@ struct AvailabilityAppCoordinator: View {
                 .toolbar(.hidden, for: .navigationBar)
                 .navigationDestination(for: AvailabilityNavigationDestination.self) { destination in
                     destinationView(for: destination)
+                        .environmentObject(coordinator)
                 }
                 .environmentObject(coordinator)
                 .sheet(item: Binding(
@@ -51,7 +52,6 @@ struct AvailabilityAppCoordinator: View {
             FiltersView(availabilityFiltersResults: $availabilityViewModel.availabilityFiltersResults)
         case .eventPreview:
             EmptyView()
-            
         }
     }
 
@@ -62,6 +62,9 @@ struct AvailabilityAppCoordinator: View {
             ViewMoreInfoEvent(eventId: eventId)
         case .addNewEvent:
             CoordinatorAddNewEvent()
+        case .creatorProfile(let userId):
+            ProfileView(userId: userId, onBack: { coordinator.pop() })
+                .toolbar(.hidden, for: .navigationBar)
         }
     }
 }
