@@ -6,9 +6,9 @@
 //
 
 import Foundation
-
-enum IconsBaseName: String {
-    case running =  "run"
-    case gym = "gym"
-    case cycling = "cycling"
-}
+//
+//enum IconsBaseName: String {
+//    case running =  "run"
+//    case gym = "gym"
+//    case cycling = "cycling"
+//}

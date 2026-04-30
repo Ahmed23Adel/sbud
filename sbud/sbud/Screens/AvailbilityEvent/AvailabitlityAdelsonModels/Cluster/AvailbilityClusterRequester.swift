@@ -19,6 +19,7 @@ class AvailbilityClusterRequester {
         requestParams: AvailabilityClusterModelRequest
     ) async throws -> AvailabitlityClusterResponse {
         let apicaller = createApiCaller()
+        print("AdelsonFirebaseAuthConfig", AdelsonFirebaseAuthConfig.shared)
         return try await apicaller.callGet(
             url: "events/clusters",
             queryParams: requestParams.toDict(),

@@ -8,7 +8,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "39D78714-23F1-49BA-8172-00F22F1C2846"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "sbud/BusinessLogic/Authentication/AuthenticationManagerGoogle.swift"
@@ -33,22 +33,6 @@
             startingLineNumber = "26"
             endingLineNumber = "26"
             landmarkName = "signUp()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "3633C990-FEFF-448F-9B75-C9A54546FE9D"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../../../../Library/Developer/Xcode/DerivedData/sbud-ekrqexiibhuyfjhhjpkcuczxrpgd/SourcePackages/checkouts/AdelsonApiCaller/Sources/AdelsonApiCaller/AdelsonFirebaseApiCaller.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "119"
-            endingLineNumber = "119"
-            landmarkName = "callGivenUrl(url:params:method:token:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

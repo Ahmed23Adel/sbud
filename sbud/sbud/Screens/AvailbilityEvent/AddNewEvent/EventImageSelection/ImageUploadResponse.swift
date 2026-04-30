@@ -2,7 +2,7 @@
 //  ImageUploadResponse.swift
 //  sbud
 //
-//  Created by Erdal on 1.04.2026.
+//  Created by ahmed on 06/03/2026.
 //
 
 import Foundation

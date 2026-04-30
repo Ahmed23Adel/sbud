@@ -18,7 +18,7 @@ struct FiltersView: View {
 
     var body: some View {
         ZStack {
-            FloatingIconsBackground(iconBaseName: IconsAdaptor(viewModel.selectedActivityType).convert())
+            FloatingIconsBackground(activityType: viewModel.selectedActivityType)
                 .animation(.easeInOut, value: viewModel.selectedActivityType)
             VStack {
                 VStack {

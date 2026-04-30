@@ -37,11 +37,12 @@ struct Event: Decodable, Sendable {
     let isLocationConfirmed: Bool
     let isPublic: Bool
     let eventImage: String
-    let name: String
+    let creatorName: String
 
     func covertToAnchor() -> AnchorAvailabilityEvent {
-        AnchorAvailabilityEvent(event: AvailabilityEvent(
+        AnchorAvailabilityEvent(eventId: self.eventId, event: AvailabilityEvent(
             id: id,
+            eventId: eventId,
             geoPoint: GeoPoint(latitude: g.geopoint.latitude, longitude: g.geopoint.longitude),
             dateLocationId: dateLocationId,
             activityType: activityType,
@@ -53,7 +54,7 @@ struct Event: Decodable, Sendable {
             isLocationConfirmed: isLocationConfirmed,
             isPublic: isPublic,
             eventImage: eventImage,
-            creatorName: name
+            creatorName: creatorName
         )
         )
     }

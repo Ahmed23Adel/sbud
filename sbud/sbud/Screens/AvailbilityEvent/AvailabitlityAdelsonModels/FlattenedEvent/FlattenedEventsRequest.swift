@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct FlattenedEventsRequest: Encodable, Sendable {
+struct FlattenedEventsRequest: Encodable, Sendable, CustomStringConvertible {
     let topLeft: GeoPoint
     let bottomRight: GeoPoint
     let selectedActivityType: String
@@ -19,17 +19,21 @@ struct FlattenedEventsRequest: Encodable, Sendable {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
-        let startString = formatter.string(from: selectedStartTime)
-        let endString = formatter.string(from: selectedEndTime)
-        let dict = [
+        return [
             "topLeftLatitude": String(topLeft.latitude),
             "topLeftLongitude": String(topLeft.longitude),
             "bottomRightLatitude": String(bottomRight.latitude),
             "bottomRightLongitude": String(bottomRight.longitude),
             "selectedActivityType": selectedActivityType,
-            "selectedStartTime": startString,
-            "selectedEndTime": endString
+            "selectedStartTime": formatter.string(from: selectedStartTime),
+            "selectedEndTime": formatter.string(from: selectedEndTime)
         ]
-        return dict
+    }
+
+    // MARK: - CustomStringConvertible
+    var description: String {
+        toDict()
+            .map { "\($0.key): \($0.value)" }
+            .joined(separator: ", ")
     }
 }

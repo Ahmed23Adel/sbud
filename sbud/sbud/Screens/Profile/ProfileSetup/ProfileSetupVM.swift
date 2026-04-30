@@ -10,10 +10,6 @@ import FirebaseAuth
 import Combine
 import PhoneNumberKit
 import _PhotosUI_SwiftUI
-//import UIKit
-//import PhotosUI
-//import CoreLocation
-//import FirebaseFirestore
 
 
 @MainActor

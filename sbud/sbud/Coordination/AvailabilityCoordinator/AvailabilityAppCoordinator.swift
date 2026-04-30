@@ -15,16 +15,15 @@ struct AvailabilityAppCoordinator: View {
     private let impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     var body: some View {
         NavigationStack(path: $coordinator.navigationPath){
-            
             AvailbilityView(viewModel: AvailbilityViewModel(
                 locationManager: LocationManager.shared,
                 availabilityFiltersResults: availaibilityFiltesrResults
-                
             ))
             .ignoresSafeArea()
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: AvailabilityNavigationDestination.self){ destination in
                 destinationView(for: destination)
+                    .environmentObject(coordinator)  
             }
             .environmentObject(coordinator)
             .sheet(item: $coordinator.activeSheet) { sheetType in
@@ -46,13 +45,17 @@ struct AvailabilityAppCoordinator: View {
             FiltersView(availabilityFiltersResults: $availaibilityFiltesrResults)
         }
     }
+
     @ViewBuilder
-    private func destinationView(
-        for destination: AvailabilityNavigationDestination)
-    -> some View {
+    private func destinationView(for destination: AvailabilityNavigationDestination) -> some View {
         switch destination {
-        case .moreInfoEvent(let event):
-            ViewMoreInfoEvent(basicEvent: event)
+        case .moreInfoEvent(let eventId):
+            ViewMoreInfoEvent(eventId: eventId)
+        case .addNewEvent:
+            CoordinatorAddNewEvent()
+        case .creatorProfile(let userId):
+            ProfileView(userId: userId, onBack: { coordinator.pop() })
+                .toolbar(.hidden, for: .navigationBar)
         }
     }
 }
