@@ -71,6 +71,7 @@ final class AvailbilityViewModel: ObservableObject {
                     logger.debug("Fetching individuals: \(self.anchorsClusters.count)")
                     anchorsClusters.removeAll()
                 } catch {
+                    logger.fault("Couldn't load individuals events: \(error)")
                     showErrorMsgForIndividuals()
                 }
             }

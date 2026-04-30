@@ -11,11 +11,11 @@ import AdelsonAuthManager
 
 class PaginatedFlattenedEventsRequester {
 
-    nonisolated func createApiCaller() -> AdelsonFirebaseApiCaller<PaginatedFlattenedEventResponse> {
-        return AdelsonFirebaseApiCaller<PaginatedFlattenedEventResponse>()
+    nonisolated func createApiCaller() -> AdelsonFirebaseApiCaller<PaginatedEventDetailsResponse> {
+        return AdelsonFirebaseApiCaller<PaginatedEventDetailsResponse>()
     }
 
-    nonisolated func fetchEvents(requestParams: PaginatedFlattenedEventsRequest) async throws -> PaginatedFlattenedEventResponse {
+    nonisolated func fetchEvents(requestParams: PaginatedFlattenedEventsRequest) async throws -> PaginatedEventDetailsResponse {
         let apicaller = createApiCaller()
         return try await apicaller.callGet(
             url: "events/flattenedevents/paginated",
