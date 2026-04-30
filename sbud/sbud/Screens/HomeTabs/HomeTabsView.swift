@@ -28,9 +28,9 @@ struct HomeTabsView: View {
                     Label("Events", systemImage: "person.3")
                 }
                 .tag(2)
-            AllEventsView()
+            ProfileView(userId: ProfileManager.shared.getLocalProfile()?.id ?? "")
                 .tabItem {
-                    Label("Settings", systemImage: "gearshape")
+                    Label("Profile", systemImage: "person.fill")
                 }
                 .tag(3)
         }

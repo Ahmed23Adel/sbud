@@ -12,13 +12,14 @@ import Lottie
 
 struct ViewMoreInfoEvent: View {
     @StateObject var viewModel: ViewModelMoreInfoEvent
-    
+    @EnvironmentObject var coordinator: AvailabilityCoordinator
+
     init(eventId: String){
         _viewModel = StateObject(wrappedValue: ViewModelMoreInfoEvent(eventId: eventId))
     }
+
     var body: some View {
         ZStack{
-            
             Color.darkBackground
             VStack{
                 if let coverImgURL = viewModel.fullDetails?.eventImage{
@@ -26,14 +27,12 @@ struct ViewMoreInfoEvent: View {
                     .ignoresSafeArea()
                     Spacer()
                 }
-                    
-                
             }
             if viewModel.isLoading{
                 LoadingView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
-            } 
+            }
             ScrollView {
                 VStack{
                     if viewModel.isErrorLoading{
@@ -44,7 +43,7 @@ struct ViewMoreInfoEvent: View {
                                 .fontWeight(.bold)
                             Spacer()
                         }
-                    }  else if let details = viewModel.fullDetails{
+                    } else if let details = viewModel.fullDetails{
                         ProposalVsDeterminedPhase(isDateConfirmed: details.isDateConfirmed, isLocationConfirmed: details.isLocationConfirmed)
                         HStack(){
                             JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
@@ -62,20 +61,23 @@ struct ViewMoreInfoEvent: View {
                         }
                         ViewActivityTypeForDetails(activityType: details.activityType)
                         PerformanceTargetDetailedConditional(activityDetails: details.activityDetails)
-                        
+
                         GenericMultilineTextView(
                             fieldName: "Description",
                             placeholder: "Ex: Come join us",
                             iconString: "pencil",
                             text: details.notes!)
-                        
-                        CreatorContactDetailed(creatorInfo: details.creator)
-                        
-                        
+
+                        CreatorContactDetailed(
+                            creatorInfo: details.creator,
+                            onTapProfile: {
+                                coordinator.push(.creatorProfile(userId: details.creator.id))
+                            }
+                        )
+
                         LocationMapCard(dateLocations: details.dateLocations)
                             .padding()
-                        
-                        // Attending people list
+
                         LazyVStack(spacing: 0) {
                             ForEach(1...100, id: \.self){ num in
                                 Text("num \(num)")
@@ -91,6 +93,3 @@ struct ViewMoreInfoEvent: View {
         .ignoresSafeArea()
     }
 }
-//#Preview {
-//    ViewMoreInfoEvent(basicEvent: .preview)
-//}

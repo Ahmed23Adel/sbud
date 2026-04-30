@@ -210,7 +210,7 @@ struct LocationPulseView: View {
 }
 
 // MARK: - UIApplication Safe Area Helper
-private extension UIApplication {
+extension UIApplication {
     static var safeAreaTop: CGFloat {
         shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }

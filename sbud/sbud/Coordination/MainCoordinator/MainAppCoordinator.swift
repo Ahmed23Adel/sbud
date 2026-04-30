@@ -20,30 +20,55 @@ struct MainAppCoordinator: View {
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)))
+                        .ignoresSafeArea()
                 case .signUp:
                     SignUpView()
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)))
+                        .ignoresSafeArea()
                 case .signIn:
                     SignInView()
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)))
+                        .ignoresSafeArea()
                 case .profileSetup:
                     ProfileSetupView()
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)))
+                        .ignoresSafeArea()
                 case .loadingPage:
                     LoadingView()
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)))
+                        .ignoresSafeArea()
+                case .profilePage(let userId):
+                    ProfileView(userId: userId)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)))
+                case .settingsPage:
+                    SettingsView()
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)))
+                        .ignoresSafeArea()
+                case .friendList(let userId):
+                    FriendListView(userId: userId)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)))
+                case .friendRequests:
+                    FriendRequestsView()
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)))
                 }
             }
-            .ignoresSafeArea()
-            .animation(.easeInOut(duration: 0.3), value: coordinator.currentRoute)
+            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: coordinator.currentRoute)
             .environmentObject(coordinator)
             
             VStack{

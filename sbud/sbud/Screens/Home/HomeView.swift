@@ -11,13 +11,20 @@ struct HomeView: View {
     let authManager = AuthenticationManager.shared
     @EnvironmentObject var coordinator: MainCoordinator
     var body: some View {
-        Button {
-            Task {
-                try await authManager.signOut()
-                coordinator.logout()
+        HStack(spacing: 5){
+            Button {
+                Task {
+                    try await authManager.signOut()
+                    coordinator.logout()
+                }
+            } label: {
+                Text("sign out")
             }
-        } label: {
-            Text("sign out")
+            Button {
+                coordinator.goToProfile(userId: "Ab68s84r9IZMGtbKt16rnCUt5KS2")
+            } label: {
+                Text("Test Profile")
+            }
         }
     }
 }
