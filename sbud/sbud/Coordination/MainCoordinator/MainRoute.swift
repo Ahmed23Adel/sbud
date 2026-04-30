@@ -15,6 +15,7 @@ enum MainRoute: Equatable, Hashable {
     case homePage
     case profilePage(userId: String)
     case myEvents(userId: String)
+    case editMyEvent(userId: String)
     case settingsPage
     case friendList(userId: String)
     case friendRequests

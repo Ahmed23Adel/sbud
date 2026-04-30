@@ -95,6 +95,9 @@ struct MainAppCoordinator: View {
 
         case .myEvents:
             EmptyView() // always pushed, never a root
+            
+        case .editMyEvent:
+            EmptyView()
         }
     }
 
@@ -104,6 +107,8 @@ struct MainAppCoordinator: View {
         switch route {
         case .myEvents(let userId):
             ViewMyEvents(userId: userId)
+        case .editMyEvent(let userId):
+            ViewMyEventEdit(userId: userId)
         default:
             EmptyView()
         }

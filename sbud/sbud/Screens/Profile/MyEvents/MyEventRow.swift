@@ -11,6 +11,8 @@ import Kingfisher
 
 struct MyEventRow: View {
     var event: UsersEvent
+    @EnvironmentObject var coordinator: MainCoordinator
+    
     private let accent = Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
 
     var body: some View {
@@ -78,6 +80,9 @@ struct MyEventRow: View {
         }
         .background(Color.backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
+        .onTapGesture{
+            coordinator.goToEditMyEvents(userId: event.eventId)
+        }
     }
 
     private var statusColor: Color {

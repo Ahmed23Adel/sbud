@@ -37,13 +37,17 @@ class MainCoordinator: ObservableObject {
     }
 
     func goBack() {
+        if !navigationPath.isEmpty {
+            navigationPath.removeLast()
+            return
+        }
         guard let previous = routeStack.popLast() else {
             currentRoute = .homePage
             return
         }
-            currentRoute = previous
+        currentRoute = previous
     }
-
+    
     func goToSignUp()  { navigateTo(.signUp) }
     func goToSignIn()  { navigateTo(.signIn) }
     func goToHome()    { navigateTo(.homePage) }
@@ -56,6 +60,12 @@ class MainCoordinator: ObservableObject {
         push(.myEvents(userId: userId)) 
     }
 
+    
+    func goToEditMyEvents(userId: String) {
+        push(.editMyEvent(userId: userId))
+    }
+
+    
     func goToSettings() {
         navigateTo(.settingsPage)
     }
