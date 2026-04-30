@@ -13,49 +13,80 @@ class MainCoordinator: ObservableObject {
 
     let authManager = AuthenticationManager.shared
     let profManager = ProfileManager.shared
-    
+
+    private var routeStack: [MainRoute] = []
+
     init() {
         self.currentRoute = .loadingPage
         checkAppFlow()
     }
 
+    var canGoBack: Bool {
+        !routeStack.isEmpty
+    }
+
     func navigateTo(_ route: MainRoute) {
+        switch route {
+        case .settingsPage, .profilePage, .friendList, .friendRequests:
+            routeStack.append(currentRoute)
+        default:
+            routeStack.removeAll()
+        }
         currentRoute = route
     }
 
-    func goToSignUp() {
-        navigateTo(.signUp)
+    func goBack() {
+        guard let previous = routeStack.popLast() else {
+            currentRoute = .homePage
+            return
+        }
+            currentRoute = previous
     }
 
-    func goToSignIn() {
-        navigateTo(.signIn)
+    func goToSignUp()  { navigateTo(.signUp) }
+    func goToSignIn()  { navigateTo(.signIn) }
+    func goToHome()    { navigateTo(.homePage) }
+
+    func goToProfile(userId: String) {
+        navigateTo(.profilePage(userId: userId))
     }
 
-    func goToHome() {
-        navigateTo(.homePage)
+    func goToSettings() {
+        navigateTo(.settingsPage)
     }
+
     
-    func logout(){
+
+    func goToFriendList(userId: String) {
+        navigateTo(.friendList(userId: userId))
+    }
+
+    func goToFriendRequests() {
+        navigateTo(.friendRequests)
+    }
+
+    func logout() {
+        routeStack.removeAll()
         profManager.deleteProfileFromLocale()
-        goToSignUp()
+        currentRoute = .signUp
     }
-    
+
     func refreshAppFlow() {
-            checkAppFlow()
+        checkAppFlow()
     }
-    
+
     func checkAppFlow() {
         Task { @MainActor in
             let target = await checkProfileStatus()
-            navigateTo(target)
+            routeStack.removeAll()
+            currentRoute = target
         }
     }
 
     private func checkProfileStatus() async -> MainRoute {
-    
-        guard authManager.checkAuthStatus() else {  return .signUp  }
-        if profManager.isProfileSetupComplete { return .homePage    }
-    
+        guard authManager.checkAuthStatus() else { return .signUp }
+        if profManager.isProfileSetupComplete { return .homePage }
+
         do {
             try await profManager.syncProfileAfterLogin()
             return profManager.isProfileSetupComplete ? .homePage : .profileSetup
