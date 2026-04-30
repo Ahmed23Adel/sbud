@@ -6,11 +6,27 @@
 //
 
 import Foundation
-
+import SwiftUI
 enum UsersEventStatus: String, Codable {
     case proposed = "Proposed"
     case confirmed = "Confirmed"
     case completed = "Completed"
+
+    var color: Color {
+        switch self {
+        case .proposed:  return .yellow
+        case .confirmed: return Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
+        case .completed: return .green
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .proposed:  return "clock"
+        case .confirmed: return "checkmark.seal.fill"
+        case .completed: return "flag.checkered"
+        }
+    }
 }
 
 struct UsersEvent: Codable, Identifiable {

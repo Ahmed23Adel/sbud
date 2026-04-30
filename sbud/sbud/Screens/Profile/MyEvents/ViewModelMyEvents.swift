@@ -16,6 +16,15 @@ class ViewModelMyEvents{
     var isShowAlert = false
     var alertMsg = ""
     
+    var sections: [(UsersEventStatus, [UsersEvent])] {
+        let order: [UsersEventStatus] = [.confirmed, .proposed, .completed]
+        let grouped = Dictionary(grouping: usersEvents, by: \.status)
+        return order.compactMap { status in
+            guard let events = grouped[status], !events.isEmpty else { return nil }
+            return (status, events)
+        }
+    }
+    
     init(userId: String){
         logger.info("userId: \(userId)")
         self.userId = userId
@@ -23,6 +32,7 @@ class ViewModelMyEvents{
     }
     
     
+    // TODO: Make sure you can have access to the following event public/private
     private func loadUsersEvents() {
         let repo = UsersEventRepository()
         var query = repo.initQueryBuilderObject()

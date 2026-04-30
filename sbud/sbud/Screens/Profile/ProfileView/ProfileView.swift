@@ -43,7 +43,7 @@ struct ProfileView: View {
                             statsRow
                             performanceCard
                             archiveSection
-                            ViewMyEvents(userId: vm.userId)
+                            myEventsButton
                             
                         }
                         .padding(.bottom, 80)
@@ -398,6 +398,27 @@ private extension ProfileView {
         .cornerRadius(4)
     }
 
+    var myEventsButton: some View {
+        HStack {
+            Text("MY EVENTS")
+                .font(.system(size: 15, weight: .black))
+                .foregroundColor(.white)
+                .kerning(1.5)
+            Spacer()
+            Button {
+                coordinator.goToMyEvents(userId: vm.userId)
+            } label: {
+                Text("VIEW ALL")
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundColor(Color("turquoise"))
+            }
+        }
+        .padding(20)
+        .background(Color(white: 0.07))
+        .clipShape(Rectangle())
+        .padding(.horizontal, 16)
+        .cornerRadius(4)
+    }
     
     private var lastActivityText: String {
         guard let date = vm.profile?.lastActivityDate,

@@ -10,7 +10,8 @@ import Combine
 
 class MainCoordinator: ObservableObject {
     @Published var currentRoute: MainRoute
-
+    @Published var navigationPath: [MainRoute] = []
+    
     let authManager = AuthenticationManager.shared
     let profManager = ProfileManager.shared
 
@@ -49,6 +50,10 @@ class MainCoordinator: ObservableObject {
 
     func goToProfile(userId: String) {
         navigateTo(.profilePage(userId: userId))
+    }
+    
+    func goToMyEvents(userId: String) {
+        push(.myEvents(userId: userId)) 
     }
 
     func goToSettings() {
@@ -94,4 +99,10 @@ class MainCoordinator: ObservableObject {
             return .profileSetup
         }
     }
+    
+    func push(_ route: MainRoute) {
+        navigationPath.append(route)
+    }
+    
+    
 }
