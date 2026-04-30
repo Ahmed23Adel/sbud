@@ -43,6 +43,8 @@ struct ProfileView: View {
                             statsRow
                             performanceCard
                             archiveSection
+                            ViewMyEvents(userId: vm.userId)
+                            
                         }
                         .padding(.bottom, 80)
                     }
@@ -396,6 +398,7 @@ private extension ProfileView {
         .cornerRadius(4)
     }
 
+    
     private var lastActivityText: String {
         guard let date = vm.profile?.lastActivityDate,
               let name = vm.profile?.lastActivityName else {
@@ -422,3 +425,7 @@ private extension ProfileView {
 
 
 
+#Preview {
+    ProfileView(userId: "preview-user")
+        .environmentObject(MainCoordinator())
+}
