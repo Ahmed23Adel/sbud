@@ -13,7 +13,7 @@ struct EmailVerificationBanner: View {
     @State private var isReloading = false
     @State private var emailResent = false
     
-    // Questa è la closure che riceve l'azione dalla ProfileSetupView
+    
     var onVerified: () -> Void
     
     let iconNames = (1...14).map { "background-icon\($0)" }
@@ -21,7 +21,7 @@ struct EmailVerificationBanner: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            Text("You have to verify your email, control you inbox or spam.")
+            Text("You have to verify your email, control you inbox or SPAM.")
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.white)
@@ -63,7 +63,7 @@ struct EmailVerificationBanner: View {
                     AuthenticationManagerEmailAndPassword.shared.sendVerificationEmail()
                     emailResent = true
                 } label: {
-                    Text(emailResent ? "Inviata!" : "Invia di nuovo")
+                    Text(emailResent ? "Sent!" : "Send again")
                         .font(.footnote)
                         .fontWeight(.bold)
                 }
