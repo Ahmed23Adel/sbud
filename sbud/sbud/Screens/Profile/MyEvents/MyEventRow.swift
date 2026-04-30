@@ -42,18 +42,7 @@ struct MyEventRow: View {
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(accent)
                         Spacer()
-                        // Status badge
-                        Text(event.status.rawValue)
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(statusColor)
-                            .padding(.vertical, 4)
-                            .padding(.horizontal, 9)
-                            .background(statusColor.opacity(0.15))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: UIConstants.cornerRadius)
-                                    .stroke(statusColor.opacity(0.4), lineWidth: 1)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
+                        
                     }
 
                     // Title
