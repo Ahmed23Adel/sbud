@@ -7,10 +7,10 @@
 
 import Foundation
 import Combine
-
+import OSLog
 class MainCoordinator: ObservableObject {
     @Published var currentRoute: MainRoute
-    @Published var navigationPath: [MainRoute] = []
+    let logger = Logger(subsystem: "sbud", category: "MainCoordinator")
     
     let authManager = AuthenticationManager.shared
     let profManager = ProfileManager.shared
@@ -25,10 +25,14 @@ class MainCoordinator: ObservableObject {
     var canGoBack: Bool {
         !routeStack.isEmpty
     }
+    
+    func goBack() {
+        currentRoute = .homePage
+    }
 
     func navigateTo(_ route: MainRoute) {
         switch route {
-        case .settingsPage, .profilePage, .friendList, .friendRequests:
+        case .profilePage:
             routeStack.append(currentRoute)
         default:
             routeStack.removeAll()
@@ -36,17 +40,6 @@ class MainCoordinator: ObservableObject {
         currentRoute = route
     }
 
-    func goBack() {
-        if !navigationPath.isEmpty {
-            navigationPath.removeLast()
-            return
-        }
-        guard let previous = routeStack.popLast() else {
-            currentRoute = .homePage
-            return
-        }
-        currentRoute = previous
-    }
     
     func goToSignUp()  { navigateTo(.signUp) }
     func goToSignIn()  { navigateTo(.signIn) }
@@ -56,30 +49,7 @@ class MainCoordinator: ObservableObject {
         navigateTo(.profilePage(userId: userId))
     }
     
-    func goToMyEvents(userId: String) {
-        push(.myEvents(userId: userId)) 
-    }
-
     
-    func goToEditMyEvents(userId: String) {
-        push(.editMyEvent(userId: userId))
-    }
-
-    
-    func goToSettings() {
-        navigateTo(.settingsPage)
-    }
-
-    
-
-    func goToFriendList(userId: String) {
-        navigateTo(.friendList(userId: userId))
-    }
-
-    func goToFriendRequests() {
-        navigateTo(.friendRequests)
-    }
-
     func logout() {
         routeStack.removeAll()
         profManager.deleteProfileFromLocale()
@@ -110,9 +80,7 @@ class MainCoordinator: ObservableObject {
         }
     }
     
-    func push(_ route: MainRoute) {
-        navigationPath.append(route)
-    }
+    
     
     
 }

@@ -12,7 +12,7 @@
 import SwiftUI
 struct ViewMyEvents: View {
     @State var viewModel: ViewModelMyEvents
-    @EnvironmentObject var coordinator: MainCoordinator
+    @EnvironmentObject var coordinator: ProfileCoordinator
 
     init(userId: String) {
         _viewModel = State(initialValue: ViewModelMyEvents(userId: userId))

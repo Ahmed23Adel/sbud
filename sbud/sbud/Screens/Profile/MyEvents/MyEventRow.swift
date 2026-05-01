@@ -11,7 +11,7 @@ import Kingfisher
 
 struct MyEventRow: View {
     var event: UsersEvent
-    @EnvironmentObject var coordinator: MainCoordinator
+    @EnvironmentObject var coordinator: ProfileCoordinator
     
     private let accent = Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
 
@@ -51,15 +51,6 @@ struct MyEventRow: View {
                         .foregroundColor(.white)
                         .lineLimit(1)
 
-                    // Activity type detail label
-//                    HStack(spacing: 4) {
-//                        Image(systemName: "person.fill")
-//                            .font(.system(size: 11))
-//                            .foregroundColor(.white.opacity(0.5))
-//                        Text("My Event")
-//                            .font(.system(size: 12))
-//                            .foregroundColor(.white.opacity(0.6))
-//                    }
                 }
 
                 Spacer()
@@ -70,7 +61,7 @@ struct MyEventRow: View {
         .background(Color.backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
         .onTapGesture{
-            coordinator.goToEditMyEvents(userId: event.eventId)
+//            coordinator.goToEditMyEvents(userId: event.eventId)
         }
     }
 
