@@ -60,9 +60,7 @@ struct MyEventRow: View {
         }
         .background(Color.backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
-        .onTapGesture{
-//            coordinator.goToEditMyEvents(userId: event.eventId)
-        }
+
     }
 
     private var statusColor: Color {

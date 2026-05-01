@@ -24,6 +24,10 @@ struct ProfileAppCoordinator: View {
                         .environmentObject(coordinator)
                 }
                 .environmentObject(coordinator)
+                .sheet(item: $coordinator.sheetType){ sheet in
+                    sheetView(for: sheet)
+                        .environmentObject(coordinator)
+                }
         } else {
             // Standalone tab — owns its NavigationStack
             NavigationStack(path: $coordinator.navigationPath) {
@@ -34,6 +38,10 @@ struct ProfileAppCoordinator: View {
                     }
             }
             .environmentObject(coordinator)
+            .sheet(item: $coordinator.sheetType) { sheet in
+                sheetView(for: sheet)
+                    .environmentObject(coordinator)
+            }
         }
     }
     
@@ -60,8 +68,18 @@ struct ProfileAppCoordinator: View {
             ViewOthersEvents(userId: coordinator.currUserId)
         case .friendsList:
             FriendListView(userId: coordinator.currUserId)
+        case .viewMyEventDetails(let eventId):
+            ViewMyEventDetails(eventId: eventId)
         case .editMyEvent:
             EmptyView()
+        }
+    }
+    
+    @ViewBuilder
+    private func sheetView(for sheet: ProfileSheetType) -> some View {
+        switch sheet {
+        case .hosts(let eventId):
+            ViewHosts(eventId: eventId)
         }
     }
 }

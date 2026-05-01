@@ -20,4 +20,16 @@ enum ProfileRoutePushed: Equatable, Hashable{
     case othersEvents
     case friendsList
     case editMyEvent
+    case viewMyEventDetails (eventId: String)
+}
+
+
+enum ProfileSheetType: Equatable, Hashable, Identifiable{
+    case hosts(eventId: String)
+    
+    var id: String {
+        switch self {
+            case .hosts(let eventId): return "hosts-\(eventId)"
+        }
+    }
 }

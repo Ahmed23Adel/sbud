@@ -34,6 +34,9 @@ struct ViewMyEvents: View {
                                     MyEventRow(event: event)
                                         .padding(.horizontal, 16)
                                         .environmentObject(coordinator)
+                                        .onTapGesture{
+                                            coordinator.goToMyEventDetails(eventId: event.eventId)
+                                        }
                                 }
                             }
                             .padding(.bottom, 16)

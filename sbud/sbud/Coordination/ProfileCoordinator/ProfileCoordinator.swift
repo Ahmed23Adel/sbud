@@ -14,6 +14,7 @@ class ProfileCoordinator: ObservableObject{
     @Published var currentRoute: ProfileRoute
     @Published var navigationPath: [ProfileRoutePushed] = []
     @Published var currUserId = ""
+    @Published var sheetType: ProfileSheetType? = nil
     let logger = Logger(subsystem: "sbud", category: "ProfileCoordinator")
     
     var userIsCurUser: Bool {
@@ -84,6 +85,17 @@ class ProfileCoordinator: ObservableObject{
             navigationPath.append(.myEvents)
         } else {
             navigationPath.append(.othersEvents)
+        }
+    }
+    
+    func goToMyEventDetails(eventId: String){
+        navigationPath.append(.viewMyEventDetails(eventId: eventId))
+    }
+    
+    
+    func showHostsSheet(eventId: String){
+        if currentRoute == .myProfile{
+            sheetType = .hosts(eventId: eventId)
         }
     }
     
