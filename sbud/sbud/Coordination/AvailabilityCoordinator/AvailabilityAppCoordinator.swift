@@ -56,6 +56,8 @@ struct AvailabilityAppCoordinator: View {
         case .creatorProfile(let userId):
             ProfileView(userId: userId, onBack: { coordinator.pop() })
                 .toolbar(.hidden, for: .navigationBar)
+        case .chat(let user, let eventId): // ADD routing
+            ChatView(user: user, eventId: eventId)
         }
     }
 }

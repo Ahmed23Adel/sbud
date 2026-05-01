@@ -72,6 +72,16 @@ struct ViewMoreInfoEvent: View {
                             creatorInfo: details.creator,
                             onTapProfile: {
                                 coordinator.push(.creatorProfile(userId: details.creator.id))
+                            },
+                            onTapContact: {
+                                // 1. Mapping of the creator
+                                var chatUser = UserProfile(id: details.creator.id)
+                                chatUser.name = details.creator.name
+                                chatUser.surName = details.creator.surName
+                                chatUser.profileImageUrl = details.creator.profileImageUrl
+                                
+                                // 2. doing push using viewModel.eventId!
+                                coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId))
                             }
                         )
 
