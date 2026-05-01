@@ -20,24 +20,33 @@ struct ChatView: View {
     }
     
     var body: some View {
-        VStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach(viewModel.messages) { message in
-                        MessageView(viewModel: MessageViewModel(message: message))
+        ZStack {
+            
+            Color.darkBackground.ignoresSafeArea()
+            
+            VStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(viewModel.messages) { message in
+                            MessageView(viewModel: MessageViewModel(message: message), user: user)
+                        }
                     }
-                }
-            }.padding(.top)
-            
-            CustomInputView(inputText: $messageText,
-                            placeholder: "Message...",
-                            buttonTitle: "Send",
-                            action: sendMessage)
-            
+                }.padding(.top)
+                
+                CustomInputView(inputText: $messageText,
+                                placeholder: "Message...",
+                                buttonTitle: "Send",
+                                action: sendMessage)
+                                .background(Color.darkBackground)
+                
+            }
         }
         .navigationTitle(user.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
+        .toolbarBackground(Color.darkBackground, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
     
     func sendMessage() {

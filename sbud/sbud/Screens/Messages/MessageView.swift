@@ -24,9 +24,9 @@ struct MessageView: View {
                     Text(viewModel.message.text)
                         .font(.system(size: 15))
                         .padding(10)
-                        .background(Color.blue)
+                        .background(Color.mainColor)
                         .clipShape(ChatBubble(isFromCurrentUser: true))
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                         .padding(.leading, 100)
                         .padding(.trailing)
                 
@@ -48,9 +48,9 @@ struct MessageView: View {
                         Text(viewModel.message.text)
                             .font(.system(size: 15))
                             .padding(10)
-                            .background(Color(.systemGray5))
+                            .background(Color.backgroundColor)
                             .clipShape(ChatBubble(isFromCurrentUser: false))
-                            .foregroundColor(.black)
+                            .foregroundColor(.white)
                 }
                 .padding(.trailing, 100)
                 .padding(.leading)
