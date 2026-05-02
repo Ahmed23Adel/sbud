@@ -14,10 +14,10 @@ import FirebaseFirestore
 
 class ChatViewModel: ObservableObject {
     let user: UserProfile
-    let eventId: String?
+    let eventId: String
     @Published var messages = [Message]()
     
-    init(user: UserProfile, eventId: String? = nil) {
+    init(user: UserProfile, eventId: String) {
         self.user = user
         self.eventId = eventId
         fetchMessages()
@@ -26,9 +26,11 @@ class ChatViewModel: ObservableObject {
     func fetchMessages() {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         
+        let chatRoomId = "\(user.id)_\(eventId)"
+        
         let query = Firestore.firestore().collection("messages")
             .document(currentUid)
-            .collection(user.id)
+            .collection(chatRoomId)
             .order(by: "timestamp", descending: false)
         
         query.addSnapshotListener { snapshot, error in
@@ -51,10 +53,14 @@ class ChatViewModel: ObservableObject {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         let uid = user.id
         
-        let currentUserRef = Firestore.firestore().collection("messages").document(currentUid).collection(uid).document()
-        let receivingUserRef = Firestore.firestore().collection("messages").document(uid).collection(currentUid)
-        let receivingRecentRef = Firestore.firestore().collection("messages").document(uid).collection("recent-messages")
+        let chatRoomIdForCurrent = "\(uid)_\(eventId)"
+        let chatRoomIdForRecipient = "\(currentUid)_\(eventId)"
+        
+        let currentUserRef = Firestore.firestore().collection("messages").document(currentUid).collection(chatRoomIdForCurrent).document()
+        let receivingUserRef = Firestore.firestore().collection("messages").document(uid).collection(chatRoomIdForRecipient)
+        
         let currentRecentRef =  Firestore.firestore().collection("messages").document(currentUid).collection("recent-messages")
+        let receivingRecentRef = Firestore.firestore().collection("messages").document(uid).collection("recent-messages")
         
         let messageID = currentUserRef.documentID
         
@@ -62,21 +68,22 @@ class ChatViewModel: ObservableObject {
                                    "id": messageID,
                                    "fromId": currentUid,
                                    "toId": uid,
-                                   "eventId": eventId ?? "",
+                                   "eventId": eventId,
                                    "timestamp": Timestamp(date: Date())]
         
         let recipientData: [String: Any] = ["text": messageText,
                                             "id": messageID,
                                             "fromId": currentUid,
                                             "toId": uid,
-                                            "eventId": eventId ?? "",
+                                            "eventId": eventId,
                                             "timestamp": Timestamp(date: Date())]
         
         currentUserRef.setData(data)
-        currentRecentRef.document(uid).setData(data)
+        
+        currentRecentRef.document(chatRoomIdForCurrent).setData(data)
 
         receivingUserRef.document(messageID).setData(recipientData)
-        receivingRecentRef.document(currentUid).setData(recipientData)
+        receivingRecentRef.document(chatRoomIdForRecipient).setData(recipientData)
     }
     
 }

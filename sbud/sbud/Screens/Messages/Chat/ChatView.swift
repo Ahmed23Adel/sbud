@@ -9,13 +9,15 @@ import SwiftUI
 
 struct ChatView: View {
     let user: UserProfile
-    let eventId: String?
+    let eventId: String
+    let eventTitle: String
     @StateObject var viewModel: ChatViewModel
     @State var messageText: String = ""
     
-    init(user: UserProfile, eventId: String? = nil) {
+    init(user: UserProfile, eventId: String, eventTitle: String) {
         self.user = user
         self.eventId = eventId
+        self.eventTitle = eventTitle
         self._viewModel = StateObject(wrappedValue: ChatViewModel(user: user, eventId: eventId))
     }
     
@@ -41,7 +43,7 @@ struct ChatView: View {
                 
             }
         }
-        .navigationTitle(user.name)
+        .navigationTitle("\(user.name) • \(eventTitle)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbarBackground(Color.darkBackground, for: .navigationBar)

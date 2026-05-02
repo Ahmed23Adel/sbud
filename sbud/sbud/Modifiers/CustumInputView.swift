@@ -34,7 +34,7 @@ struct CustomInputView: View {
             .padding(.horizontal)
         }
         .padding(.horizontal)
-        .padding(.vertical, 8) 
+        .padding(.vertical, 8)
         .background(Color.darkBackground)
     }
 }

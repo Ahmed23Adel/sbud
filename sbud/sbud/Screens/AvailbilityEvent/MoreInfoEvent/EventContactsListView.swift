@@ -10,8 +10,10 @@ import Kingfisher
 
 struct EventContactsListView: View {
     @StateObject var viewModel: EventContactsViewModel
+    let eventTitle: String
     
-    init(eventId: String) {
+    init(eventId: String, eventTitle: String = "Event Chat") {
+        self.eventTitle = eventTitle
         _viewModel = StateObject(wrappedValue: EventContactsViewModel(eventId: eventId))
     }
     
@@ -28,9 +30,9 @@ struct EventContactsListView: View {
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(viewModel.contactedUsers) { userProfile in
-                        NavigationLink(destination: ChatView(user: userProfile, eventId: viewModel.eventId)) {
+                        NavigationLink(destination: ChatView(user: userProfile, eventId: viewModel.eventId, eventTitle: self.eventTitle)) {
                             HStack {
-                                // Immagine Profilo
+                                
                                 if let imageUrl = userProfile.profileImageUrl, let url = URL(string: imageUrl) {
                                     KFImage(url)
                                         .resizable()

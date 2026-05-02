@@ -80,8 +80,10 @@ struct ViewMoreInfoEvent: View {
                                 chatUser.surName = details.creator.surName
                                 chatUser.profileImageUrl = details.creator.profileImageUrl
                                 
+                                let eTitle = details.title
+                                
                                 // 2. doing push using viewModel.eventId!
-                                coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId))
+                                coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle))
                             }
                         )
 
