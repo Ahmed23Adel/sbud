@@ -8,5 +8,5 @@
 import Foundation
 
 
-class HostsRepository: IFirebaesRepository
-{}
+//class HostsRepository: IFirebaesRepository
+//{}

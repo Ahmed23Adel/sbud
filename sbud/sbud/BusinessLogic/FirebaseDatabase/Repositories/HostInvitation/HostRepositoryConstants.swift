@@ -8,6 +8,6 @@
 import Foundation
 
 
-struct UsersEventRepositoryConstants: IRepositoryConstants{
+struct HostRepositoryConstants: IRepositoryConstants{
     
 }
