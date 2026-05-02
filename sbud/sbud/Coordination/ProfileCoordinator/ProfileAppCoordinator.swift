@@ -79,7 +79,7 @@ struct ProfileAppCoordinator: View {
     private func sheetView(for sheet: ProfileSheetType) -> some View {
         switch sheet {
         case .hosts(let eventId):
-            ViewHosts(eventId: eventId)
+            ViewHosts(eventId: eventId, userId: coordinator.currUserId)
         }
     }
 }
