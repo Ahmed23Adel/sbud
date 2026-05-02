@@ -16,6 +16,7 @@ class ViewModelMyEventDetails{
     var eventId: String
     
     init(eventId: String){
+        logger.info("eventId: \(eventId)")
         self.eventId = eventId
         Task {
             await loadDetails()
