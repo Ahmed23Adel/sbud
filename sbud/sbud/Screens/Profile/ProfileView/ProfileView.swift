@@ -11,9 +11,11 @@ import Kingfisher
 struct ProfileView: View {
     @StateObject private var vm: ProfileVM
     @EnvironmentObject var coordinator: MainCoordinator
-    
+
     @State private var currentPage = 0
-    
+    @State private var showPhotoPreview = false
+    @State private var showEditProfile = false
+
     var onBack: (() -> Void)? = nil
 
     init(userId: String, onBack: (() -> Void)? = nil) {
@@ -37,9 +39,8 @@ struct ProfileView: View {
                         VStack(spacing: 24) {
                             headerTabView
                             pageIndicator
-
-                            if vm.isOwnProfile {    editButton  }
-                            else {  followButtons   }
+                            if vm.isOwnProfile { editButton }
+                            else { followButtons }
                             statsRow
                             performanceCard
                             archiveSection
@@ -48,36 +49,114 @@ struct ProfileView: View {
                     }
                 }
             }
+
+            if showPhotoPreview {
+                photoPreviewOverlay
+                    .transition(.opacity)
+                    .zIndex(10)
+            }
         }
         .task { await vm.load() }
+        .fullScreenCover(isPresented: $showEditProfile) {
+            EditProfileView(profile: vm.profile) { updatedProfile in
+                vm.applyUpdatedProfile(updatedProfile)
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: showPhotoPreview)
     }
 }
 
 
 private extension ProfileView {
-    
+
+    var photoPreviewOverlay: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+                .overlay(Color.black.opacity(0.6))
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showPhotoPreview = false
+                    }
+                }
+
+            VStack(spacing: 0) {
+                Spacer()
+
+                ZStack {
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color("turquoise"), Color("turquoise").opacity(0.25)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 4
+                        )
+                        .frame(width: 286, height: 286)
+                        .shadow(color: Color("turquoise").opacity(0.55), radius: 28)
+
+                    Group {
+                        if let urlStr = vm.profile?.profileImageUrl, let url = URL(string: urlStr) {
+                            KFImage(url)
+                                .resizable()
+                                .scaledToFill()
+                        } else {
+                            Image(systemName: "person.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .padding(60)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .frame(width: 272, height: 272)
+                    .clipShape(Circle())
+                }
+                .scaleEffect(showPhotoPreview ? 1 : 0.35)
+                .animation(.spring(response: 0.45, dampingFraction: 0.72), value: showPhotoPreview)
+
+                Spacer()
+
+                // Close button
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showPhotoPreview = false
+                    }
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.13))
+                            .frame(width: 54, height: 54)
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
+                .padding(.bottom, 52)
+            }
+        }
+    }
+}
+
+
+private extension ProfileView {
+
     var headerTabView: some View {
         TabView(selection: $currentPage) {
-            mainHeaderContent
-                .tag(0)
-            
-            detailHeaderContent
-                .tag(1)
+            mainHeaderContent.tag(0)
+            detailHeaderContent.tag(1)
         }
         .frame(height: 280)
         .tabViewStyle(.page(indexDisplayMode: .never))
     }
-    
+
     var mainHeaderContent: some View {
         VStack(spacing: 12) {
             avatarCircle
-            
-            VStack(spacing: 4) {
-                Text("\(vm.profile?.name ?? "") \(vm.profile?.surName ?? "")".uppercased())
-                    .font(.system(size: 28, weight: .black))
-                    .foregroundColor(.white)
-            }
-            
+            Text("\(vm.profile?.name ?? "") \(vm.profile?.surName ?? "")".uppercased())
+                .font(.system(size: 28, weight: .black))
+                .foregroundColor(.white)
             if let bio = vm.profile?.bio, !bio.isEmpty {
                 Text(bio)
                     .font(.system(size: 13, weight: .medium))
@@ -88,33 +167,23 @@ private extension ProfileView {
             }
         }
     }
-    
+
     var detailHeaderContent: some View {
         VStack(alignment: .leading, spacing: 18) {
-
             if vm.isOwnProfile || ((vm.profile?.showEmail ?? false) && vm.isFriend) {
                 infoRow(icon: "envelope", label: "EMAIL", value: vm.profile?.email ?? "")
             }
-
             if vm.isOwnProfile || ((vm.profile?.showPhone ?? false) && vm.isFriend) {
                 infoRow(icon: "phone", label: "PHONE", value: vm.profile?.phoneNumber ?? "")
             }
-            
-            infoRow(icon: "calendar",
-                    label: "AGE",
-                    value: "\(vm.profile?.age ?? 0) YEARS")
-            
+            infoRow(icon: "calendar", label: "AGE", value: "\(vm.profile?.age ?? 0) YEARS")
             infoRow(icon: "person", label: "GENDER", value: vm.profile?.gender ?? "")
-            
-            infoRow(
-                icon: "mappin.and.ellipse",
-                label: "LOCATION",
-                value: "\(vm.profile?.city ?? ""), \(vm.profile?.country ?? "")"
-            )
+            infoRow(icon: "mappin.and.ellipse", label: "LOCATION",
+                    value: "\(vm.profile?.city ?? ""), \(vm.profile?.country ?? "")")
         }
         .padding(.horizontal, 40)
     }
-    
+
     func infoRow(icon: String, label: String, value: String) -> some View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: icon)
@@ -122,7 +191,6 @@ private extension ProfileView {
                 .foregroundColor(Color("turquoise"))
                 .frame(width: 28, height: 28)
                 .offset(y: 2)
-            
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.system(size: 10, weight: .bold))
@@ -133,8 +201,13 @@ private extension ProfileView {
             }
         }
     }
+
     var avatarCircle: some View {
-        ZStack(alignment: .bottom) {
+        Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                showPhotoPreview = true
+            }
+        } label: {
             ZStack {
                 Circle()
                     .stroke(Color("turquoise").opacity(0.5), lineWidth: 2)
@@ -158,6 +231,7 @@ private extension ProfileView {
                 .clipShape(Circle())
             }
         }
+        .buttonStyle(PlainButtonStyle())
         .padding(.bottom, 10)
     }
 
@@ -173,7 +247,7 @@ private extension ProfileView {
     }
 
     var editButton: some View {
-        Button(action: {}) {
+        Button { showEditProfile = true } label: {
             Text("EDIT PROFILE")
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
                 .foregroundColor(.black)
@@ -184,7 +258,7 @@ private extension ProfileView {
         }
         .padding(.horizontal, 24)
     }
-    
+
     var navBar: some View {
         HStack {
             if onBack != nil {
@@ -237,7 +311,7 @@ private extension ProfileView {
         .padding(.vertical, 8)
         .background(Color(red: 0.05, green: 0.05, blue: 0.05))
     }
-    
+
     var followButtons: some View {
         Button {
             Task { await vm.toggleFriendAction() }
@@ -248,8 +322,7 @@ private extension ProfileView {
                 } else {
                     HStack(spacing: 6) {
                         if vm.isRequestSent || vm.isRequestReceived {
-                            Image(systemName: "clock")
-                                .font(.system(size: 12, weight: .bold))
+                            Image(systemName: "clock").font(.system(size: 12, weight: .bold))
                         }
                         Text(friendActionButtonLabel)
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
@@ -271,16 +344,14 @@ private extension ProfileView {
         case .friends:         return "UNFRIEND"
         case .requestSent:     return "REQUESTED"
         case .requestReceived: return "ACCEPT"
-        case .notFriend:       return (vm.profile?.isPrivate ?? false) ? "ADD FRIEND" : "ADD FRIEND"
+        case .notFriend:       return "ADD FRIEND"
         }
     }
 
     private var friendActionButtonForeground: Color {
         switch vm.friendStatus {
-        case .friends:         return .white
-        case .requestSent:     return .white
-        case .requestReceived: return .black
-        case .notFriend:       return .black
+        case .friends, .requestSent:           return .white
+        case .requestReceived, .notFriend:     return .black
         }
     }
 
@@ -295,9 +366,7 @@ private extension ProfileView {
 
     var statsRow: some View {
         HStack(spacing: 0) {
-            Button {
-                coordinator.goToFriendList(userId: vm.userId)
-            } label: {
+            Button { coordinator.goToFriendList(userId: vm.userId) } label: {
                 statItem(value: formatCount(vm.profile?.friendsCount ?? 0), label: "FRIENDS")
             }
             Rectangle().fill(Color(white: 0.15)).frame(width: 1, height: 28)
@@ -305,7 +374,7 @@ private extension ProfileView {
         .padding(.vertical, 16)
         .background(Color(white: 0.07))
     }
-    
+
     func statItem(value: String, label: String) -> some View {
         VStack(spacing: 5) {
             Text(value)
@@ -318,30 +387,20 @@ private extension ProfileView {
         }
         .frame(maxWidth: .infinity)
     }
-    
+
     var performanceCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("PERFORMANCE METRICS")
                 .font(.system(size: 15, weight: .black))
                 .foregroundColor(.white)
                 .kerning(1.5)
-            
             HStack(alignment: .top) {
-                metricItem(label: "TOTAL SESSIONS",
-                           value: "\(vm.profile?.totalSessions ?? 0)",
-                           color: Color("turquoise"))
+                metricItem(label: "TOTAL SESSIONS", value: "\(vm.profile?.totalSessions ?? 0)", color: Color("turquoise"))
                 Spacer()
-                metricItem(label: "DISTANCE (KM)",
-                           value: formatDistance(vm.profile?.totalDistanceKm ?? 0),
-                           color: .white)
+                metricItem(label: "DISTANCE (KM)", value: formatDistance(vm.profile?.totalDistanceKm ?? 0), color: .white)
             }
-            
-            metricItem(label: "AVG. INTENSITY",
-                       value: "\(vm.profile?.avgIntensity ?? 0) %",
-                       color: .white)
-            
+            metricItem(label: "AVG. INTENSITY", value: "\(vm.profile?.avgIntensity ?? 0) %", color: .white)
             Divider().background(Color(white: 0.12))
-            
             HStack {
                 Text(lastActivityText)
                     .font(.system(size: 10, design: .monospaced))
@@ -358,7 +417,7 @@ private extension ProfileView {
         .padding(.horizontal, 16)
         .cornerRadius(4)
     }
-    
+
     func metricItem(label: String, value: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(label)
@@ -370,7 +429,7 @@ private extension ProfileView {
                 .foregroundColor(color)
         }
     }
-    
+
     var archiveSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -382,7 +441,6 @@ private extension ProfileView {
                     .font(.system(size: 10, weight: .bold, design: .monospaced))
                     .foregroundColor(Color("turquoise"))
             }
-            
             Text("No activity history yet.")
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundColor(.gray)
@@ -398,9 +456,7 @@ private extension ProfileView {
 
     private var lastActivityText: String {
         guard let date = vm.profile?.lastActivityDate,
-              let name = vm.profile?.lastActivityName else {
-            return "No recent activity"
-        }
+              let name = vm.profile?.lastActivityName else { return "No recent activity" }
         return "Last activity: \(timeAgo(date)) • \(name)"
     }
 
@@ -419,6 +475,3 @@ private extension ProfileView {
         return "\(diff / 86400)d ago"
     }
 }
-
-
-

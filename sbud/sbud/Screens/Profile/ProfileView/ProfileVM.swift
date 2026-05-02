@@ -23,9 +23,7 @@ final class ProfileVM: ObservableObject {
     private let userRepository = UserRepository()
     let userId: String
 
-    var isOwnProfile: Bool {
-        userId == Auth.auth().currentUser?.uid
-    }
+    var isOwnProfile: Bool { userId == Auth.auth().currentUser?.uid }
 
     var displayName: String {
         guard let p = profile else { return "" }
@@ -46,16 +44,13 @@ final class ProfileVM: ObservableObject {
         if isOwnProfile, let local = profileManager.getLocalProfile() {
             profile = local
         }
-
         isLoading = profile == nil
         defer { isLoading = false }
 
         do {
             if let fresh = try await userRepository.fetchProfile(userId) {
                 profile = fresh
-                if isOwnProfile {
-                    profileManager.saveProfileToLocale(profile: fresh)
-                }
+                if isOwnProfile { profileManager.saveProfileToLocale(profile: fresh) }
             }
         } catch {
             if profile == nil { errorMessage = error.localizedDescription }
@@ -79,6 +74,10 @@ final class ProfileVM: ObservableObject {
         }
     }
 
+    func applyUpdatedProfile(_ updated: UserProfile) {
+        profile = updated
+    }
+
     func toggleFriendAction() async {
         guard !isFriendActionLoading else { return }
         isFriendActionLoading = true
@@ -89,12 +88,8 @@ final class ProfileVM: ObservableObject {
             case .notFriend:
                 let isPrivate = profile?.isPrivate ?? false
                 try await friendManager.addFriend(targetUserId: userId, isTargetPrivate: isPrivate)
-                if isPrivate {
-                    friendStatus = .requestSent
-                } else {
-                    friendStatus = .friends
-                    profile?.friendsCount = (profile?.friendsCount ?? 0) + 1
-                }
+                friendStatus = isPrivate ? .requestSent : .friends
+                if !isPrivate { profile?.friendsCount = (profile?.friendsCount ?? 0) + 1 }
 
             case .requestSent:
                 try await friendManager.cancelRequest(targetUserId: userId)
