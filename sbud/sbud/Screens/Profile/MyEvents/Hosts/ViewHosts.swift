@@ -2,10 +2,7 @@
 //  ViewHosts.swift
 //  sbud
 //
-//  Created by ahmed on 01/05/2026.
-//
 
-import SwiftUI
 import SwiftUI
 import Kingfisher
 
@@ -18,12 +15,10 @@ struct ViewHosts: View {
 
     var body: some View {
         ZStack {
-            Color.blackBackground
-                .ignoresSafeArea()
+            Color.blackBackground.ignoresSafeArea()
 
             if viewModel.isLoading {
-                ProgressView()
-                    .tint(Color.mainColor)
+                ProgressView().tint(Color.mainColor)
             } else {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 28) {
@@ -34,17 +29,17 @@ struct ViewHosts: View {
 
                         if !hosts.isEmpty || !pending.isEmpty || !declined.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
-                                SectionHeader(title: "INVITED", accent: Color.mainColor)
-                                ForEach(hosts)    { FriendHostRow(item: $0, accent: Color.mainColor) }
-                                ForEach(pending)  { FriendHostRow(item: $0, accent: Color.mainColor) }
-                                ForEach(declined) { FriendHostRow(item: $0, accent: Color.mainColor) }
+                                SectionHeader(title: "INVITED", accent: .mainColor)
+                                ForEach(hosts)    { row(for: $0) }
+                                ForEach(pending)  { row(for: $0) }
+                                ForEach(declined) { row(for: $0) }
                             }
                         }
 
                         if !none.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
-                                SectionHeader(title: "FRIENDS", accent: Color.mainColor)
-                                ForEach(none) { FriendHostRow(item: $0, accent: Color.mainColor) }
+                                SectionHeader(title: "FRIENDS", accent: .mainColor)
+                                ForEach(none) { row(for: $0) }
                             }
                         }
                     }
@@ -60,5 +55,16 @@ struct ViewHosts: View {
             Button("OK", role: .cancel) {}
         }
     }
-}
 
+    // Extracted to avoid repeating 4 closures inline across every ForEach
+    private func row(for item: FriendHostItem) -> some View {
+        FriendHostRow(
+            item: item,
+            accent: .mainColor,
+            onInvite:   { Task { await viewModel.inviteHost(item: item) } },
+            onCancel:   { Task { await viewModel.cancelInvitation(item: item) } },
+            onRemove:   { Task { await viewModel.removeHost(item: item) } },
+            onReInvite: { Task { await viewModel.reInviteHost(item: item) } }
+        )
+    }
+}

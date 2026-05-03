@@ -19,9 +19,14 @@ class HostsRepository: IFirebaesRepository{
     let constants = HostRepositoryConstants()
     let db = Firestore.firestore()
     let logger = Logger(subsystem: "sbud", category: "HostsRepository")
+    let eventId: String
+    let userId: String
     
     init(eventId: String){
         collectionPath = "\(collectionPath)/\(eventId)/hosts"
+        self.eventId = eventId
+        userId = ProfileManager.shared.getLocalProfile()!.id
+        
         logger.info("Current collection path: \(self.collectionPath)")
     }
     
@@ -33,12 +38,12 @@ class HostsRepository: IFirebaesRepository{
         let hostsInvitations = documents.compactMap { doc -> HostInvitation? in
             let data = doc.data()
             let id = doc.documentID
-            guard let invitedAt = data["invitedAt"] as? Date,
+            guard let invitedAt = data["invitedAt"] as? Timestamp,
                   let status = data["status"] as? String else {
                 return nil
             }
             return HostInvitation(
-                invitedAt: invitedAt,
+                invitedAt: invitedAt.dateValue(),
                 status: HostInvitationStatus(rawValue: status)!,
                 userId: id
             )
@@ -55,15 +60,33 @@ class HostsRepository: IFirebaesRepository{
     }
     
     func create(_ item: HostInvitation) async throws -> String {
-        ""
+        let data: [String: Any] = [
+            "status": item.status.rawValue,
+            "invitedAt": FieldValue.serverTimestamp(),
+        ]
+        try await firebaseClient.db
+            .collection(collectionPath)
+            .document(item.userId)
+            .setData(data)
+        return item.userId
     }
     
     func update(_ id: String, _ item: HostInvitation) async throws {
-        
+        let data: [String: Any] = [
+            "status": item.status.rawValue,
+            "respondedAt": FieldValue.serverTimestamp()
+        ]
+        try await firebaseClient.db
+            .collection(collectionPath)
+            .document(id)
+            .updateData(data)
     }
     
     func delete(_ id: String) async throws {
-        
+        try await firebaseClient.db
+            .collection(collectionPath)
+            .document(id)
+            .delete()
     }
     
     func initQueryBuilderObject() -> any IQueryBuilder {
@@ -71,6 +94,57 @@ class HostsRepository: IFirebaesRepository{
     }
     
     
+    func inviteHost(_ invitation: HostInvitation) async throws {
+        let batch = firebaseClient.db.batch()
+
+        let eventHostRef = firebaseClient.db
+            .collection(collectionPath)
+            .document(invitation.userId)
+
+        let userInviteRef = firebaseClient.db
+            .collection("users")
+            .document(invitation.userId)
+            .collection("hostInvitations")
+            .document(eventId)
+
+        logger.info("eventHostRef path: \(eventHostRef.path)")
+        logger.info("userInviteRef path: \(userInviteRef.path)")
+        let inviteData: [String: Any] = [
+            "status": HostInvitationStatus.pending.rawValue,
+            "invitedAt": FieldValue.serverTimestamp(),
+        ]
+
+        let userInviteData: [String: Any] = [
+            "status": HostInvitationStatus.pending.rawValue,
+            "invitedAt": FieldValue.serverTimestamp(),
+        ]
+
+        batch.setData(inviteData, forDocument: eventHostRef)
+        batch.setData(userInviteData, forDocument: userInviteRef)
+
+        try await batch.commit()
+    }
+
+    /// Removes both docs atomically — used for cancel, remove host, or re-invite cleanup.
+    func removeInvitation(targetUserId: String) async throws {
+        let batch = firebaseClient.db.batch()
+
+        let eventHostRef = firebaseClient.db
+            .collection(collectionPath)
+            .document(targetUserId)
+
+        let userInviteRef = firebaseClient.db
+            .collection("users")
+            .document(targetUserId)
+            .collection("hostInvitations")
+            .document(eventId)
+
+        batch.deleteDocument(eventHostRef)
+        batch.deleteDocument(userInviteRef)
+
+        try await batch.commit()
+    }
+
     
     
 }

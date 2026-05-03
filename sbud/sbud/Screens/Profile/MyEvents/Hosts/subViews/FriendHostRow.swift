@@ -2,8 +2,6 @@
 //  FriendHostRow.swift
 //  sbud
 //
-//  Created by ahmed on 02/05/2026.
-//
 
 import SwiftUI
 import Kingfisher
@@ -11,16 +9,18 @@ import Kingfisher
 struct FriendHostRow: View {
     let item: FriendHostItem
     let accent: Color
+    let onInvite:   () -> Void
+    let onCancel:   () -> Void
+    let onRemove:   () -> Void
+    let onReInvite: () -> Void
 
     var body: some View {
         HStack(spacing: 0) {
-            // Left accent bar
             Rectangle()
-                .fill(accent)
+                .fill(stateColor)
                 .frame(width: 3)
 
             HStack(spacing: 12) {
-                // Avatar
                 KFImage(URL(string: item.profile.profileImageUrl ?? ""))
                     .placeholder {
                         Circle()
@@ -37,19 +37,15 @@ struct FriendHostRow: View {
                     .clipShape(Circle())
                     .overlay(Circle().stroke(stateColor.opacity(0.5), lineWidth: 1.5))
 
-                // Name + status
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(item.profile.name) \(item.profile.surName)")
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(1)
-
                     stateBadge
                 }
 
                 Spacer()
-
-                // Action button
                 actionButton
             }
             .padding(.horizontal, 14)
@@ -60,7 +56,7 @@ struct FriendHostRow: View {
     }
 
     @ViewBuilder
-    var stateBadge: some View {
+    private var stateBadge: some View {
         switch item.state {
         case .host:
             Label("HOST", systemImage: "checkmark.seal.fill")
@@ -82,10 +78,10 @@ struct FriendHostRow: View {
     }
 
     @ViewBuilder
-    var actionButton: some View {
+    private var actionButton: some View {
         switch item.state {
         case .notInvited:
-            Button("INVITE") { /* call invite */ }
+            Button("INVITE", action: onInvite)
                 .font(.system(size: 11, weight: .black, design: .monospaced))
                 .foregroundColor(.black)
                 .padding(.horizontal, 14)
@@ -94,7 +90,7 @@ struct FriendHostRow: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
 
         case .pending:
-            Button("CANCEL") { /* cancel invite */ }
+            Button("CANCEL", action: onCancel)
                 .font(.system(size: 11, weight: .black, design: .monospaced))
                 .foregroundColor(.yellow)
                 .padding(.horizontal, 14)
@@ -104,7 +100,7 @@ struct FriendHostRow: View {
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.yellow.opacity(0.3), lineWidth: 1))
 
         case .host:
-            Button("REMOVE") { /* remove host */ }
+            Button("REMOVE", action: onRemove)
                 .font(.system(size: 11, weight: .black, design: .monospaced))
                 .foregroundColor(.red.opacity(0.7))
                 .padding(.horizontal, 14)
@@ -114,7 +110,7 @@ struct FriendHostRow: View {
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.red.opacity(0.2), lineWidth: 1))
 
         case .rejected:
-            Button("RE-INVITE") { /* re-invite */ }
+            Button("RE-INVITE", action: onReInvite)
                 .font(.system(size: 11, weight: .black, design: .monospaced))
                 .foregroundColor(.white.opacity(0.4))
                 .padding(.horizontal, 14)
@@ -129,11 +125,7 @@ struct FriendHostRow: View {
         case .host:       return .green
         case .pending:    return .yellow
         case .rejected:   return .red.opacity(0.7)
-        case .notInvited: return Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
+        case .notInvited: return .mainColor
         }
     }
 }
-//
-//#Preview {
-//    FriendHostRow()
-//}
