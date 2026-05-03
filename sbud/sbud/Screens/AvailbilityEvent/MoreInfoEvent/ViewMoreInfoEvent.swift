@@ -9,11 +9,12 @@ import SwiftUI
 import FirebaseFirestore
 import Kingfisher
 import Lottie
-
+import OSLog
 struct ViewMoreInfoEvent: View {
     @StateObject var viewModel: ViewModelMoreInfoEvent
     @EnvironmentObject var coordinator: AvailabilityCoordinator
-
+    
+    let logger = Logger(subsystem: "sbud", category: "ViewMoreInfoEvent")
     init(eventId: String){
         _viewModel = StateObject(wrappedValue: ViewModelMoreInfoEvent(eventId: eventId))
     }
@@ -84,6 +85,9 @@ struct ViewMoreInfoEvent: View {
                                 
                                 // 2. doing push using viewModel.eventId!
                                 coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle))
+                                logger.info("CreatorContactDetailed \(type(of: coordinator))")
+                                logger.info("details.creator.id: \(details.creator.id)")
+                                coordinator.push(.profileView(userId: details.creator.id))
                             }
                         )
 

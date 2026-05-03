@@ -7,10 +7,11 @@
 
 import Foundation
 import Combine
-
+import OSLog
 class MainCoordinator: ObservableObject {
     @Published var currentRoute: MainRoute
-
+    let logger = Logger(subsystem: "sbud", category: "MainCoordinator")
+    
     let authManager = AuthenticationManager.shared
     let profManager = ProfileManager.shared
 
@@ -24,10 +25,14 @@ class MainCoordinator: ObservableObject {
     var canGoBack: Bool {
         !routeStack.isEmpty
     }
+    
+    func goBack() {
+        currentRoute = .homePage
+    }
 
     func navigateTo(_ route: MainRoute) {
         switch route {
-        case .settingsPage, .profilePage, .friendList, .friendRequests:
+        case .profilePage:
             routeStack.append(currentRoute)
         default:
             routeStack.removeAll()
@@ -35,14 +40,7 @@ class MainCoordinator: ObservableObject {
         currentRoute = route
     }
 
-    func goBack() {
-        guard let previous = routeStack.popLast() else {
-            currentRoute = .homePage
-            return
-        }
-            currentRoute = previous
-    }
-
+    
     func goToSignUp()  { navigateTo(.signUp) }
     func goToSignIn()  { navigateTo(.signIn) }
     func goToHome()    { navigateTo(.homePage) }
@@ -50,21 +48,8 @@ class MainCoordinator: ObservableObject {
     func goToProfile(userId: String) {
         navigateTo(.profilePage(userId: userId))
     }
-
-    func goToSettings() {
-        navigateTo(.settingsPage)
-    }
-
     
-
-    func goToFriendList(userId: String) {
-        navigateTo(.friendList(userId: userId))
-    }
-
-    func goToFriendRequests() {
-        navigateTo(.friendRequests)
-    }
-
+    
     func logout() {
         routeStack.removeAll()
         profManager.deleteProfileFromLocale()
@@ -94,4 +79,8 @@ class MainCoordinator: ObservableObject {
             return .profileSetup
         }
     }
+    
+    
+    
+    
 }

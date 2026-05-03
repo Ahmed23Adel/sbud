@@ -12,6 +12,8 @@ enum AvailabilityNavigationDestination: Hashable {
     case addNewEvent
     case creatorProfile(userId: String)
     case chat(user: UserProfile, eventId: String,eventTitle: String)
+    case profileView(userId: String)
+
 
     // To conform chat to Equatable (it s necessarly to management of UserProfile)
     static func == (lhs: AvailabilityNavigationDestination, rhs: AvailabilityNavigationDestination) -> Bool {
@@ -32,7 +34,7 @@ enum AvailabilityNavigationDestination: Hashable {
             hasher.combine(eventId)
         case .addNewEvent:
             hasher.combine("addNewEvent")
-        case .creatorProfile(let userId):
+        case .profileView(let userId):
             hasher.combine(userId)
         case .chat(let user, let eventId,let eventTitle): //Management chat hash
             hasher.combine("chat")
