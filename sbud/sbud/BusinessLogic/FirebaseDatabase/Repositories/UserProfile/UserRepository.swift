@@ -7,7 +7,7 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
-
+import OSLog
 
 
 class UserRepository: IFirebaesRepository{
@@ -21,7 +21,7 @@ class UserRepository: IFirebaesRepository{
     let firebaseClient = FirebaseClient()
     let constants = UserRepositoryConstants()
     let db = Firestore.firestore()
-    
+    let logger = Logger(subsystem: "sbud", category: "UserRepository")
     
     
     func fetch(query: any IQueryBuilder) async throws -> [ T ] {
@@ -57,6 +57,7 @@ class UserRepository: IFirebaesRepository{
 //        return try snapshot.data(as: UserProfile.self)
 //    }
     func fetchProfile(_ id: String) async throws -> UserProfile? {
+        logger.info("id: \(id)")
         let snapshot = try await db.collection("users").document(id).getDocument()
         guard snapshot.exists else { return nil }
 

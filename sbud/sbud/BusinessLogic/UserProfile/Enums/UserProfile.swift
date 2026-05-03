@@ -97,3 +97,7 @@ struct UserProfile: Codable, Identifiable {
         showAddress       = try c.decodeIfPresent(Bool.self,   forKey: .showAddress)       ?? false
     }
 }
+
+extension UserProfile {
+    static let empty = UserProfile(id: "")
+}
