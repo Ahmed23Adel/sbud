@@ -65,22 +65,16 @@ private extension OwnProfileView {
             Color.clear.frame(width: 44, height: 44)
             Spacer()
             HStack(spacing: 16) {
-                Button { coordinator.goToFriendRequests() } label: {
-                    ZStack(alignment: .topTrailing) {
-                        Image(systemName: "person.badge.clock")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
-                        if vm.pendingRequestCount > 0 {
-                            Text("\(vm.pendingRequestCount)")
-                                .font(.system(size: 9, weight: .black))
-                                .foregroundColor(.black)
-                                .padding(3)
-                                .background(Color("palelime"))
-                                .clipShape(Circle())
-                                .offset(x: 6, y: -6)
-                        }
-                    }
-                }
+                NumberedButtonNotifications(
+                    onTapGestureFunc: coordinator.goToFriendRequests,
+                    buttonIcon: "person.badge.clock",
+                    pendingRequestCount: $vm.pendingFriendsRequestCount)
+                
+                NumberedButtonNotifications(
+                    onTapGestureFunc: coordinator.goToHostRequests,
+                    buttonIcon: "person.2.wave.2",
+                    pendingRequestCount: $vm.pendingHostsRequestCount)
+
                 Button {
                     coordinator.goToSettings()
                 } label: {

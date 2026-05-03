@@ -62,6 +62,8 @@ struct ProfileAppCoordinator: View {
             SettingsView()
         case .friendRequest:
             FriendRequestsView()
+        case .hostsRequests:
+            ViewHostsRequests()
         case .myEvents:
             ViewMyEvents(userId: coordinator.currUserId)
         case .othersEvents:

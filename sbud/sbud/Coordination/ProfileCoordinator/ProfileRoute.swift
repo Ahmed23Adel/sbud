@@ -16,6 +16,7 @@ enum ProfileRoute: Equatable, Hashable{
 enum ProfileRoutePushed: Equatable, Hashable{
     case settings
     case friendRequest
+    case hostsRequests
     case myEvents
     case othersEvents
     case friendsList
