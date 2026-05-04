@@ -10,9 +10,24 @@ import Foundation
 enum AvailabilityNavigationDestination: Hashable {
     case moreInfoEvent(String)
     case addNewEvent
+    case creatorProfile(userId: String)
+    case chat(user: UserProfile, eventId: String,eventTitle: String)
     case profileView(userId: String)
 
 
+    // To conform chat to Equatable (it s necessarly to management of UserProfile)
+    static func == (lhs: AvailabilityNavigationDestination, rhs: AvailabilityNavigationDestination) -> Bool {
+        switch (lhs, rhs) {
+        case (.moreInfoEvent(let l), .moreInfoEvent(let r)): return l == r
+        case (.addNewEvent, .addNewEvent): return true
+        case (.creatorProfile(let l), .creatorProfile(let r)): return l == r
+        case (.chat(let u1, let e1, let t1), .chat(let u2, let e2, let t2)):
+            return u1.id == u2.id && e1 == e2 && t1 == t2
+        default: return false
+        }
+    }
+    
+    //hashable
     func hash(into hasher: inout Hasher) {
         switch self {
         case .moreInfoEvent(let eventId):
@@ -21,6 +36,11 @@ enum AvailabilityNavigationDestination: Hashable {
             hasher.combine("addNewEvent")
         case .profileView(let userId):
             hasher.combine(userId)
+        case .chat(let user, let eventId,let eventTitle): //Management chat hash
+            hasher.combine("chat")
+            hasher.combine(user.id)
+            hasher.combine(eventId)
+            hasher.combine(eventTitle)
         }
     }
 }
