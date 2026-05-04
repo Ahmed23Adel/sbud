@@ -92,6 +92,9 @@ class ProfileCoordinator: ObservableObject{
         navigationPath.append(.viewMyEventDetails(eventId: eventId))
     }
     
+    func goToEventConversations(eventId: String, eventTitle: String){
+        navigationPath.append(.eventConversations(eventId: eventId, eventTitle: eventTitle))
+    }
     
     func showHostsSheet(eventId: String){
         if currentRoute == .myProfile{

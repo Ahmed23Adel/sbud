@@ -61,6 +61,27 @@ struct ViewMyEventDetails: View {
                         LocationMapCard(dateLocations: details.dateLocations)
                             .padding()
                         
+                        Button{
+                            
+                            coordinator.goToEventConversations(eventId: viewModel.eventId, eventTitle: details.title)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "tray.fill")
+                                    .font(.system(size: 20))
+                                Text("View Messages")
+                            }
+                            .font(.system(size: 17, weight: .heavy))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 68)
+                            .background(
+                                Capsule()
+                                    .fill(Color.mainColor)
+                            )
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 12)
+                        
                         // Invite a host
                         Button{
                             coordinator.showHostsSheet(eventId: viewModel.eventId)

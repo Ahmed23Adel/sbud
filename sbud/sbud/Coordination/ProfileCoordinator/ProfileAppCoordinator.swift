@@ -72,6 +72,8 @@ struct ProfileAppCoordinator: View {
             ViewMyEventDetails(eventId: eventId)
         case .editMyEvent:
             EmptyView()
+        case .eventConversations(let eventId, let eventTitle):
+            EventConversationsView(eventId: eventId, eventTitle: eventTitle)
         }
     }
     
