@@ -50,7 +50,6 @@ final class AvailbilityViewModel: ObservableObject {
         )
         setupFilterResultsListener()
         fetchNewData()
-
     }
 
     private func fetchNewData() {
@@ -168,14 +167,6 @@ final class AvailbilityViewModel: ObservableObject {
     }
 
     // MARK: Filters
-    private func setupFilterResultsListener() {
-        availabilityFiltersResults.$selectedActivityIndex
-            .sink { [weak self] newIndex in
-                self?.changeSelectedActivity(selectedActivityIndex: newIndex)
-            }
-            .store(in: &cancellables)
-    }
-
     func changeSelectedActivity(selectedActivityIndex: Int) {
         self.selectedActivityIndex = selectedActivityIndex
         fetchNewData()
@@ -183,6 +174,46 @@ final class AvailbilityViewModel: ObservableObject {
     
     func updateListId(){
         listViewRefreshId = UUID()
+    }
+    
+    private func setupFilterResultsListener() {
+        availabilityFiltersResults.$selectedActivityIndex
+            .sink { [weak self] newIndex in
+                self?.changeSelectedActivity(selectedActivityIndex: newIndex)
+            }
+            .store(in: &cancellables)
+
+        availabilityFiltersResults.$startDateTime
+            .dropFirst()
+            .sink { [weak self] _ in self?.fetchNewData() }
+            .store(in: &cancellables)
+
+        availabilityFiltersResults.$endDateTime
+            .dropFirst()
+            .sink { [weak self] _ in self?.fetchNewData() }
+            .store(in: &cancellables)
+
+        availabilityFiltersResults.$gender
+            .dropFirst()
+            .sink { [weak self] _ in self?.fetchNewData() }
+            .store(in: &cancellables)
+
+        // Nested filter holders
+        subscribeToFilterHolder(availabilityFiltersResults.runningFilter)
+        subscribeToFilterHolder(availabilityFiltersResults.cyclingFilter)
+        subscribeToFilterHolder(availabilityFiltersResults.gymFilter)
+        subscribeToFilterHolder(availabilityFiltersResults.skiingFilter)
+        subscribeToFilterHolder(availabilityFiltersResults.swimmingFilter)
+        subscribeToFilterHolder(availabilityFiltersResults.hikingFilter)
+        subscribeToFilterHolder(availabilityFiltersResults.yogaFilter)
+        subscribeToFilterHolder(availabilityFiltersResults.tennisFilter)
+    }
+
+    private func subscribeToFilterHolder<T: ObservableObject>(_ holder: T) {
+        holder.objectWillChange
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in self?.fetchNewData() }
+            .store(in: &cancellables)
     }
 
 }
