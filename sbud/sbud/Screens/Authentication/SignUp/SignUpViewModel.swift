@@ -67,7 +67,6 @@ class SignUpViewModel: ObservableObject {
         isSigningUp = true
         do {
             try await authManager.signUp(email: email, password: password)
-            AuthenticationManagerEmailAndPassword.shared.sendVerificationEmail()
             isSigningUp = false
             stopLoading()
             coordinator?.refreshAppFlow()

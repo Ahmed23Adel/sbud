@@ -53,11 +53,6 @@ struct AvailabilityAppCoordinator: View {
             ViewMoreInfoEvent(eventId: eventId)
         case .addNewEvent:
             CoordinatorAddNewEvent()
-        case .creatorProfile(let userId):
-            ProfileView(userId: userId, onBack: { coordinator.pop() })
-                .toolbar(.hidden, for: .navigationBar)
-        case .chat(let user, let eventId, let eventTitle): // ADD routing
-                    ChatView(user: user, eventId: eventId, eventTitle: eventTitle)
         case .profileView(let userId):
             ProfileAppCoordinator(userId: userId, isEmbedded: true)
         }

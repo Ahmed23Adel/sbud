@@ -17,24 +17,21 @@ struct CustomInputView: View {
         ZStack(alignment: .trailing) {
             TextField(placeholder, text: $inputText, axis: .vertical)
                 .padding(12)
-                .padding(.leading, 8)
-                .padding(.trailing, 60)
+                .padding(.leading, 4)
+                .padding(.trailing, 48)
                 .background(Color(.systemGroupedBackground))
-                .foregroundColor(.white)
-                .colorScheme(.dark)
                 .clipShape(Capsule())
                 .font(.subheadline)
 
             Button(action: action) {
                 Text(buttonTitle)
                     .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color.mainColor)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color(.systemBlue))
             }
             .padding(.horizontal)
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
-        .background(Color.darkBackground)
+        .padding(.bottom, 8)
     }
 }
