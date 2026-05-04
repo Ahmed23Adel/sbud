@@ -65,7 +65,8 @@ final class AvailbilityViewModel: ObservableObject {
                         selectedEndDateTime: availabilityFiltersResults.endDateTime,
                         selectedActivityType: ActivityType(rawValue:
                                                             AvailabilityConfig.activityNames[selectedActivityIndex])
-                        ?? .running
+                        ?? .running,
+                        extraFilters: availabilityFiltersResults.buildExtraQueryParams()
 
                     )
                     logger.debug("Fetching individuals: \(self.anchorsClusters.count)")
@@ -86,12 +87,14 @@ final class AvailbilityViewModel: ObservableObject {
                         topLeft: currentRegion?.topLeft ?? GeoPoint(latitude: 0, longitude: 0),
                         bottomRight: currentRegion?.bottomRight ?? GeoPoint(latitude: 180, longitude: 180),
                         selectedActivityType: ActivityType(rawValue: AvailabilityConfig.activityNames[selectedActivityIndex])
-                        ?? .running
+                        ?? .running,
+                        extraFilters: availabilityFiltersResults.buildExtraQueryParams()
 
                     )
                     logger.debug("Fetching clusters")
                     anchorAvailabilityEvents.removeAll()
                 } catch {
+                    print("showErrorMsgForClusters")
                     showErrorMsgForClusters()
                 }
             }

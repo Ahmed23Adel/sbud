@@ -17,50 +17,67 @@ struct FiltersView: View {
     }
 
     var body: some View {
-        ZStack {
-            FloatingIconsBackground(activityType: viewModel.selectedActivityType)
-                .animation(.easeInOut, value: viewModel.selectedActivityType)
-            VStack {
+        NavigationStack{
+            ZStack {
+                FloatingIconsBackground(activityType: viewModel.selectedActivityType)
+                    .animation(.easeInOut, value: viewModel.selectedActivityType)
                 VStack {
-                    DatePicker(
-                        "Start date & Time",
-                        selection: $viewModel.availabilityFiltersResults.startDateTime,
-                        displayedComponents: [.date, .hourAndMinute]
-                    )
-                    .datePickerStyle(.compact)
-                    .font(.headline)
-                    .tint(.mainColor)
+                    FilterCard{
+                        FilterSectionHeader(title: "When", icon: "calendar")
+                        DatePicker(
+                            "From",
+                            selection: $viewModel.availabilityFiltersResults.startDateTime,
+                            displayedComponents: [.date, .hourAndMinute]
+                        )
+                        .datePickerStyle(.compact)
+                        .font(.subheadline)
+                        .tint(.mainColor)
+                        
+                        DatePicker(
+                            "Until",
+                            selection: $viewModel.availabilityFiltersResults.endDateTime,
+                            displayedComponents: [.date, .hourAndMinute]
+                        )
+                        .datePickerStyle(.compact)
+                        .font(.subheadline)
+                        .tint(.mainColor)
+                    }
+                    .background(Color.backgroundColor)
+                    .padding()
+                    
+                    NavigationLink {
+                        ActivityFiltersView(viewModel: viewModel, filters: viewModel.availabilityFiltersResults)
+                    } label: {
+                        FilterCard {
+                            HStack {
+                                FilterSectionHeader(
+                                    title: viewModel.selectedActivityType.rawValue.capitalized + " Filters",
+                                    icon: AvailabilityConfig.icons[viewModel.selectedActivityIndex]
+                                )
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(Color.mainColor)
+                            }
+                        }
+                    }
+                    .background(Color.backgroundColor)
+                    .padding(.horizontal)
+                    .buttonStyle(.plain)
 
-                    DatePicker(
-                        "End date & Time",
-                        selection: $viewModel.availabilityFiltersResults.endDateTime,
-                        displayedComponents: [.date, .hourAndMinute]
+                    Spacer()
+                    
+                    Wheel(
+                        imageNames: viewModel.icons,
+                        names: viewModel.activityNames,
+                        selectedIndex: $viewModel.selectedActivityIndex
                     )
-                    .datePickerStyle(.compact)
-                    .font(.headline)
-                    .tint(.mainColor)
+                    .offset(y: 120)
                 }
-
-                .padding()
-                .background(
-                    Color.backgroundColor.overlay(Color.white.opacity(0.5))
-                )
-                .cornerRadius(32)
-                .padding(16)
-                .popUp()
-
-                Spacer()
-
-                Wheel(
-                    imageNames: viewModel.icons,
-                    names: viewModel.activityNames,
-                    selectedIndex: $viewModel.selectedActivityIndex
-                )
-                .offset(y: 120)
+                
             }
-
+            .ignoresSafeArea()
         }
-        .ignoresSafeArea()
     }
 }
 
