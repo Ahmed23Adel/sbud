@@ -79,8 +79,7 @@ struct SignInView: View {
                     .popUp()
                     .padding(.vertical)
 
-                    HStack {
-
+                    HStack (spacing: 30) {
                         Button {
                             viewModel.isSigningIn = true
                             Task {
@@ -93,6 +92,9 @@ struct SignInView: View {
                                 .frame(width: 80, height: 80)
                         }
                         .disabled(viewModel.isSigningIn)
+                        
+                       
+                        
                     }
 
                     Spacer()

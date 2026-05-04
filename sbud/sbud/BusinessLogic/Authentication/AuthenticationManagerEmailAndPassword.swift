@@ -47,6 +47,33 @@ class AuthenticationManagerEmailAndPassword: IAuthenticationManager {
         AuthenticationManager.shared.currentUser = nil
         AuthenticationManager.shared.isLoading = false
     }
+    
+    func sendVerificationEmail() {
+    //is logged?
+    guard let user = Auth.auth().currentUser else {
+        print("Nessun utente attualmente loggato.")
+        return
+    }
+    //send verification mail
+        user.sendEmailVerification { error in
+            if let error = error {
+                print("Error during verification mail: \(error.localizedDescription)")
+                
+            } else {
+                print("Verification mail is sent")
+                
+            }
+        }
+    }
+    
+    func reloadUser() async throws {
+        guard let user = Auth.auth().currentUser else { return }
+        
+        
+        try await user.reload()
+        
+        self.updateUserState(user: currentUser, methodUsed: .email)
+    }
 
     func checkAuthStatus() -> Bool {
         if let user  = Auth.auth().currentUser {

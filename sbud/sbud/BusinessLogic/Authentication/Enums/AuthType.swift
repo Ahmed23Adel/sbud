@@ -11,4 +11,5 @@ enum AuthType: String {
     case unknown = "Unknown"
     case google = "MethodIsGoogle"
     case email = "Email"
+    case phone = "Phone"
 }
