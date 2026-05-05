@@ -86,25 +86,25 @@ class ChatViewModel: ObservableObject {
                                             "eventId": eventId,
                                             "timestamp": Timestamp(date: Date())]
         
-        // 1. Salva per chi invia
+        
         currentUserRef.setData(data) { error in
-            if let error = error { print("❌ Errore currentUserRef: \(error.localizedDescription)") }
+            if let error = error { print("❌ Error currentUserRef: \(error.localizedDescription)") }
         }
         
         currentRecentRef.document(chatRoomIdForCurrent).setData(data) { error in
-            if let error = error { print("❌ Errore currentRecentRef: \(error.localizedDescription)") }
+            if let error = error { print(" Error currentRecentRef: \(error.localizedDescription)") }
         }
 
-        // 2. Salva per il ricevente (Creator) - È QUI CHE PROBABILMENTE FALLISCE!
+        
         receivingUserRef.document(messageID).setData(recipientData) { error in
-            if let error = error { print("❌ Errore receivingUserRef: \(error.localizedDescription)") }
+            if let error = error { print(" Error receivingUserRef: \(error.localizedDescription)") }
         }
         
         receivingRecentRef.document(chatRoomIdForRecipient).setData(recipientData) { error in
             if let error = error {
-                print("❌ Errore receivingRecentRef: \(error.localizedDescription)")
+                print("❌ Error receivingRecentRef: \(error.localizedDescription)")
             } else {
-                print("✅ SUCCESSO! Messaggio inserito correttamente nei recent-messages del Creator!")
+                print("✅ SUCCESS! ")
             }
         }
     }

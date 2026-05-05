@@ -29,22 +29,22 @@ class EventConversationsViewModel: ObservableObject {
             .whereField("eventId", isEqualTo: eventId)
         
         do {
-            // 1. FORZIAMO IL SERVER: ignora la cache quando l'utente fa Pull-to-Refresh
+            
             let snapshot = try await query.getDocuments(source: .server)
             
             var messages: [Message] = []
             
-            // 2. STOP AGLI ERRORI SILENZIOSI: vediamo se la decodifica fallisce
+            
             for document in snapshot.documents {
                 do {
                     let msg = try document.data(as: Message.self)
                     messages.append(msg)
                 } catch {
-                    print("❌ ERRORE DECODIFICA MESSAGGIO \(document.documentID): \(error)")
+                    print("❌ ERROR \(document.documentID): \(error)")
                 }
             }
             
-            // Ordiniamo dal più recente al meno recente
+            
             messages.sort { $0.timestamp.dateValue() > $1.timestamp.dateValue() }
             
             var profilesMap = [String: UserProfile]()
@@ -62,16 +62,16 @@ class EventConversationsViewModel: ObservableObject {
                             profilesMap[partnerId] = userProfile
                         }
                     } catch {
-                        print("Errore nel fetch dell'utente \(partnerId): \(error)")
+                        print("Error nel fetch user \(partnerId): \(error)")
                     }
                 }
             }
             
             self.recentMessages = messages
-            print("✅ Trovate \(self.recentMessages.count) conversazioni per l'evento \(eventId)")
+            print("✅ Find \(self.recentMessages.count) \(eventId)")
             
         } catch {
-            print("❌ Errore durante il caricamento delle conversazioni: \(error)")
+            print("❌ Error: \(error)")
         }
     }
 }

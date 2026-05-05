@@ -5,14 +5,6 @@
 //  Created by Riccardo Maria Cadario on 04/05/26.
 //
 
-
-//
-//  ChatBubble.swift
-//  sbud
-//
-//  Created by Riccardo Maria Cadario on 23/02/26.
-//
-
 import SwiftUI
 
 struct ChatBubble: Shape {
