@@ -24,6 +24,7 @@ struct ViewMoreInfoEvent: View {
     var body: some View {
         ZStack {
             Color.darkBackground
+                .ignoresSafeArea()
 
             VStack {
                 if let url = viewModel.fullDetails?.eventImage {

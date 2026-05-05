@@ -21,31 +21,29 @@ enum JoinState: Equatable {
 
     var isDisabled: Bool {
         switch self {
-        case .idle, .withdrawn, .rejected: return false
+        case .idle, .withdrawn, .rejected, .left: return false
         default: return true
         }
     }
 
     var labelText: String {
         switch self {
-        case .idle, .withdrawn:            return "Join Activity"
-        case .pending:                     return "Request Sent"
-        case .waitlisted(let pos):         return "Waitlist #\(pos)"
-        case .confirmed:                   return "Joined ✓"
-        case .rejected:                    return "Rejected — Rejoin?"
-        case .left:                        return "You Left"
-        case .full:                        return "Event Full"
+        case .idle, .withdrawn, .left: return "Join Activity"
+        case .pending:                 return "Request Sent"
+        case .waitlisted(let pos):     return "Waitlist #\(pos)"
+        case .confirmed:               return "Joined ✓"
+        case .rejected:                return "Rejected"
+        case .full:                    return "Event Full"
         }
     }
 
     var iconName: String {
         switch self {
-        case .idle, .withdrawn, .rejected: return "door.left.hand.open"
-        case .pending:                     return "clock"
-        case .waitlisted:                  return "list.number"
-        case .confirmed:                   return "checkmark.circle.fill"
-        case .left:                        return "arrow.uturn.left"
-        case .full:                        return "person.fill.xmark"
+        case .idle, .withdrawn, .rejected, .left: return "door.left.hand.open"
+        case .pending:                            return "clock"
+        case .waitlisted:                         return "list.number"
+        case .confirmed:                          return "checkmark.circle.fill"
+        case .full:                               return "person.fill.xmark"
         }
     }
 
@@ -153,9 +151,6 @@ class ViewModelMoreInfoEvent {
                 if msg.contains("full") {
                     joinState = .full
                     PopUpGenerator.shared.show(msg: "Event is full.", type: .warning)
-                } else if msg.contains("left this event") {
-                    joinState = .left
-                    PopUpGenerator.shared.show(msg: "You cannot re-join this event.", type: .warning)
                 } else if msg.contains("Already") {
                     PopUpGenerator.shared.show(msg: "Already joined.", type: .warning)
                 } else {
@@ -170,14 +165,12 @@ class ViewModelMoreInfoEvent {
             _ = try await joinRequester.withdraw(eventId: eventId)
             await MainActor.run {
                 joinState = .withdrawn
-                PopUpGenerator.shared.show(msg: "Request withdrawn. You can re-join anytime.", type: .information)
+                PopUpGenerator.shared.show(msg: "Withdrawn. You can re-join anytime.", type: .information)
             }
         } catch {
             PopUpGenerator.shared.show(msg: "Error: \(error.localizedDescription)", type: .error)
         }
     }
-
-    // MARK: - Leave (confirmed -> cannot re-join)
 
     func leave() async {
         do {
