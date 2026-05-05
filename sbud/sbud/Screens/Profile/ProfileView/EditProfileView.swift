@@ -24,7 +24,6 @@ struct EditProfileView: View {
         ZStack {
             Color(red: 0.05, green: 0.05, blue: 0.05)
                 .ignoresSafeArea()
-                //.onTapGesture { hideKeyboard() }
 
             VStack(spacing: 0) {
                 topBar
@@ -33,7 +32,7 @@ struct EditProfileView: View {
                     VStack(spacing: 28) {
                         avatarSection
                         fieldsSection
-                        Spacer(minLength: vm.hasChanges ? 110 : 40)
+                        Spacer(minLength: vm.hasChanges ? 160 : 80)
                     }
                     .padding(.top, 28)
                     .padding(.horizontal, 24)
@@ -45,6 +44,7 @@ struct EditProfileView: View {
                 }
             }
             .onTapGesture { hideKeyboard() }
+
             if vm.isSaving {
                 LoadingView()
                     .zIndex(10)
@@ -59,6 +59,47 @@ struct EditProfileView: View {
         .onChange(of: vm.selectedPhotoItem) { _ in
             Task { await vm.loadSelectedPhoto() }
         }
+        .overlay {
+            if vm.showCalendar {
+                ZStack(alignment: .bottom) {
+                    Color.black.opacity(0.5)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(.spring()) { vm.showCalendar = false }
+                        }
+
+                    VStack(spacing: 0) {
+                        CustomCalendarView(selectedDate: $vm.tempBirthDate)
+                            .frame(maxWidth: .infinity)
+
+                        Button {
+                            withAnimation(.spring()) {
+                                vm.birthDate = vm.tempBirthDate
+                                vm.showCalendar = false
+                            }
+                        } label: {
+                            Text("CONFIRM")
+                                .font(.system(size: 13, weight: .black))
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(Color("palelime"))
+                                .cornerRadius(4)
+                        }
+                        .padding([.horizontal, .bottom], 15)
+                        .padding(.top, 8)
+                    }
+                    .background(Color(red: 0.07, green: 0.07, blue: 0.07))
+                    .cornerRadius(16)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 40)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+                .ignoresSafeArea()
+                .zIndex(20)
+                .animation(.spring(), value: vm.showCalendar)
+            }
+        }
         .alert("Error", isPresented: $vm.showError) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -72,7 +113,6 @@ struct EditProfileView: View {
     }
 }
 
-// MARK: - Top Bar
 private extension EditProfileView {
 
     var topBar: some View {
@@ -82,15 +122,11 @@ private extension EditProfileView {
                     .font(.system(size: 13, weight: .bold, design: .monospaced))
                     .foregroundColor(.gray)
             }
-
             Spacer()
-
             Text("EDIT PROFILE")
                 .font(.system(size: 14, weight: .black, design: .monospaced))
                 .foregroundColor(.white)
-
             Spacer()
-
             Text("CANCEL")
                 .font(.system(size: 13, weight: .bold, design: .monospaced))
                 .foregroundColor(.clear)
@@ -160,56 +196,27 @@ private extension EditProfileView {
 
     var fieldsSection: some View {
         VStack(spacing: 20) {
+
             editField(
-                label: "EMAIL",
-                icon: "envelope",
-                placeholder: "your@email.com",
-                text: $vm.email,
-                errorMessage: vm.emailError,
-                keyboardType: .emailAddress
+                label: "FIRST NAME",
+                icon: "person",
+                placeholder: "Your first name",
+                text: $vm.name,
+                errorMessage: vm.nameError
             )
 
-            phoneField
+            editField(
+                label: "LAST NAME",
+                icon: "person",
+                placeholder: "Your last name",
+                text: $vm.surName,
+                errorMessage: vm.surNameError
+            )
 
+            birthDateField
+            preferredActivityField
             bioField
         }
-    }
-
-    var phoneField: some View {
-        let hasError = vm.phoneError != nil
-        return VStack(alignment: .leading, spacing: 8) {
-            Text("PHONE NUMBER")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundColor(.gray)
-                .kerning(1.2)
-
-            PhoneNumberView(text: $vm.phone)
-                .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                .foregroundColor(.white)
-                .padding(.horizontal, 14)
-                .background(Color(white: 0.11))
-                .frame(height: 54)
-                .cornerRadius(4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(
-                            hasError ? Color.red.opacity(0.6) : Color("turquoise").opacity(0.18),
-                            lineWidth: hasError ? 1.5 : 1
-                        )
-                )
-
-            if let err = vm.phoneError {
-                HStack(spacing: 5) {
-                    Image(systemName: "exclamationmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(err)
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                }
-                .foregroundColor(.red.opacity(0.85))
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
-        }
-        .animation(.easeInOut(duration: 0.2), value: vm.phoneError)
     }
 
     func editField(
@@ -238,7 +245,6 @@ private extension EditProfileView {
                     .foregroundColor(.white)
                     .keyboardType(keyboardType)
                     .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
             }
             .padding(.horizontal, 14)
             .frame(height: 54)
@@ -254,16 +260,92 @@ private extension EditProfileView {
 
             if let err = errorMessage {
                 HStack(spacing: 5) {
-                    Image(systemName: "exclamationmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(err)
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    Image(systemName: "exclamationmark.circle.fill").font(.system(size: 10))
+                    Text(err).font(.system(size: 10, weight: .semibold, design: .monospaced))
                 }
                 .foregroundColor(.red.opacity(0.85))
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .animation(.easeInOut(duration: 0.2), value: errorMessage)
+    }
+
+    var birthDateField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("BIRTH DATE")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.gray)
+                .kerning(1.2)
+
+            Button {
+                withAnimation(.spring()) { vm.showCalendar = true }
+            } label: {
+                HStack {
+                    Text(vm.birthDate, format: .dateTime.month(.twoDigits).day(.twoDigits).year())
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(Color("turquoise"))
+                    Spacer()
+                    Image(systemName: "calendar")
+                        .font(.system(size: 13))
+                        .foregroundColor(.gray)
+                }
+                .padding(.horizontal, 14)
+                .frame(height: 54)
+                .background(Color(white: 0.12))
+                .cornerRadius(4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(Color("turquoise").opacity(0.18), lineWidth: 1)
+                )
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    var preferredActivityField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("PREFERRED ACTIVITY")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.gray)
+                .kerning(1.2)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(ActivityType.allCases, id: \.self) { activity in
+                        let isSelected = vm.preferredActivity == activity
+                        Button {
+                            vm.preferredActivity = activity
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: activity.icon)
+                                    .font(.system(size: 13, weight: .semibold))
+                                Text(activity.rawValue)
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            }
+                            .foregroundColor(isSelected ? .black : Color("turquoise").opacity(0.8))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(
+                                isSelected
+                                    ? Color("palelime")
+                                    : Color(white: 0.11)
+                            )
+                            .cornerRadius(4)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(
+                                        isSelected
+                                            ? Color.clear
+                                            : Color("turquoise").opacity(0.18),
+                                        lineWidth: 1
+                                    )
+                            )
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+        }
     }
 
     var bioField: some View {
@@ -303,10 +385,8 @@ private extension EditProfileView {
 
             if let err = vm.bioError {
                 HStack(spacing: 5) {
-                    Image(systemName: "exclamationmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(err)
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    Image(systemName: "exclamationmark.circle.fill").font(.system(size: 10))
+                    Text(err).font(.system(size: 10, weight: .semibold, design: .monospaced))
                 }
                 .foregroundColor(.red.opacity(0.85))
                 .transition(.opacity.combined(with: .move(edge: .top)))

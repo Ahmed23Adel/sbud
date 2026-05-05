@@ -19,7 +19,6 @@ struct StepFourView: View {
     var body: some View {
         VStack(spacing: 0) {
 
-            // MARK: - Harita
             ZStack(alignment: .bottomLeading) {
                 Map(position: $cameraPosition) {
                     if vm.profile.location.latitude != 0 {
@@ -58,7 +57,6 @@ struct StepFourView: View {
 
             .clipped()
 
-            // MARK: - İçerik
             VStack(alignment: .leading, spacing: 0) {
 
                 Text("FINAL STEP — GEO VERIFICATION")
@@ -206,21 +204,6 @@ struct LocationPulseView: View {
                 .frame(width: 4, height: 4)
         }
         .onAppear { pulse1 = true; pulse2 = true }
-    }
-}
-
-// MARK: - UIApplication Safe Area Helper
-extension UIApplication {
-    static var safeAreaTop: CGFloat {
-        shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.windows.first?.safeAreaInsets.top ?? 0
-    }
-
-    static var safeAreaBottom: CGFloat {
-        shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.windows.first?.safeAreaInsets.bottom ?? 0
     }
 }
 

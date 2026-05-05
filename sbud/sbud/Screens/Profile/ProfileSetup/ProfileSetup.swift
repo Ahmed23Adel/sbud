@@ -221,8 +221,6 @@ struct ProfileSetupView: View {
         }
     }
 
-    // MARK: - Header Progress Bar
-
     private var headerProgressBar: some View {
         VStack(alignment: .leading, spacing: 15) {
             HStack(spacing: 8) {
@@ -243,8 +241,6 @@ struct ProfileSetupView: View {
         }
     }
 
-    // MARK: - Helpers
-    
     private func handleContinue() {
         withAnimation(.spring()) {
             switch vm.currentStep {
@@ -257,17 +253,6 @@ struct ProfileSetupView: View {
             }
         }
     }
-
-    /*private func handleContinue() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-            switch vm.currentStep {
-            case 0: if vm.validateStepOne() { vm.goNext() }
-            case 1: if vm.validateStepTwo() { vm.goNext() }
-            case 2: if vm.validateStepThree() { showLocationPopup = true }
-            default: break
-            }
-        }
-    }*/
 
     private func goBack() {
         switch vm.currentStep {

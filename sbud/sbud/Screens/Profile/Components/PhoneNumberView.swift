@@ -53,12 +53,6 @@ struct PhoneNumberView: UIViewRepresentable {
 
         return textField
     }
-
-    /*func updateUIView(_ uiView: PhoneNumberTextField, context: Context) {
-        if uiView.text != text {
-            uiView.text = text
-        }
-    }*/
     
     func updateUIView(_ uiView: PhoneNumberTextField, context: Context) {
         guard !uiView.isFirstResponder else { return }

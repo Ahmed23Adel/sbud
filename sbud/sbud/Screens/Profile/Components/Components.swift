@@ -7,35 +7,6 @@
 
 import SwiftUI
 
-struct CustomInputField: View {
-        let title: String
-        let placeholder: String
-        @Binding var text: String
-        
-        var body: some View {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(title)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.black)
-                
-                TextField(placeholder, text: $text)
-                    .textContentType(.name)
-                    .padding(.horizontal, 16)
-                    .frame(height: 58)
-                    .background(Color("textFieldColor"))
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .toolbar {
-                                        ToolbarItemGroup(placement: .keyboard) {
-                                            Spacer()
-                                            Button("Done") {
-                                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                                            }
-                                        }
-                                    }
-            }
-        }
-    }
-// MARK: - Yardımcı View Bileşeni
 @ViewBuilder
 func customTextField(title: String, placeholder: String, text: Binding<String>) -> some View {
     VStack(alignment: .leading, spacing: 8) {
@@ -56,151 +27,22 @@ func customTextField(title: String, placeholder: String, text: Binding<String>) 
     }
 }
 
-    
-    struct CustomMultilineField: View {
-        let title: String
-        let placeholder: String
-        @Binding var text: String
-        
-        var body: some View {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(title)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.black)
-                
-                TextField(placeholder, text: $text, axis: .vertical)
-                    .lineLimit(3...5)
-                    .padding(16)
-                    .frame(minHeight: 110, alignment: .topLeading)
-                    .background(Color("textFieldColor"))
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .toolbar {
-                                        ToolbarItemGroup(placement: .keyboard) {
-                                            Spacer()
-                                            Button("Done") {
-                                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                                            }
-                                        }
-                                    }
-            }
-        }
-    }
-    
-    struct CustomDateField: View {
-        let title: String
-        @Binding var date: Date?
-        let maxDate = Calendar.current.date(byAdding: .year, value: -18, to: Date())!
-        
-        var body: some View {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(title)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.black)
-                
-                DatePicker(
-                    "Birth Date",
-                    selection: Binding(
-                        get: { date ?? maxDate },
-                        set: { date = $0 }
-                    ),
-                    in: ...maxDate,
-                    displayedComponents: .date
-                )
-                .datePickerStyle(.compact)
-                .labelsHidden()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .frame(height: 58)
-                .background(Color("textFieldColor"))
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            }
-        }
+extension UIApplication {
+    static var safeAreaTop: CGFloat {
+        shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.safeAreaInsets.top ?? 0
     }
 
-    struct CustomPickerField: View {
-        let title: String
-        @Binding var selection: String
-        let options: [String]
-        
-        var body: some View {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(title)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.black)
-                
-                Picker(title, selection: $selection) {
-                    ForEach(options, id: \.self) { option in
-                        Text(option.isEmpty ? "Select" : option).tag(option)
-                    }
-                }
-                .padding(.horizontal, 8)
-                .frame(height: 58)
-                .frame(maxWidth: .infinity)
-                .background(Color("textFieldColor"))
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            }
-        }
+    static var safeAreaBottom: CGFloat {
+        shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.safeAreaInsets.bottom ?? 0
     }
-    
-    struct CustomNumberField: View {
-        let title: String
-        @Binding var value: Double
-        let placeholder: String
-        
-        var body: some View {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(title)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.black)
-                
-                TextField(placeholder, value: $value, format: .number)
-                    .keyboardType(.decimalPad)
-                    .padding(.horizontal, 16)
-                    .frame(height: 58)
-                    .background(Color("textFieldColor"))
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .toolbar {
-                        ToolbarItemGroup(placement: .keyboard) {
-                        Spacer()
-                        Button("Bitti") {
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-struct CustomActivityPicker: View {
-    @ObservedObject var vm: ProfileSetupVM
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Preferences & Stats")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.black)
-            
-            Picker("Activity Type", selection: $vm.profile.preferredActivity) {
-                ForEach(ActivityType.allCases, id: \.self) { type in
-                    Text(type.rawValue.capitalized).tag(type)
-                }
-            }
-            .padding(.horizontal, 8)
-            .frame(height: 58)
-            .frame(maxWidth: .infinity)
-            .background(Color(.systemGray6))
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            
-            if vm.profile.preferredActivity == .running {
-                CustomInputField(
-                    title: "Avg Pace",
-                    placeholder: "e.g. 5:45",
-                    text: Binding(
-                        get: { vm.profile.metrics.averagePace ?? "" },
-                        set: { vm.profile.metrics.averagePace = $0 }
-                    )
-                )
-            }
-        }
+}
+
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

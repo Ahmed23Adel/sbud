@@ -16,43 +16,50 @@ final class EditProfileVM: ObservableObject {
 
     let original: UserProfile?
 
-    @Published var email: String
-    @Published var phone: String
+    @Published var name: String
+    @Published var surName: String
     @Published var bio: String
+    @Published var preferredActivity: ActivityType
+    @Published var birthDate: Date
 
     @Published var showPhotoPicker = false
+    @Published var showCalendar = false
+    @Published var tempBirthDate: Date
     @Published var selectedPhotoItem: PhotosPickerItem?
     @Published var selectedImage: UIImage?
     private var newPhotoData: Data?
 
-    @Published var emailError: String?
-    @Published var phoneError: String?
+    @Published var nameError: String?
+    @Published var surNameError: String?
     @Published var bioError: String?
 
     @Published var isSaving = false
     @Published var showError = false
     @Published var errorMessage: String?
 
-    // MARK: - Dependencies
     private let profileManager = ProfileManager.shared
     private let userRepository = UserRepository()
 
-    // MARK: - Change detection
     var hasChanges: Bool {
-        email != (original?.email ?? "")
-        || phone != (original?.phoneNumber ?? "")
-        || bio != (original?.bio ?? "")
+        name             != (original?.name ?? "")
+        || surName       != (original?.surName ?? "")
+        || bio           != (original?.bio ?? "")
+        || preferredActivity != (original?.preferredActivity ?? .running)
+        || !Calendar.current.isDate(birthDate, inSameDayAs: original?.birthDate ?? Date())
         || selectedImage != nil
     }
 
     init(profile: UserProfile?) {
-        self.original = profile
-        self.email = profile?.email ?? ""
-        self.phone = profile?.phoneNumber ?? ""
-        self.bio = profile?.bio ?? ""
+        self.original        = profile
+        self.name            = profile?.name ?? ""
+        self.surName         = profile?.surName ?? ""
+        self.bio             = profile?.bio ?? ""
+        self.preferredActivity = profile?.preferredActivity ?? .running
+        let defaultDate = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
+        self.birthDate       = profile?.birthDate ?? defaultDate
+        self.tempBirthDate   = profile?.birthDate ?? defaultDate
     }
 
-    // MARK: - Load selected photo from picker
     func loadSelectedPhoto() async {
         guard let item = selectedPhotoItem else { return }
         do {
@@ -69,36 +76,34 @@ final class EditProfileVM: ObservableObject {
 
     @discardableResult
     func validate() -> Bool {
-        emailError = nil
-        phoneError = nil
-        bioError = nil
+        nameError    = nil
+        surNameError = nil
+        bioError     = nil
 
         var valid = true
 
-        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
-        if trimmedEmail.isEmpty {
-            emailError = "Email cannot be empty."
-            valid = false
-        } else if !trimmedEmail.contains("@") || !trimmedEmail.contains(".") {
-            emailError = "Enter a valid email address."
+        let trimmedName = name.trimmingCharacters(in: .whitespaces)
+        if trimmedName.isEmpty {
+            nameError = "Name cannot be empty."
             valid = false
         }
 
-        let trimmedPhone = phone.trimmingCharacters(in: .whitespaces)
-        if trimmedPhone.isEmpty {
-            phoneError = "Phone number cannot be empty."
+        let trimmedSurName = surName.trimmingCharacters(in: .whitespaces)
+        if trimmedSurName.isEmpty {
+            surNameError = "Surname cannot be empty."
             valid = false
-        } else {
-            let digits = trimmedPhone.filter { $0.isNumber }
-            if digits.count < 7 {
-                phoneError = "Enter a valid phone number."
-                valid = false
-            }
+        }
+
+        let age = Calendar.current.dateComponents([.year], from: birthDate, to: Date()).year ?? 0
+        if age < 18 {
+            valid = false
+            errorMessage = "You must be at least 18 years old."
+            showError = true
         }
 
         let trimmedBio = bio.trimmingCharacters(in: .whitespaces)
-        if trimmedBio.isEmpty {
-            bioError = "Bio cannot be empty."
+        if trimmedBio.count > 120 {
+            bioError = "Bio cannot exceed 120 characters."
             valid = false
         }
 
@@ -115,16 +120,16 @@ final class EditProfileVM: ObservableObject {
 
         var fields: [String: Any] = [:]
 
-        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
-        if trimmedEmail != profile.email {
-            fields["email"] = trimmedEmail
-            profile.email = trimmedEmail
+        let trimmedName = name.trimmingCharacters(in: .whitespaces)
+        if trimmedName != profile.name {
+            fields["name"] = trimmedName
+            profile.name = trimmedName
         }
 
-        let trimmedPhone = phone.trimmingCharacters(in: .whitespaces)
-        if trimmedPhone != (profile.phoneNumber ?? "") {
-            fields["phoneNumber"] = trimmedPhone.isEmpty ? NSNull() : trimmedPhone
-            profile.phoneNumber = trimmedPhone.isEmpty ? nil : trimmedPhone
+        let trimmedSurName = surName.trimmingCharacters(in: .whitespaces)
+        if trimmedSurName != profile.surName {
+            fields["surName"] = trimmedSurName
+            profile.surName = trimmedSurName
         }
 
         let trimmedBio = bio.trimmingCharacters(in: .whitespaces)
@@ -133,6 +138,23 @@ final class EditProfileVM: ObservableObject {
             profile.bio = trimmedBio
         }
 
+        if preferredActivity != profile.preferredActivity {
+            fields["preferredActivity"] = preferredActivity.rawValue
+            profile.preferredActivity = preferredActivity
+        }
+
+        // Birth date — compare day only
+        if let oldBirth = profile.birthDate {
+            if !Calendar.current.isDate(birthDate, inSameDayAs: oldBirth) {
+                fields["birthDate"] = birthDate.timeIntervalSince1970
+                profile.birthDate = birthDate
+            }
+        } else {
+            fields["birthDate"] = birthDate.timeIntervalSince1970
+            profile.birthDate = birthDate
+        }
+
+        // Photo
         if let photoData = newPhotoData {
             do {
                 let imageUrl = try await profileManager.uploadProfileImage(data: photoData)
