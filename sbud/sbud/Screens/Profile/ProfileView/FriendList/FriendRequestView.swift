@@ -17,23 +17,6 @@ struct FriendRequestsView: View {
             Color(red: 0.05, green: 0.05, blue: 0.05).ignoresSafeArea()
 
             VStack(spacing: 0) {
-                HStack {
-                    Button { coordinator.goBack() } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    Spacer()
-                    Text("FRIEND REQUESTS")
-                        .font(.system(size: 14, weight: .black, design: .monospaced))
-                        .foregroundColor(.white)
-                        .kerning(1.5)
-                    Spacer()
-                    Color.clear.frame(width: 28, height: 28)
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
-
                 Divider().background(Color(white: 0.12))
                 if vm.isLoading {
                     Spacer()
@@ -60,6 +43,18 @@ struct FriendRequestsView: View {
                         }
                     }
                 }
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color(red: 0.05, green: 0.05, blue: 0.05), for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("FRIEND REQUESTS")
+                    .font(.system(size: 14, weight: .black, design: .monospaced))
+                    .foregroundColor(.white)
+                    .kerning(1.5)
             }
         }
         .task { await vm.load() }

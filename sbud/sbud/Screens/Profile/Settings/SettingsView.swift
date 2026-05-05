@@ -21,24 +21,6 @@ struct SettingsView: View {
             Color(red: 0.05, green: 0.05, blue: 0.05).ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Navbar
-                HStack {
-                    Button { coordinator.goBack() } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    Spacer()
-                    Text("SETTINGS")
-                        .font(.system(size: 14, weight: .black, design: .monospaced))
-                        .foregroundColor(.white)
-                        .kerning(1.5)
-                    Spacer()
-                    Color.clear.frame(width: 28, height: 28)
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
-                .padding(.top, UIApplication.safeAreaTop)
 
                 Divider().background(Color(white: 0.12))
 
@@ -108,6 +90,11 @@ struct SettingsView: View {
                 }
             }
         }
+        .navigationTitle("SETTINGS")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color(red: 0.05, green: 0.05, blue: 0.05), for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .task { vm.loadFromLocal() }
     }
 

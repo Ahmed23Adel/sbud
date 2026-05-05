@@ -53,9 +53,8 @@ struct AvailabilityAppCoordinator: View {
             ViewMoreInfoEvent(eventId: eventId)
         case .addNewEvent:
             CoordinatorAddNewEvent()
-        case .creatorProfile(let userId):
-            ProfileView(userId: userId, onBack: { coordinator.pop() })
-                .toolbar(.hidden, for: .navigationBar)
+        case .profileView(let userId):
+            ProfileAppCoordinator(userId: userId, isEmbedded: true)
         }
     }
 }

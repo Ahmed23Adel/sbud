@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeTabsView: View {
     @StateObject var viewModel = HomeTabsViewModel()
-
+    @EnvironmentObject private var coordinator: MainCoordinator
     var body: some View {
         TabView(selection: $viewModel.selectedTab) {
             HomeView()
@@ -28,7 +28,7 @@ struct HomeTabsView: View {
                     Label("Events", systemImage: "person.3")
                 }
                 .tag(2)
-            ProfileView(userId: ProfileManager.shared.getLocalProfile()?.id ?? "")
+            ProfileAppCoordinator(userId: ProfileManager.shared.getLocalProfile()!.id, isEmbedded: false)
                 .tabItem {
                     Label("Profile", systemImage: "person.fill")
                 }
