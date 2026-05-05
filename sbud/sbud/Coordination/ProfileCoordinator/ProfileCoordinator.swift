@@ -105,4 +105,15 @@ class ProfileCoordinator: ObservableObject{
         }
     }
     
+    func goToQRCode() {
+        sheetType = .qrCode
+    }
+    
+    func goToScannedProfile(_ userId: String) {
+        guard !userId.isEmpty else {
+            return
+        }
+        sheetType = nil
+        navigationPath.append(.scannedProfile(userId: userId))
+    }
 }
