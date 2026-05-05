@@ -31,24 +31,43 @@ struct ChatView: View {
     
     var body: some View {
         ZStack {
-            
             Color.darkBackground.ignoresSafeArea()
             
             VStack {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 12) {
-                        ForEach(viewModel.messages) { message in
-                            MessageView(viewModel: MessageViewModel(message: message), user: user)
+                
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 12) {
+                            ForEach(viewModel.messages) { message in
+                                MessageView(viewModel: MessageViewModel(message: message), user: user)
+                                    .id(message.id)
+                            }
+                        }
+                        .padding(.top)
+                    }
+                    
+                    .onChange(of: viewModel.messages.count) { _ in
+                        if let lastMessageId = viewModel.messages.last?.id {
+                            withAnimation {
+                                proxy.scrollTo(lastMessageId, anchor: .bottom)
+                            }
                         }
                     }
-                }.padding(.top)
+                   
+                    .onReceive(viewModel.$messages) { messages in
+                        if let lastMessageId = messages.last?.id {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                proxy.scrollTo(lastMessageId, anchor: .bottom)
+                            }
+                        }
+                    }
+                }
                 
                 CustomInputView(inputText: $messageText,
                                 placeholder: "Message...",
                                 buttonTitle: "Send",
                                 action: sendMessage)
-                                .background(Color.darkBackground)
-                
+                .background(Color.darkBackground)
             }
         }
         .navigationTitle("\(user.name) • \(eventTitle)")
@@ -60,6 +79,8 @@ struct ChatView: View {
     }
     
     func sendMessage() {
+        
+        guard !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         viewModel.sendMessage(messageText)
         messageText = ""
     }

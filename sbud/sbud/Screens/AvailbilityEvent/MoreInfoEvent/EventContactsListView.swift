@@ -9,9 +9,9 @@ import Kingfisher
 
 struct EventContactsListView: View {
     @StateObject var viewModel: EventContactsViewModel
-    let eventTitle: String // 1. AGGIUNTO IL TITOLO DELL'EVENTO
+    let eventTitle: String
     
-    // 2. AGGIUNTO IL TITOLO ALL'INIT (con un valore di default per non rompere il codice esistente)
+    
     init(eventId: String, eventTitle: String = "Event Chat") {
         self.eventTitle = eventTitle
         _viewModel = StateObject(wrappedValue: EventContactsViewModel(eventId: eventId))
@@ -19,13 +19,13 @@ struct EventContactsListView: View {
     
     var body: some View {
         ZStack {
-            // COLORE APP: Sfondo scuro per tutta la vista
+            
             Color.darkBackground.ignoresSafeArea()
             
             VStack {
                 if viewModel.isLoadingContacts {
                     ProgressView()
-                        .tint(Color.mainColor) // COLORE APP
+                        .tint(Color.mainColor)
                         .padding()
                 } else if viewModel.contactedUsers.isEmpty {
                     Text("No one has contacted you for this event yet.")
@@ -36,35 +36,35 @@ struct EventContactsListView: View {
                     LazyVStack(spacing: 0) {
                         ForEach(viewModel.contactedUsers) { userProfile in
                             
-                            // 3. FIX APPLICATO: Ora passiamo l'eventTitle alla ChatView
+                            
                             NavigationLink(destination: ChatView(user: userProfile, eventId: viewModel.eventId, eventTitle: self.eventTitle)) {
                                 HStack {
-                                    // Immagine Profilo
+                                    
                                     if let imageUrl = userProfile.profileImageUrl, let url = URL(string: imageUrl) {
                                         KFImage(url)
                                             .resizable()
                                             .scaledToFill()
                                             .frame(width: 40, height: 40)
                                             .clipShape(Circle())
-                                            .overlay(Circle().stroke(Color.mainColor, lineWidth: 1)) // COLORE APP: Bordo lime
+                                            .overlay(Circle().stroke(Color.mainColor, lineWidth: 1)) 
                                     } else {
                                         Image(systemName: "person.circle.fill")
                                             .resizable()
                                             .frame(width: 40, height: 40)
-                                            .foregroundColor(Color.backgroundColor) // COLORE APP
+                                            .foregroundColor(Color.backgroundColor)
                                     }
                                     
                                     Text("\(userProfile.name) \(userProfile.surName)")
                                         .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.white) // Testo bianco per contrasto
+                                        .foregroundColor(.white)
                                     
                                     Spacer()
                                     
                                     Image(systemName: "chevron.right")
-                                        .foregroundColor(Color.mainColor) // COLORE APP: Freccia lime
+                                        .foregroundColor(Color.mainColor)
                                 }
                                 .padding()
-                                .background(Color.backgroundColor) // COLORE APP: Cella grigia
+                                .background(Color.backgroundColor)
                                 .cornerRadius(10)
                                 .padding(.horizontal)
                                 .padding(.vertical, 4)

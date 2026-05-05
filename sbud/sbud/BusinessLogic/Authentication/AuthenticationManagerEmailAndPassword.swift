@@ -53,7 +53,7 @@ class AuthenticationManagerEmailAndPassword: IAuthenticationManager {
             print("Nessun utente attualmente loggato.")
             return
         }
-        //send verification mail
+        
         user.sendEmailVerification { error in
             if let error = error {
                 print("Error during verification mail: \(error.localizedDescription)")

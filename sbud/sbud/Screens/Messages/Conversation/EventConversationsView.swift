@@ -24,7 +24,6 @@ struct EventConversationsView: View {
             Color.darkBackground.ignoresSafeArea()
             
             if viewModel.recentMessages.isEmpty {
-                
                 VStack(spacing: 16) {
                     Image(systemName: "tray")
                         .font(.system(size: 48))
@@ -33,12 +32,14 @@ struct EventConversationsView: View {
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.gray)
                 }
+                
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
             } else {
                 ScrollView {
                     LazyVStack(spacing: 0) {
                         ForEach(viewModel.recentMessages) { message in
                             if let user = message.user {
-                                // Cliccando si va alla ChatView che abbiamo aggiornato in precedenza
                                 NavigationLink(destination: ChatView(user: user, eventId: eventId, eventTitle: eventTitle)) {
                                     ConversationCell(message: message, user: user)
                                 }
@@ -47,6 +48,10 @@ struct EventConversationsView: View {
                     }
                     .padding(.top)
                 }
+                .refreshable {
+                    
+                    await viewModel.loadData()
+                }
             }
         }
         .navigationTitle("Chats: \(eventTitle)")
@@ -54,8 +59,9 @@ struct EventConversationsView: View {
         .toolbarBackground(Color.darkBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .onAppear {
-            viewModel.loadData()
+        .task {
+            
+            await viewModel.loadData()
         }
     }
 }

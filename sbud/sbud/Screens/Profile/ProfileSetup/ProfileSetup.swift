@@ -45,16 +45,15 @@ struct ProfileSetupView: View {
                         
                     }
                     if shouldShowEmailBanner {
-                       EmailVerificationBanner {
-                           
-                           withAnimation(.easeOut) {
-                               isEmailVerified = true
-                           }
-                       }
-                       .padding(.horizontal, 24)
-                       .padding(.top, 10)
-                       .transition(.move(edge: .top).combined(with: .opacity))
-                   }
+                        EmailVerificationBanner {
+                            withAnimation(.easeOut) {
+                                isEmailVerified = true
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.top, 10)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    }
                     
                     if !isFinalStep {
                         headerProgressBar

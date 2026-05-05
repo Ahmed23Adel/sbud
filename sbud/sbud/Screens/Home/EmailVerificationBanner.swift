@@ -32,10 +32,10 @@ struct EmailVerificationBanner: View {
                     Task {
                         isReloading = true
                         
-                        // Ricarica l'utente da Firebase
+                        
                         try? await AuthenticationManagerEmailAndPassword.shared.reloadUser()
                         
-                        // CONTROLLA SE È VERIFICATO E AVVISA LA VIEW PRINCIPALE
+                        
                         if Auth.auth().currentUser?.isEmailVerified == true {
                             await MainActor.run {
                                 onVerified()
