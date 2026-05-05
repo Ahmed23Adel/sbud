@@ -18,11 +18,14 @@ class ProfileCoordinator: ObservableObject{
     let logger = Logger(subsystem: "sbud", category: "ProfileCoordinator")
     
     var userIsCurUser: Bool {
-        currUserId == ProfileManager.shared.getLocalProfile()!.id
+        // Sostituisci il `!` con un check sicuro
+        currUserId == (ProfileManager.shared.getLocalProfile()?.id ?? "")
     }
+    
     init(userId: String){
         self.currUserId = userId
-        if userId == ProfileManager.shared.getLocalProfile()!.id{
+        
+        if let localProfileId = ProfileManager.shared.getLocalProfile()?.id, userId == localProfileId {
             currentRoute = .myProfile
         } else {
             currentRoute = .othersProfile

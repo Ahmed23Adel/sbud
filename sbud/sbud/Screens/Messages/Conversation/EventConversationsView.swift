@@ -23,20 +23,23 @@ struct EventConversationsView: View {
         ZStack {
             Color.darkBackground.ignoresSafeArea()
             
-            if viewModel.recentMessages.isEmpty {
-                VStack(spacing: 16) {
-                    Image(systemName: "tray")
-                        .font(.system(size: 48))
-                        .foregroundColor(Color.backgroundColor)
-                    Text("No messages for this event yet.")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.gray)
-                }
-                
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                
-            } else {
-                ScrollView {
+            // 1. La ScrollView ORA avvolge tutto, in modo da poter sempre tirare giù
+            ScrollView {
+                if viewModel.recentMessages.isEmpty {
+                    // STATO VUOTO
+                    VStack(spacing: 16) {
+                        Image(systemName: "tray")
+                            .font(.system(size: 48))
+                            .foregroundColor(.gray)
+                        Text("No messages for this event yet.")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.gray)
+                    }
+                    // 2. Fondamentale: diamo un'altezza minima per permettere il drag
+                    .frame(maxWidth: .infinity, minHeight: UIScreen.main.bounds.height * 0.6)
+                    
+                } else {
+                    // STATO PIENO
                     LazyVStack(spacing: 0) {
                         ForEach(viewModel.recentMessages) { message in
                             if let user = message.user {
@@ -48,10 +51,10 @@ struct EventConversationsView: View {
                     }
                     .padding(.top)
                 }
-                .refreshable {
-                    
-                    await viewModel.loadData()
-                }
+            }
+            // 3. Il refreshable ora è applicato SEMPRE, indipendentemente dai messaggi
+            .refreshable {
+                await viewModel.loadData()
             }
         }
         .navigationTitle("Chats: \(eventTitle)")
@@ -60,7 +63,7 @@ struct EventConversationsView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .task {
-            
+            // task assicura che il ViewModel carichi i dati appena apri la pagina
             await viewModel.loadData()
         }
     }

@@ -29,18 +29,28 @@ class EventConversationsViewModel: ObservableObject {
             .whereField("eventId", isEqualTo: eventId)
         
         do {
+            // 1. FORZIAMO IL SERVER: ignora la cache quando l'utente fa Pull-to-Refresh
+            let snapshot = try await query.getDocuments(source: .server)
             
-            let snapshot = try await query.getDocuments()
-            var messages = snapshot.documents.compactMap({ try? $0.data(as: Message.self) })
+            var messages: [Message] = []
             
+            // 2. STOP AGLI ERRORI SILENZIOSI: vediamo se la decodifica fallisce
+            for document in snapshot.documents {
+                do {
+                    let msg = try document.data(as: Message.self)
+                    messages.append(msg)
+                } catch {
+                    print("❌ ERRORE DECODIFICA MESSAGGIO \(document.documentID): \(error)")
+                }
+            }
             
+            // Ordiniamo dal più recente al meno recente
             messages.sort { $0.timestamp.dateValue() > $1.timestamp.dateValue() }
             
             var profilesMap = [String: UserProfile]()
             
             for i in 0 ..< messages.count {
                 let partnerId = messages[i].chatPartnerId
-                
                 
                 if let cachedUser = profilesMap[partnerId] {
                     messages[i].user = cachedUser
@@ -52,16 +62,16 @@ class EventConversationsViewModel: ObservableObject {
                             profilesMap[partnerId] = userProfile
                         }
                     } catch {
-                        print("Errore nel fetch dell'utente: \(error)")
+                        print("Errore nel fetch dell'utente \(partnerId): \(error)")
                     }
                 }
             }
             
-            
             self.recentMessages = messages
+            print("✅ Trovate \(self.recentMessages.count) conversazioni per l'evento \(eventId)")
             
         } catch {
-            print("Errore durante il caricamento delle conversazioni: \(error)")
+            print("❌ Errore durante il caricamento delle conversazioni: \(error)")
         }
     }
 }
