@@ -24,8 +24,8 @@ struct ViewMyEventDetails: View {
                     Spacer()
                 }
                 else {
-                    ProgressView()
-                        .padding(.top, 50)
+                    LoadingView()
+                        .ignoresSafeArea()
                     Spacer()
                 }
                 
@@ -65,17 +65,21 @@ struct ViewMyEventDetails: View {
                         Button{
                             coordinator.showHostsSheet(eventId: viewModel.eventId)
                         } label: {
-                            Text("Invite/Edit hosts")
-                                .font(.system(size: 17, weight: .heavy))
-                                .foregroundColor(Color(red: 0.15, green: 0.25, blue: 0.0))
-                            
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 68)
-                                .background(
-                                    Capsule()
-                                        .fill(Color("palelime"))
-                                    
-                                )
+                            HStack(spacing: 10) {
+                                Image(systemName: "person.2.wave.2")
+                                    .font(.system(size: 18, weight: .heavy))
+                                    .foregroundColor(Color(red: 0.15, green: 0.25, blue: 0.0))
+                                
+                                Text("Invite/Edit hosts")
+                                    .font(.system(size: 17, weight: .heavy))
+                                    .foregroundColor(Color(red: 0.15, green: 0.25, blue: 0.0))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 68)
+                            .background(
+                                Capsule()
+                                    .fill(Color("palelime"))
+                            )
                         }
                         .padding(.horizontal, 24)
                         .padding(.bottom, 20)
