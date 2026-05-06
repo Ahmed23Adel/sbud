@@ -10,9 +10,12 @@ import SwiftUI
 struct ViewMyEventDetails: View {
     @State var viewModel: ViewModelMyEventDetails
     @EnvironmentObject private var coordinator: ProfileCoordinator
+    @State private var showingConfirmationSheet = false
+    
     init(eventId: String){
         _viewModel = State(wrappedValue: ViewModelMyEventDetails(eventId: eventId))
     }
+    
     var body: some View {
         ZStack{
             Color.darkBackground
@@ -60,6 +63,46 @@ struct ViewMyEventDetails: View {
                         
                         LocationMapCard(dateLocations: details.dateLocations)
                             .padding()
+                        if !details.isDateConfirmed || !details.isLocationConfirmed {
+                            Button {
+                                showingConfirmationSheet = true
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "checkmark.seal.fill")
+                                        .font(.system(size: 20))
+                                    Text("Confirm Final Details")
+                                }
+                                .font(.system(size: 17, weight: .heavy))
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 68)
+                                .background(Color.mainColor)
+                                .clipShape(Capsule())
+                            }
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 12)
+                        }
+                        
+                        Button{
+                            
+                            coordinator.goToEventConversations(eventId: viewModel.eventId, eventTitle: details.title)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "tray.fill")
+                                    .font(.system(size: 20))
+                                Text("View Messages")
+                            }
+                            .font(.system(size: 17, weight: .heavy))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 68)
+                            .background(
+                                Capsule()
+                                    .fill(Color.mainColor)
+                            )
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 12)
                         
                         // Invite a host
                         Button{
@@ -92,6 +135,29 @@ struct ViewMyEventDetails: View {
                         }
                     }
                 }
+                
+            }
+            if viewModel.isLoading {
+                Color.black.opacity(0.4).ignoresSafeArea()
+                ProgressView().tint(.white).scaleEffect(1.5)
+            }
+        }
+        .sheet(isPresented: $showingConfirmationSheet) {
+            if let details = viewModel.myEventDertails {
+                ConfirmEventSheet(dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
+                    showingConfirmationSheet = false
+                    Task {
+                        // Inviamo al ViewModel sia la location che le date esatte scelte!
+                        await viewModel.confirmEventFinalChoice(
+                            selectedDateEntry: selectedDateEntry,
+                            selectedLocation: selectedLoc,
+                            finalStartDate: finalStart,
+                            finalEndDate: finalEnd
+                        )
+                    }
+                }
+                .presentationDetents([.large]) // Ora richiede più spazio per i DatePicker
+                .presentationDragIndicator(.visible)
             }
         }
     }

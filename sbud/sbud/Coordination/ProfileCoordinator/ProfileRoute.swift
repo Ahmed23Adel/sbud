@@ -21,6 +21,7 @@ enum ProfileRoutePushed: Equatable, Hashable{
     case friendsList
     case editMyEvent
     case viewMyEventDetails (eventId: String)
+    case eventConversations(eventId: String, eventTitle: String)
 }
 
 

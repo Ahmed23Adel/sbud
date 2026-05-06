@@ -10,6 +10,7 @@ import FirebaseFirestore
 import Kingfisher
 import Lottie
 import OSLog
+import FirebaseAuth
 struct ViewMoreInfoEvent: View {
     @StateObject var viewModel: ViewModelMoreInfoEvent
     @EnvironmentObject var coordinator: AvailabilityCoordinator
@@ -69,14 +70,26 @@ struct ViewMoreInfoEvent: View {
                             iconString: "pencil",
                             text: details.notes!)
 
-                        CreatorContactDetailed(
-                            creatorInfo: details.creator,
-                            onTapProfile: {
-                                logger.info("CreatorContactDetailed \(type(of: coordinator))")
-                                logger.info("details.creator.id: \(details.creator.id)")
-                                coordinator.push(.profileView(userId: details.creator.id))
-                            }
-                        )
+                        if Auth.auth().currentUser?.uid != details.creator.id {
+                                                    
+                            CreatorContactDetailed(
+                                creatorInfo: details.creator,
+                                onTapProfile: {
+                                    logger.info("CreatorContactDetailed \(type(of: coordinator))")
+                                    logger.info("details.creator.id: \(details.creator.id)")
+                                    coordinator.push(.profileView(userId: details.creator.id))
+                                },
+                                onTapContact: {
+                                    var chatUser = UserProfile(id: details.creator.id)
+                                    chatUser.name = details.creator.name
+                                    chatUser.surName = details.creator.surName
+                                    chatUser.profileImageUrl = details.creator.profileImageUrl
+                                    
+                                    let eTitle = details.title
+                                    coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle))
+                                }
+                            )
+                        }
 
                         LocationMapCard(dateLocations: details.dateLocations)
                             .padding()

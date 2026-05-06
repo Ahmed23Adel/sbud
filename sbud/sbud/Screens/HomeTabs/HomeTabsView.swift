@@ -28,7 +28,7 @@ struct HomeTabsView: View {
                     Label("Events", systemImage: "person.3")
                 }
                 .tag(2)
-            ProfileAppCoordinator(userId: ProfileManager.shared.getLocalProfile()!.id, isEmbedded: false)
+            ProfileAppCoordinator(userId: ProfileManager.shared.getLocalProfile()?.id ?? "", isEmbedded: false)
                 .tabItem {
                     Label("Profile", systemImage: "person.fill")
                 }
