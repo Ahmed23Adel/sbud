@@ -22,17 +22,14 @@ struct MapSelectableItem: Identifiable, Equatable {
     }
 }
 
-
 struct ConfirmEventSheet: View {
     var dateLocations: [DateLocationEntry]
     var onConfirm: (DateLocationEntry, LocationPoint, Date, Date) -> Void
     
-    // Stats fot the selection
     @State private var selectedItem: MapSelectableItem?
     @State private var finalStartDate: Date = Date()
     @State private var finalEndDate: Date = Date()
     
-    // We generate a flat list of all the locations to display on the map
     private var mapItems: [MapSelectableItem] {
         var items: [MapSelectableItem] = []
         var counter = 1
@@ -50,28 +47,58 @@ struct ConfirmEventSheet: View {
         return items
     }
     
-    // Let's calculate the initial frame using your logic
     @State private var cameraPosition: MapCameraPosition = .automatic
     
     var body: some View {
         NavigationView {
             ZStack {
-                Color.backgroundColor.ignoresSafeArea()
+                Color.darkBackground.ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // MARK: - LA MAPPA INTERATTIVA
+                    
+                    // MARK: - Custom Top Bar
+                    HStack {
+                        Text("Confirm Final Details")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color.mainColor)
+                        
+                        Spacer()
+                        
+                        Button {
+                            if let selected = selectedItem {
+                                onConfirm(selected.dateEntry, selected.location, finalStartDate, finalEndDate)
+                            }
+                        } label: {
+                            Text("Confirm")
+                                .fontWeight(.bold)
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(
+                                    selectedItem == nil
+                                        ? Color.mainColor.opacity(0.4)
+                                        : Color.mainColor
+                                )
+                                .clipShape(Capsule())
+                        }
+                        .disabled(selectedItem == nil)
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 12)
+                    
+                    // MARK: - Map
                     Map(position: $cameraPosition) {
                         ForEach(mapItems) { item in
                             Annotation("", coordinate: item.coordinate) {
                                 Button {
-                                    //animation
                                     withAnimation(.spring()) {
                                         selectedItem = item
                                         finalStartDate = item.dateEntry.startDateTime
                                         finalEndDate = item.dateEntry.endDateTime
                                     }
                                 } label: {
-                                    // selction the pin
                                     MapPinView(index: item.displayIndex)
                                         .scaleEffect(selectedItem == item ? 1.4 : 1.0)
                                         .overlay(
@@ -88,7 +115,7 @@ struct ConfirmEventSheet: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .padding()
                     
-                    //selection of date
+                    // MARK: - Selection Detail
                     ScrollView {
                         if let selected = selectedItem {
                             VStack(alignment: .leading, spacing: 20) {
@@ -101,7 +128,7 @@ struct ConfirmEventSheet: View {
                                 VStack(alignment: .leading, spacing: 15) {
                                     Text("Refine Exact Event Time")
                                         .font(.headline)
-                                        .foregroundColor(Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)) // Il tuo colore accent
+                                        .foregroundColor(Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0))
                                         .padding(.horizontal)
                                     
                                     DatePicker("Start", selection: $finalStartDate)
@@ -122,7 +149,6 @@ struct ConfirmEventSheet: View {
                             .padding(.top, 10)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                         } else {
-                            
                             VStack(spacing: 12) {
                                 Image(systemName: "hand.tap.fill")
                                     .font(.system(size: 40))
@@ -137,28 +163,13 @@ struct ConfirmEventSheet: View {
                     }
                 }
             }
-            .navigationTitle("Confirm Final Details")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Confirm") {
-                        if let selected = selectedItem {
-                            
-                            onConfirm(selected.dateEntry, selected.location, finalStartDate, finalEndDate)
-                        }
-                    }
-                    .disabled(selectedItem == nil) // Disabled until you tap on a pin
-                    .fontWeight(.bold)
-                    .foregroundColor(selectedItem == nil ? .gray : Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0))
-                }
-            }
+            .navigationBarHidden(true)
             .onAppear {
                 setupInitialCameraPosition()
             }
         }
     }
     
-    // Function that calculates the map zoom based on all the pins present
     private func setupInitialCameraPosition() {
         let coords = mapItems.map { $0.coordinate }
         guard !coords.isEmpty else { return }

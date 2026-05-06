@@ -73,10 +73,11 @@ struct ViewMyEventDetails: View {
                                     Text("Confirm Final Details")
                                 }
                                 .font(.system(size: 17, weight: .heavy))
-                                .foregroundColor(.white)
+                                .foregroundColor(.black)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 68)
-                                .background(Capsule().fill(Color.blue)) // Usa il colore del tuo brand
+                                .background(Color.mainColor)
+                                .clipShape(Capsule())
                             }
                             .padding(.horizontal, 24)
                             .padding(.bottom, 12)
