@@ -43,15 +43,19 @@ class ViewModelMyEventDetails{
         }
     }
     
+    
     func confirmEventFinalChoice(selectedDateEntry: DateLocationEntry, selectedLocation: LocationPoint, finalStartDate: Date, finalEndDate: Date) async {
         await MainActor.run { isLoading = true }
         let db = Firestore.firestore()
         
-        // Questo sarà il NUOVO array dateLocations. Sostituisce quello vecchio!
+        
+        let batch = db.batch()
+        
+        
+        let eventRef = db.collection("Events").document(eventId)
         let finalizedDateLocation: [[String: Any]] = [
             [
                 "id": selectedDateEntry.id,
-                // Usiamo le date decise con i DatePicker!
                 "startDateTime": Timestamp(date: finalStartDate),
                 "endDateTime": Timestamp(date: finalEndDate),
                 "locations": [
@@ -64,20 +68,63 @@ class ViewModelMyEventDetails{
             ]
         ]
         
+        batch.updateData([
+            "isDateConfirmed": true,
+            "isLocationConfirmed": true,
+            "status": "confirmed",
+            "dateLocations": finalizedDateLocation
+        ], forDocument: eventRef)
+        
         do {
-            try await db.collection("Events").document(eventId).updateData([
-                "isDateConfirmed": true,
-                "isLocationConfirmed": true,
-                "status": "confirmed",
-                "dateLocations": finalizedDateLocation // Sovrascrive le vecchie location
-            ])
             
-            // Ricaricando i dettagli, l'app riceverà una sola location e un solo range di date
+            let flattenedSnapshot = try await db.collection("flattenedEvents")
+                .whereField("eventId", isEqualTo: eventId)
+                .getDocuments()
+            
+            
+            for doc in flattenedSnapshot.documents {
+                let data = doc.data()
+                
+                let docDateLocationId = data["dateLocationId"] as? String ?? ""
+                var isChosenLocation = false
+                
+                
+                if let geoPoint = data["geoPoint"] as? GeoPoint {
+                    
+                    let latDiff = abs(geoPoint.latitude - selectedLocation.latitude)
+                    let lonDiff = abs(geoPoint.longitude - selectedLocation.longitude)
+                    isChosenLocation = (latDiff < 0.00001 && lonDiff < 0.00001)
+                } else if let g = data["g"] as? [String: Any], let geohash = g["geohash"] as? String {
+                    
+                    isChosenLocation = (geohash == selectedLocation.geohash)
+                }
+                
+                
+                let isChosenEntry = (docDateLocationId == selectedDateEntry.id)
+                
+                if isChosenEntry && isChosenLocation {
+                    
+                    batch.updateData([
+                        "startDateTime": Timestamp(date: finalStartDate),
+                        "endDateTime": Timestamp(date: finalEndDate),
+                        "isDateConfirmed": true,
+                        "isLocationConfirmed": true
+                    ], forDocument: doc.reference)
+                } else {
+                   
+                    batch.deleteDocument(doc.reference)
+                }
+            }
+            
+            
+            try await batch.commit()
+            
+            
             await loadDetails()
             await MainActor.run { isLoading = false }
             
         } catch {
-            logger.error("Error confirming event: \(error.localizedDescription)")
+            logger.error("Error confirming event & deleting flattened locations: \(error.localizedDescription)")
             await MainActor.run { isLoading = false }
             PopUpGenerator.shared.show(msg: "Error confirming event", type: .error)
         }

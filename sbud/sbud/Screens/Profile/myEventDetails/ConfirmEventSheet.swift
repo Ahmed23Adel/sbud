@@ -7,133 +7,178 @@
 
 
 import SwiftUI
+import MapKit
 
-import SwiftUI
+// MARK: - Helper Struct per appiattire tutte le location e renderle selezionabili sulla mappa
+struct MapSelectableItem: Identifiable, Equatable {
+    let id = UUID()
+    let dateEntry: DateLocationEntry
+    let location: LocationPoint
+    let displayIndex: Int
+    let coordinate: CLLocationCoordinate2D
+    
+    static func == (lhs: MapSelectableItem, rhs: MapSelectableItem) -> Bool {
+        lhs.id == rhs.id
+    }
+}
 
+// MARK: - Il Nuovo Bottom Sheet Interattivo
 struct ConfirmEventSheet: View {
     var dateLocations: [DateLocationEntry]
-    
     var onConfirm: (DateLocationEntry, LocationPoint, Date, Date) -> Void
     
-    @State private var selectedDateEntry: DateLocationEntry?
-    @State private var selectedLocation: LocationPoint?
-    
-    // Nuovi stati per la scelta della data esatta
+    // Stati per la selezione
+    @State private var selectedItem: MapSelectableItem?
     @State private var finalStartDate: Date = Date()
     @State private var finalEndDate: Date = Date()
+    
+    // Generiamo una lista piatta di tutte le location da mostrare sulla mappa
+    private var mapItems: [MapSelectableItem] {
+        var items: [MapSelectableItem] = []
+        var counter = 1
+        for entry in dateLocations {
+            for loc in entry.locations {
+                items.append(MapSelectableItem(
+                    dateEntry: entry,
+                    location: loc,
+                    displayIndex: counter,
+                    coordinate: CLLocationCoordinate2D(latitude: loc.latitude, longitude: loc.longitude)
+                ))
+                counter += 1
+            }
+        }
+        return items
+    }
+    
+    // Calcoliamo l'inquadratura iniziale usando la tua logica
+    @State private var cameraPosition: MapCameraPosition = .automatic
     
     var body: some View {
         NavigationView {
             ZStack {
-                Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea() // Sfondo scuro
+                Color.backgroundColor.ignoresSafeArea() // Usa il colore di background del tuo progetto
                 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        Text("Select a location option and confirm the final date and time.")
-                            .foregroundColor(.gray)
-                            .padding(.horizontal)
-                        
-                        ForEach(dateLocations) { dateEntry in
-                            VStack(alignment: .leading) {
+                VStack(spacing: 0) {
+                    // MARK: - LA MAPPA INTERATTIVA
+                    Map(position: $cameraPosition) {
+                        ForEach(mapItems) { item in
+                            Annotation("", coordinate: item.coordinate) {
+                                Button {
+                                    // Seleziona il pin con animazione
+                                    withAnimation(.spring()) {
+                                        selectedItem = item
+                                        finalStartDate = item.dateEntry.startDateTime
+                                        finalEndDate = item.dateEntry.endDateTime
+                                    }
+                                } label: {
+                                    // Usiamo il tuo pin, ma lo evidenziamo se è selezionato
+                                    MapPinView(index: item.displayIndex)
+                                        .scaleEffect(selectedItem == item ? 1.4 : 1.0) // Si ingrandisce se tappato
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.white, lineWidth: selectedItem == item ? 3 : 0)
+                                                .scaleEffect(selectedItem == item ? 1.4 : 1.0)
+                                        )
+                                        .shadow(color: selectedItem == item ? .white.opacity(0.8) : .black.opacity(0.3), radius: selectedItem == item ? 8 : 4)
+                                }
+                            }
+                        }
+                    }
+                    .frame(height: 300)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .padding()
+                    
+                    // MARK: - SELEZIONE DELLA DATA DEFINITIVA
+                    ScrollView {
+                        if let selected = selectedItem {
+                            VStack(alignment: .leading, spacing: 20) {
                                 
-                                Text("\(dateEntry.startDateTime.formatted(date: .abbreviated, time: .shortened)) - \(dateEntry.endDateTime.formatted(date: .omitted, time: .shortened))")
-                                    .font(.headline)
+                                Text("📍 Location \(selected.displayIndex) Selected")
+                                    .font(.title3.weight(.bold))
                                     .foregroundColor(.white)
                                     .padding(.horizontal)
                                 
-                                
-                                ForEach(Array(dateEntry.locations.enumerated()), id: \.element.geohash) { index, location in
-                                    Button {
-                                        selectedDateEntry = dateEntry
-                                        selectedLocation = location
-                                        // Quando clicchi, inizializza i DatePicker con le date del range
-                                        finalStartDate = dateEntry.startDateTime
-                                        finalEndDate = dateEntry.endDateTime
-                                    } label: {
-                                        HStack {
-                                            
-                                            Circle()
-                                                .fill(Color.teal)
-                                                .frame(width: 32, height: 32)
-                                                .overlay(
-                                                    Text("\(index + 1)")
-                                                        .font(.system(size: 14, weight: .bold))
-                                                        .foregroundColor(.white)
-                                                )
-                                            
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                Text("Lat: \(String(format: "%.4f", location.latitude))")
-                                                Text("Lon: \(String(format: "%.4f", location.longitude))")
-                                            }
-                                            .font(.subheadline)
-                                            .foregroundColor(.white)
-                                            .padding(.leading, 8)
-                                            
-                                            Spacer()
-                                            
-                                            if selectedDateEntry?.id == dateEntry.id && selectedLocation?.geohash == location.geohash {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundColor(.green)
-                                                    .font(.title2)
-                                            } else {
-                                                Image(systemName: "circle")
-                                                    .foregroundColor(.gray)
-                                                    .font(.title2)
-                                            }
-                                        }
+                                VStack(alignment: .leading, spacing: 15) {
+                                    Text("Refine Exact Event Time")
+                                        .font(.headline)
+                                        .foregroundColor(Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)) // Il tuo colore accent
+                                        .padding(.horizontal)
+                                    
+                                    DatePicker("Start", selection: $finalStartDate)
+                                        .colorScheme(.dark)
                                         .padding()
                                         .background(Color.white.opacity(0.1))
                                         .cornerRadius(12)
                                         .padding(.horizontal)
-                                    }
+                                    
+                                    DatePicker("End", selection: $finalEndDate)
+                                        .colorScheme(.dark)
+                                        .padding()
+                                        .background(Color.white.opacity(0.1))
+                                        .cornerRadius(12)
+                                        .padding(.horizontal)
                                 }
                             }
-                            .padding(.bottom, 10)
-                        }
-                        
-                        
-                        if selectedLocation != nil {
-                            VStack(alignment: .leading, spacing: 15) {
-                                Text("Select Exact Event Time")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal)
-                                    .padding(.top, 10)
-                                
-                                DatePicker("Start", selection: $finalStartDate)
-                                    .colorScheme(.dark) // Forza lo stile scuro
-                                    .padding()
-                                    .background(Color.white.opacity(0.1))
-                                    .cornerRadius(12)
-                                    .padding(.horizontal)
-                                
-                                DatePicker("End", selection: $finalEndDate)
-                                    .colorScheme(.dark)
-                                    .padding()
-                                    .background(Color.white.opacity(0.1))
-                                    .cornerRadius(12)
-                                    .padding(.horizontal)
+                            .padding(.top, 10)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        } else {
+                            // Messaggio che invita a tappare sulla mappa
+                            VStack(spacing: 12) {
+                                Image(systemName: "hand.tap.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.gray)
+                                Text("Tap a pin on the map to select the final location.")
+                                    .multilineTextAlignment(.center)
+                                    .foregroundColor(.gray)
                             }
+                            .padding(.top, 50)
+                            .padding(.horizontal)
                         }
                     }
-                    .padding(.top, 20)
-                    .padding(.bottom, 40)
                 }
             }
-            .navigationTitle("Confirm Event")
+            .navigationTitle("Confirm Final Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Confirm") {
-                        if let sDate = selectedDateEntry, let sLoc = selectedLocation {
-                            
-                            onConfirm(sDate, sLoc, finalStartDate, finalEndDate)
+                        if let selected = selectedItem {
+                            // Passiamo il singolo entry, la location esatta, e le nuove date definitive!
+                            onConfirm(selected.dateEntry, selected.location, finalStartDate, finalEndDate)
                         }
                     }
-                    .disabled(selectedDateEntry == nil || selectedLocation == nil)
+                    .disabled(selectedItem == nil) // Disattivato finché non tappe su un pin
                     .fontWeight(.bold)
+                    .foregroundColor(selectedItem == nil ? .gray : Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0))
                 }
             }
+            .onAppear {
+                setupInitialCameraPosition()
+            }
         }
+    }
+    
+    // Funzione che calcola lo zoom della mappa in base a tutti i pin presenti
+    private func setupInitialCameraPosition() {
+        let coords = mapItems.map { $0.coordinate }
+        guard !coords.isEmpty else { return }
+        if coords.count == 1 {
+            cameraPosition = .region(MKCoordinateRegion(
+                center: coords[0],
+                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+            ))
+            return
+        }
+        let lats = coords.map(\.latitude)
+        let lons = coords.map(\.longitude)
+        let center = CLLocationCoordinate2D(
+            latitude: (lats.min()! + lats.max()!) / 2,
+            longitude: (lons.min()! + lons.max()!) / 2
+        )
+        let span = MKCoordinateSpan(
+            latitudeDelta: (lats.max()! - lats.min()!) * 1.8 + 0.01,
+            longitudeDelta: (lons.max()! - lons.min()!) * 1.8 + 0.01
+        )
+        cameraPosition = .region(MKCoordinateRegion(center: center, span: span))
     }
 }
