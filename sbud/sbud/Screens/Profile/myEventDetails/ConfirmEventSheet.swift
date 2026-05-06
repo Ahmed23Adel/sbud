@@ -22,17 +22,17 @@ struct MapSelectableItem: Identifiable, Equatable {
     }
 }
 
-// MARK: - Il Nuovo Bottom Sheet Interattivo
+
 struct ConfirmEventSheet: View {
     var dateLocations: [DateLocationEntry]
     var onConfirm: (DateLocationEntry, LocationPoint, Date, Date) -> Void
     
-    // Stati per la selezione
+    // Stats fot the selection
     @State private var selectedItem: MapSelectableItem?
     @State private var finalStartDate: Date = Date()
     @State private var finalEndDate: Date = Date()
     
-    // Generiamo una lista piatta di tutte le location da mostrare sulla mappa
+    // We generate a flat list of all the locations to display on the map
     private var mapItems: [MapSelectableItem] {
         var items: [MapSelectableItem] = []
         var counter = 1
@@ -50,13 +50,13 @@ struct ConfirmEventSheet: View {
         return items
     }
     
-    // Calcoliamo l'inquadratura iniziale usando la tua logica
+    // Let's calculate the initial frame using your logic
     @State private var cameraPosition: MapCameraPosition = .automatic
     
     var body: some View {
         NavigationView {
             ZStack {
-                Color.backgroundColor.ignoresSafeArea() // Usa il colore di background del tuo progetto
+                Color.backgroundColor.ignoresSafeArea()
                 
                 VStack(spacing: 0) {
                     // MARK: - LA MAPPA INTERATTIVA
@@ -64,16 +64,16 @@ struct ConfirmEventSheet: View {
                         ForEach(mapItems) { item in
                             Annotation("", coordinate: item.coordinate) {
                                 Button {
-                                    // Seleziona il pin con animazione
+                                    //animation
                                     withAnimation(.spring()) {
                                         selectedItem = item
                                         finalStartDate = item.dateEntry.startDateTime
                                         finalEndDate = item.dateEntry.endDateTime
                                     }
                                 } label: {
-                                    // Usiamo il tuo pin, ma lo evidenziamo se è selezionato
+                                    // selction the pin
                                     MapPinView(index: item.displayIndex)
-                                        .scaleEffect(selectedItem == item ? 1.4 : 1.0) // Si ingrandisce se tappato
+                                        .scaleEffect(selectedItem == item ? 1.4 : 1.0)
                                         .overlay(
                                             Circle()
                                                 .stroke(Color.white, lineWidth: selectedItem == item ? 3 : 0)
@@ -88,7 +88,7 @@ struct ConfirmEventSheet: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .padding()
                     
-                    // MARK: - SELEZIONE DELLA DATA DEFINITIVA
+                    //selection of date
                     ScrollView {
                         if let selected = selectedItem {
                             VStack(alignment: .leading, spacing: 20) {
@@ -122,7 +122,7 @@ struct ConfirmEventSheet: View {
                             .padding(.top, 10)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                         } else {
-                            // Messaggio che invita a tappare sulla mappa
+                            
                             VStack(spacing: 12) {
                                 Image(systemName: "hand.tap.fill")
                                     .font(.system(size: 40))
@@ -143,11 +143,11 @@ struct ConfirmEventSheet: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Confirm") {
                         if let selected = selectedItem {
-                            // Passiamo il singolo entry, la location esatta, e le nuove date definitive!
+                            
                             onConfirm(selected.dateEntry, selected.location, finalStartDate, finalEndDate)
                         }
                     }
-                    .disabled(selectedItem == nil) // Disattivato finché non tappe su un pin
+                    .disabled(selectedItem == nil) // Disabled until you tap on a pin
                     .fontWeight(.bold)
                     .foregroundColor(selectedItem == nil ? .gray : Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0))
                 }
@@ -158,7 +158,7 @@ struct ConfirmEventSheet: View {
         }
     }
     
-    // Funzione che calcola lo zoom della mappa in base a tutti i pin presenti
+    // Function that calculates the map zoom based on all the pins present
     private func setupInitialCameraPosition() {
         let coords = mapItems.map { $0.coordinate }
         guard !coords.isEmpty else { return }
