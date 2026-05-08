@@ -5,6 +5,13 @@
 //  Created by ahmed on 01/05/2026.
 //
 
+//
+//  ProfileCoordinator.swift
+//  sbud
+//
+//  Created by ahmed on 01/05/2026.
+//
+
 import Foundation
 import Combine
 import OSLog
@@ -18,12 +25,12 @@ class ProfileCoordinator: ObservableObject {
     let logger = Logger(subsystem: "sbud", category: "ProfileCoordinator")
 
     var userIsCurUser: Bool {
-        currUserId == ProfileManager.shared.getLocalProfile()!.id
+        currUserId == (ProfileManager.shared.getLocalProfile()?.id ?? "")
     }
 
     init(userId: String) {
         self.currUserId = userId
-        if userId == ProfileManager.shared.getLocalProfile()!.id {
+        if let localProfileId = ProfileManager.shared.getLocalProfile()?.id, userId == localProfileId {
             currentRoute = .myProfile
         } else {
             currentRoute = .othersProfile
@@ -60,6 +67,12 @@ class ProfileCoordinator: ObservableObject {
         }
     }
 
+    func goToHostRequests() {
+        if currentRoute == .myProfile {
+            navigationPath.append(.hostsRequests)
+        }
+    }
+
     func goToMyEvents() {
         if currentRoute == .myProfile {
             navigationPath.append(.myEvents)
@@ -92,6 +105,10 @@ class ProfileCoordinator: ObservableObject {
 
     func goToProfileFromQueue(userId: String) {
         navigationPath.append(.viewOthersProfile(userId: userId))
+    }
+
+    func goToEventConversations(eventId: String, eventTitle: String) {
+        navigationPath.append(.eventConversations(eventId: eventId, eventTitle: eventTitle))
     }
 
     func showHostsSheet(eventId: String) {

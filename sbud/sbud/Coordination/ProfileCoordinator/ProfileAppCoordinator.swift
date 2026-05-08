@@ -73,6 +73,8 @@ struct ProfileAppCoordinator: View {
             EmptyView()
         case .viewOthersProfile(let userId):
             ProfileAppCoordinator(userId: userId, isEmbedded: true)
+        case .eventConversations(let eventId, let eventTitle):
+            EventConversationsView(eventId: eventId, eventTitle: eventTitle)
         }
     }
 

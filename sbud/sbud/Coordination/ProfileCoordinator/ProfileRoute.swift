@@ -20,7 +20,8 @@ enum ProfileRoutePushed: Equatable, Hashable {
     case friendsList
     case editMyEvent
     case viewMyEventDetails(eventId: String)
-    case viewOthersProfile(userId: String)  // profile from queue card tap
+    case viewOthersProfile(userId: String)
+    case eventConversations(eventId: String, eventTitle: String)
 }
 
 enum ProfileSheetType: Equatable, Hashable, Identifiable {
