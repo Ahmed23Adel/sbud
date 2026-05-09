@@ -10,6 +10,7 @@ import FirebaseCore
 import GoogleSignIn
 import AdelsonAuthManager
 import AdelsonApiCaller
+import FirebaseAuth
 
 // Note: Used to enable push notification in future
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -38,6 +39,14 @@ struct SbudApp: App {
                 await FirebaseTokenExtractor().getIDToken()
             }
         )
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            Task {
+                if let token = try? await Auth.auth().currentUser?.getIDToken() {
+                    print("🔑 TOKEN:", token)
+                }
+            }
+        }
     }
     
     var body: some Scene {

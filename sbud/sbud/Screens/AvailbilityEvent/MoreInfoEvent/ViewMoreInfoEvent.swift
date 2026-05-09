@@ -11,56 +11,69 @@ import Kingfisher
 import Lottie
 import OSLog
 import FirebaseAuth
+
 struct ViewMoreInfoEvent: View {
-    @StateObject var viewModel: ViewModelMoreInfoEvent
+    @State var viewModel: ViewModelMoreInfoEvent
     @EnvironmentObject var coordinator: AvailabilityCoordinator
-    
+
     let logger = Logger(subsystem: "sbud", category: "ViewMoreInfoEvent")
-    init(eventId: String){
-        _viewModel = StateObject(wrappedValue: ViewModelMoreInfoEvent(eventId: eventId))
+
+    init(eventId: String) {
+        _viewModel = State(wrappedValue: ViewModelMoreInfoEvent(eventId: eventId))
     }
 
     var body: some View {
-        ZStack{
+        ZStack {
             Color.darkBackground
-            VStack{
-                if let coverImgURL = viewModel.fullDetails?.eventImage{
-                    FadingEventImage(coverImgURL: coverImgURL)
-                    .ignoresSafeArea()
+                .ignoresSafeArea()
+
+            VStack {
+                if let url = viewModel.fullDetails?.eventImage {
+                    FadingEventImage(coverImgURL: url).ignoresSafeArea()
                     Spacer()
                 }
             }
-            if viewModel.isLoading{
+
+            if viewModel.isLoading {
                 LoadingView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
             }
+
             ScrollView {
                 VStack{
-                    if viewModel.isErrorLoading{
+                    if viewModel.isErrorLoading {
                         VStack{
                             Spacer()
                             Text("Error loading full details of event, pleaes try again")
-                                .font(.title)
-                                .fontWeight(.bold)
+                            .font(.title)
+                            .fontWeight(.bold)
                             Spacer()
                         }
-                    } else if let details = viewModel.fullDetails{
-                        ProposalVsDeterminedPhase(isDateConfirmed: details.isDateConfirmed, isLocationConfirmed: details.isLocationConfirmed)
-                        HStack(){
+                    } else if let details = viewModel.fullDetails {
+
+                        ProposalVsDeterminedPhase(
+                            isDateConfirmed: details.isDateConfirmed,
+                            isLocationConfirmed: details.isLocationConfirmed
+                        )
+
+                        HStack {
                             JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
                             VisibilityDetailed(isPublic: details.isPublic)
+                            if let max = details.maxAllowedToJoin {
+                                capacityBadge(max: max)
+                            }
                             Spacer()
                         }
                         .padding(.leading, 14)
-                        HStack{
+
+                        HStack {
                             Text(details.title)
-                                .font(.title)
-                                .foregroundColor(.white)
-                                .italic()
+                                .font(.title).foregroundColor(.white).italic()
                                 .padding(.horizontal)
                             Spacer()
                         }
+
                         ViewActivityTypeForDetails(activityType: details.activityType)
                         PerformanceTargetDetailedConditional(activityDetails: details.activityDetails)
 
@@ -68,10 +81,10 @@ struct ViewMoreInfoEvent: View {
                             fieldName: "Description",
                             placeholder: "Ex: Come join us",
                             iconString: "pencil",
-                            text: details.notes!)
+                            text: details.notes ?? ""
+                        )
 
                         if Auth.auth().currentUser?.uid != details.creator.id {
-                                                    
                             CreatorContactDetailed(
                                 creatorInfo: details.creator,
                                 onTapProfile: {
@@ -84,28 +97,46 @@ struct ViewMoreInfoEvent: View {
                                     chatUser.name = details.creator.name
                                     chatUser.surName = details.creator.surName
                                     chatUser.profileImageUrl = details.creator.profileImageUrl
-                                    
+
                                     let eTitle = details.title
                                     coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle))
                                 }
                             )
                         }
 
-                        LocationMapCard(dateLocations: details.dateLocations)
-                            .padding()
+                        LocationMapCard(dateLocations: details.dateLocations).padding()
 
-                        LazyVStack(spacing: 0) {
-                            ForEach(1...100, id: \.self){ num in
-                                Text("num \(num)")
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding()
-                            }
+                        if !viewModel.isCurrentUserHost {
+                            JoinEventButton(
+                                joinCondition: details.joinCondition,
+                                joinState: viewModel.joinState,
+                                isLoading: viewModel.isJoiningLoading,
+                                onJoin: { Task { await viewModel.joinEvent() } },
+                                onWithdraw: { Task { await viewModel.withdraw() } },
+                                onLeave: { Task { await viewModel.leave() } }
+                            )
+                            .padding(.vertical, 8)
                         }
+
+                        Spacer()
                     }
                 }
                 .padding(.top, 200)
+                .padding(.bottom, 120)
             }
+            .scrollIndicators(.hidden)
         }
         .ignoresSafeArea()
+    }
+
+    private func capacityBadge(max: Int) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "person.2").font(.system(size: 9))
+            Text("Max \(max)").font(.system(size: 10))
+        }
+        .foregroundColor(.black)
+        .padding(.vertical, 5).padding(.horizontal, 10)
+        .background(Color.yellow.opacity(0.8))
+        .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
     }
 }
