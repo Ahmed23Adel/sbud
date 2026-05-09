@@ -41,10 +41,15 @@ struct ViewMoreInfoEvent: View {
             }
 
             ScrollView {
-                VStack(spacing: 0) {
+                VStack{
                     if viewModel.isErrorLoading {
-                        Text("Error loading event, please try again")
-                            .font(.title).fontWeight(.bold).padding(.top, 100)
+                        VStack{
+                            Spacer()
+                            Text("Error loading full details of event, pleaes try again")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            Spacer()
+                        }
                     } else if let details = viewModel.fullDetails {
 
                         ProposalVsDeterminedPhase(
@@ -113,14 +118,15 @@ struct ViewMoreInfoEvent: View {
                             .padding(.vertical, 8)
                         }
 
-                        Spacer().frame(height: 120)
+                        Spacer()
                     }
                 }
-                .padding(.top, viewModel.fullDetails?.eventImage != nil ? 200 : 60)
+                .padding(.top, 200)
+                .padding(.bottom, 120)
             }
             .scrollIndicators(.hidden)
         }
-        .ignoresSafeArea(edges: .top)
+        .ignoresSafeArea()
     }
 
     private func capacityBadge(max: Int) -> some View {

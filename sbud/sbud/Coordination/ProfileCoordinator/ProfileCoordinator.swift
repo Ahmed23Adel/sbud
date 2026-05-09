@@ -67,12 +67,6 @@ class ProfileCoordinator: ObservableObject {
         }
     }
 
-    func goToHostRequests() {
-        if currentRoute == .myProfile {
-            navigationPath.append(.hostsRequests)
-        }
-    }
-
     func goToMyEvents() {
         if currentRoute == .myProfile {
             navigationPath.append(.myEvents)
