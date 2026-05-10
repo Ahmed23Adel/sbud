@@ -38,7 +38,7 @@ struct StepTwoView: View {
                         .padding(.top, -2)
                 }
             }
-            .padding(.bottom, 40)
+            .padding(.bottom, 80)
         }
     }
 
@@ -151,18 +151,43 @@ struct StepTwoView: View {
                 .font(.system(size: 10, weight: .bold))
                 .foregroundColor(.gray)
                 .kerning(1.2)
-
-            ActivityRow(icon: "figure.run", title: "RUNNING",
-                isSelected: vm.profile.preferredActivity == .running
-            ) { vm.profile.preferredActivity = .running }
-
-            ActivityRow(icon: "figure.outdoor.cycle", title: "CYCLING",
-                isSelected: vm.profile.preferredActivity == .cycling
-            ) { vm.profile.preferredActivity = .cycling }
-
-            ActivityRow(icon: "dumbbell.fill", title: "GYM",
-                isSelected: vm.profile.preferredActivity == .gym
-            ) { vm.profile.preferredActivity = .gym }
+            
+            HStack(alignment: .top, spacing: 12) {
+                ActivityRow(icon: "figure.run", title: "RUNNING",
+                            isSelected: vm.profile.preferredActivity == .running
+                ) { vm.profile.preferredActivity = .running }
+                
+                ActivityRow(icon: "figure.outdoor.cycle", title: "CYCLING",
+                            isSelected: vm.profile.preferredActivity == .cycling
+                ) { vm.profile.preferredActivity = .cycling }
+            }
+            HStack(alignment: .top, spacing: 12) {
+                ActivityRow(icon: "dumbbell.fill", title: "GYM",
+                            isSelected: vm.profile.preferredActivity == .gym
+                ) { vm.profile.preferredActivity = .gym }
+                
+                ActivityRow(icon: "figure.skiing.downhill", title: "SKIING",
+                            isSelected: vm.profile.preferredActivity == .skiing
+                ) { vm.profile.preferredActivity = .skiing }
+            }
+            HStack(alignment: .top, spacing: 12) {
+                ActivityRow(icon: "figure.pool.swim", title: "SWIMMING",
+                            isSelected: vm.profile.preferredActivity == .swimming
+                ) { vm.profile.preferredActivity = .swimming }
+                
+                ActivityRow(icon: "figure.hiking", title: "HIKING",
+                            isSelected: vm.profile.preferredActivity == .hiking
+                ) { vm.profile.preferredActivity = .hiking }
+            }
+            HStack(alignment: .top, spacing: 12) {
+                ActivityRow(icon: "figure.yoga", title: "YOGA",
+                            isSelected: vm.profile.preferredActivity == .yoga
+                ) { vm.profile.preferredActivity = .yoga }
+                
+                ActivityRow(icon: "figure.tennis", title: "TENNIS",
+                            isSelected: vm.profile.preferredActivity == .tennis
+                ) { vm.profile.preferredActivity = .tennis }
+            }
         }
     }
 }
@@ -177,31 +202,32 @@ private struct ActivityRow: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 16) {
+            HStack(spacing: 10) {
                 Image(systemName: icon)
                     .font(.system(size: 20))
                     .foregroundColor(isSelected ? Color("turquoise") : .gray)
                     .frame(width: 28)
 
                 Text(title)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundColor(.white)
+                    .lineLimit(1)
 
                 Spacer()
 
                 ZStack {
                     Circle()
                         .stroke(isSelected ? Color("turquoise") : Color.gray, lineWidth: 1.5)
-                        .frame(width: 22, height: 22)
+                        .frame(width: 18, height: 18)
                     if isSelected {
                         Circle()
                             .fill(Color("turquoise"))
-                            .frame(width: 12, height: 12)
+                            .frame(width: 9, height: 9)
                     }
                 }
             }
-            .padding(.horizontal, 18)
-            .frame(height: 58)
+            .padding(.horizontal, 14)
+            .frame(height: 54)
             .background(Color.white.opacity(0.05))
             .cornerRadius(4)
             .overlay(

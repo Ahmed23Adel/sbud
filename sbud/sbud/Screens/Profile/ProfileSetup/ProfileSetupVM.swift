@@ -320,10 +320,6 @@ final class ProfileSetupVM: ObservableObject {
         }
         profile.phoneNumber = normalized
 
-        if profile.preferredActivity != .running {
-            profile.metrics.averagePace = nil
-        }
-
         return true
     }
     

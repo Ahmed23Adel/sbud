@@ -6,49 +6,28 @@
 //
 
 import Foundation
-import Combine
 import OSLog
 
 @Observable
-class ViewModelMoreInfoEvent: ObservableObject {
+class ViewModelMoreInfoEvent {
     let eventId: String
     let logger = Logger(subsystem: "sBud", category: "MoreInfo")
 
-    var fullDetails: EventFullDetails? = nil
-    var isLoading: Bool = false
-    var isErrorLoading: Bool = false
+    var role: EventUserRole? = nil
+    var isLoading = false
 
     init(eventId: String) {
-        logger.info("Selected activity: \(eventId)")
         self.eventId = eventId
-
-//        #if DEBUG
-//        if let existing = event.fullDatailedEvent {
-//            fullDetails = existing
-//            return
-//        }
-//        #endif
-        Task { await loadDetails() }
+        Task { await loadRole() }
     }
 
-    private func loadDetails() async {
+    private func loadRole() async {
         await MainActor.run { isLoading = true }
-        do {
-            let requester = EventByIdRequester()
-            let details = try await requester.fetchEvent(eventId: eventId)
-            await MainActor.run {
-                fullDetails = details
-                isLoading = false
-                isErrorLoading = false
-            }
-            logger.log("Full event loaded \(self.eventId)")
-        } catch {
-            logger.error("Error: \(error)")
-            await MainActor.run {
-                isErrorLoading = true
-                isLoading = false
-            }
-            PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
+        let resolvedRole = await EventRoleService.getRole(eventId: eventId)
+        print("🔑 ROLE:", resolvedRole)  
+        await MainActor.run {
+            role = resolvedRole
+            isLoading = false
         }
     }
 }

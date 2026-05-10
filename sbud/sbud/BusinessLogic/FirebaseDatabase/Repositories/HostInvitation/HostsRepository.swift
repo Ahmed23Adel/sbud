@@ -26,7 +26,6 @@ class HostsRepository: IFirebaesRepository{
         collectionPath = "\(collectionPath)/\(eventId)/hosts"
         self.eventId = eventId
         userId = ProfileManager.shared.getLocalProfile()!.id
-        
         logger.info("Current collection path: \(self.collectionPath)")
     }
     
@@ -51,16 +50,12 @@ class HostsRepository: IFirebaesRepository{
         return hostsInvitations
     }
     
-    func fetchById(_ id: String) async throws -> HostInvitation? {
-        return nil
-    }
-    
-    func fetchByIds(_ ids: [String]) async throws -> [HostInvitation]? {
-        return []
-    }
-    
+    func fetchById(_ id: String) async throws -> HostInvitation? { return nil }
+    func fetchByIds(_ ids: [String]) async throws -> [HostInvitation]? { return [] }
+
     func create(_ item: HostInvitation) async throws -> String {
         let data: [String: Any] = [
+            "userId": item.userId,
             "status": item.status.rawValue,
             "invitedAt": FieldValue.serverTimestamp(),
         ]
@@ -70,7 +65,7 @@ class HostsRepository: IFirebaesRepository{
             .setData(data)
         return item.userId
     }
-    
+
     func update(_ id: String, _ item: HostInvitation) async throws {
         let data: [String: Any] = [
             "status": item.status.rawValue,
@@ -81,19 +76,18 @@ class HostsRepository: IFirebaesRepository{
             .document(id)
             .updateData(data)
     }
-    
+
     func delete(_ id: String) async throws {
         try await firebaseClient.db
             .collection(collectionPath)
             .document(id)
             .delete()
     }
-    
+
     func initQueryBuilderObject() -> any IQueryBuilder {
         QueryCollectionBuilder(collectionPath: collectionPath, firebaseClient: firebaseClient)
     }
-    
-    
+
     func inviteHost(_ invitation: HostInvitation) async throws {
         let batch = firebaseClient.db.batch()
 
@@ -109,7 +103,9 @@ class HostsRepository: IFirebaesRepository{
 
         logger.info("eventHostRef path: \(eventHostRef.path)")
         logger.info("userInviteRef path: \(userInviteRef.path)")
+
         let inviteData: [String: Any] = [
+            "userId": invitation.userId,
             "status": HostInvitationStatus.pending.rawValue,
             "invitedAt": FieldValue.serverTimestamp(),
         ]
@@ -125,7 +121,6 @@ class HostsRepository: IFirebaesRepository{
         try await batch.commit()
     }
 
-    /// Removes both docs atomically — used for cancel, remove host, or re-invite cleanup.
     func removeInvitation(targetUserId: String) async throws {
         let batch = firebaseClient.db.batch()
 
@@ -144,7 +139,4 @@ class HostsRepository: IFirebaesRepository{
 
         try await batch.commit()
     }
-
-    
-    
 }

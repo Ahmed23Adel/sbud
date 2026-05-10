@@ -55,6 +55,8 @@ struct AvailabilityAppCoordinator: View {
             CoordinatorAddNewEvent()
         case .profileView(let userId):
             ProfileAppCoordinator(userId: userId, isEmbedded: true)
+        case .chat(let user, let eventId, let eventTitle): // ADD eventTitle
+                ChatView(user: user, eventId: eventId, eventTitle: eventTitle)
         }
     }
 }
