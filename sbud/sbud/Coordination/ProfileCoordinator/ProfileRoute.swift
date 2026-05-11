@@ -7,13 +7,12 @@
 
 import Foundation
 
-enum ProfileRoute: Equatable, Hashable{
+enum ProfileRoute: Equatable, Hashable {
     case myProfile
     case othersProfile
 }
 
-
-enum ProfileRoutePushed: Equatable, Hashable{
+enum ProfileRoutePushed: Equatable, Hashable {
     case settings
     case friendRequest
     case hostsRequests
@@ -21,16 +20,18 @@ enum ProfileRoutePushed: Equatable, Hashable{
     case othersEvents
     case friendsList
     case editMyEvent
-    case viewMyEventDetails (eventId: String)
+    case viewMyEventDetails(eventId: String)
+    case viewOthersProfile(userId: String)
+    case eventConversations(eventId: String, eventTitle: String)
 }
 
-
-enum ProfileSheetType: Equatable, Hashable, Identifiable{
+enum ProfileSheetType: Equatable, Hashable, Identifiable {
     case hosts(eventId: String)
-    
+
     var id: String {
         switch self {
-            case .hosts(let eventId): return "hosts-\(eventId)"
+        case .hosts(let eventId): return "hosts-\(eventId)"
         }
     }
 }
+
