@@ -71,6 +71,9 @@ struct ProfileAppCoordinator: View {
             FriendListView(userId: coordinator.currUserId)
         case .viewMyEventDetails(let eventId):
             ViewMyEventDetails(eventId: eventId)
+        case .viewHostEventDetails(let eventId):
+            ViewMoreInfoEvent(eventId: eventId)
+                .environmentObject(AvailabilityCoordinator())
         case .editMyEvent:
             EmptyView()
         case .viewOthersProfile(let userId):

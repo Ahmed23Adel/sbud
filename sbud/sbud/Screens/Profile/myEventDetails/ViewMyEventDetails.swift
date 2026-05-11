@@ -18,17 +18,14 @@ struct ViewMyEventDetails: View {
 
     var body: some View {
         ZStack {
-            Color.darkBackground
-                .ignoresSafeArea()
+            Color.darkBackground.ignoresSafeArea()
 
             VStack {
                 if let coverImg = viewModel.myEventDertails?.eventImage {
-                    FadingEventImage(coverImgURL: coverImg)
-                        .ignoresSafeArea()
+                    FadingEventImage(coverImgURL: coverImg).ignoresSafeArea()
                     Spacer()
                 } else {
-                    ProgressView()
-                        .padding(.top, 50)
+                    ProgressView().padding(.top, 50)
                     Spacer()
                 }
             }
@@ -46,18 +43,14 @@ struct ViewMyEventDetails: View {
                         HStack {
                             JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
                             VisibilityDetailed(isPublic: details.isPublic)
-                            if let max = details.maxAllowedToJoin {
-                                capacityBadge(max: max)
-                            }
+                            if let max = details.maxAllowedToJoin { capacityBadge(max: max) }
                             Spacer()
                         }
                         .padding(.leading, 14)
 
                         HStack {
                             Text(details.title)
-                                .font(.title)
-                                .foregroundColor(.white)
-                                .italic()
+                                .font(.title).foregroundColor(.white).italic()
                                 .padding(.horizontal)
                             Spacer()
                         }
@@ -71,107 +64,73 @@ struct ViewMyEventDetails: View {
                             iconString: "pencil",
                             text: details.notes ?? ""
                         )
+                        
+                        if let role = viewModel.role, role == .acceptedHost {
+                            if let details = viewModel.myEventDertails {
+                                CreatorContactDetailed(
+                                    creatorInfo: details.creator,
+                                    onTapProfile: {
+                                        coordinator.goToProfileFromQueue(userId: details.creator.id)
+                                    },
+                                    onTapContact: {
+                                        coordinator.goToEventConversations(eventId: viewModel.eventId, eventTitle: details.title)
+                                    }
+                                )
+                            }
+                        }
+                        
+                        LocationMapCard(dateLocations: details.dateLocations).padding()
 
-                        LocationMapCard(dateLocations: details.dateLocations)
-                            .padding()
+                        if let role = viewModel.role {
 
-                        if !details.isDateConfirmed || !details.isLocationConfirmed {
-                            Button {
-                                showingConfirmationSheet = true
-                            } label: {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "checkmark.seal.fill")
-                                        .font(.system(size: 20))
-                                    Text("Confirm Final Details")
+                            if role == .creator {
+                                if !details.isDateConfirmed || !details.isLocationConfirmed {
+                                    actionButton(icon: "checkmark.seal.fill", title: "Confirm Final Details", color: .mainColor, textColor: .black) {
+                                        showingConfirmationSheet = true
+                                    }
                                 }
-                                .font(.system(size: 17, weight: .heavy))
-                                .foregroundColor(.black)
+
+                                actionButton(icon: "tray.fill", title: "View Messages", color: .mainColor, textColor: .black) {
+                                    coordinator.goToEventConversations(eventId: viewModel.eventId, eventTitle: details.title)
+                                }
+
+                                actionButton(icon: "star.fill", title: "Invite/Edit Hosts", color: Color("palelime"), textColor: Color(red: 0.15, green: 0.25, blue: 0.0)) {
+                                    coordinator.showHostsSheet(eventId: viewModel.eventId)
+                                }
+                            }
+
+                            Button {
+                                Task { await viewModel.loadQueue(); viewModel.showQueue = true }
+                            } label: {
+                                HStack(spacing: 10) {
+                                    if viewModel.isLoadingQueue {
+                                        ProgressView().tint(.black)
+                                    } else {
+                                        Image(systemName: "person.badge.clock").font(.system(size: 15, weight: .semibold))
+                                        let pending = viewModel.queueResponse?.pendingCount ?? 0
+                                        let wl = viewModel.queueResponse?.waitlistCount ?? 0
+                                        Text(pending > 0
+                                             ? "Review Requests (\(pending) pending\(wl > 0 ? ", \(wl) waitlist" : ""))"
+                                             : "No Pending Requests")
+                                            .font(.system(size: 15, weight: .semibold))
+                                    }
+                                }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 68)
-                                .background(Color.mainColor)
-                                .clipShape(Capsule())
+                                .padding(.vertical, 14)
+                                .background(viewModel.queueResponse?.pendingCount ?? 0 > 0 ? Color.mainColor : Color.backgroundColor.opacity(0.5))
+                                .foregroundColor(viewModel.queueResponse?.pendingCount ?? 0 > 0 ? .black : .white)
+                                .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
                             }
                             .padding(.horizontal, 24)
-                            .padding(.bottom, 12)
+                            .padding(.bottom, 20)
                         }
-
-                        Button {
-                            coordinator.goToEventConversations(eventId: viewModel.eventId, eventTitle: details.title)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "tray.fill")
-                                    .font(.system(size: 20))
-                                Text("View Messages")
-                            }
-                            .font(.system(size: 17, weight: .heavy))
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 68)
-                            .background(
-                                Capsule()
-                                    .fill(Color.mainColor)
-                            )
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 12)
-
-                        Button {
-                            coordinator.showHostsSheet(eventId: viewModel.eventId)
-                        } label: {
-                            Text("Invite/Edit hosts")
-                                .font(.system(size: 17, weight: .heavy))
-                                .foregroundColor(Color(red: 0.15, green: 0.25, blue: 0.0))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 68)
-                                .background(Capsule().fill(Color("palelime")))
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 12)
-                        .transition(.opacity)
-
-                        Button {
-                            Task {
-                                await viewModel.loadQueue()
-                                viewModel.showQueue = true
-                            }
-                        } label: {
-                            HStack(spacing: 10) {
-                                if viewModel.isLoadingQueue {
-                                    ProgressView().tint(.black)
-                                } else {
-                                    Image(systemName: "person.badge.clock")
-                                        .font(.system(size: 15, weight: .semibold))
-                                    let pending = viewModel.queueResponse?.pendingCount ?? 0
-                                    let wl = viewModel.queueResponse?.waitlistCount ?? 0
-                                    Text(pending > 0
-                                         ? "Review Requests (\(pending) pending\(wl > 0 ? ", \(wl) waitlist" : ""))"
-                                         : "No Pending Requests")
-                                        .font(.system(size: 15, weight: .semibold))
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(
-                                viewModel.queueResponse?.pendingCount ?? 0 > 0
-                                    ? Color.mainColor
-                                    : Color.backgroundColor.opacity(0.5)
-                            )
-                            .foregroundColor(
-                                viewModel.queueResponse?.pendingCount ?? 0 > 0 ? .black : .white
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 20)
 
                         Spacer().frame(height: 40)
                     }
                 }
                 .padding(.top, 200)
                 .toolbar {
-                    ToolbarItem {
-                        Button("Edit") { }
-                    }
+                    ToolbarItem { Button("Edit") {} }
                 }
             }
 
@@ -205,9 +164,7 @@ struct ViewMyEventDetails: View {
                     onRespond: { userId, accept in
                         Task { await viewModel.respondToRequest(requesterId: userId, accept: accept) }
                     },
-                    onDismiss: {
-                        viewModel.showQueue = false
-                    },
+                    onDismiss: { viewModel.showQueue = false },
                     onTapProfile: { userId in
                         viewModel.showQueue = false
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
@@ -217,6 +174,22 @@ struct ViewMyEventDetails: View {
                 )
             }
         }
+    }
+
+    private func actionButton(icon: String, title: String, color: Color, textColor: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon).font(.system(size: 20))
+                Text(title)
+            }
+            .font(.system(size: 17, weight: .heavy))
+            .foregroundColor(textColor)
+            .frame(maxWidth: .infinity)
+            .frame(height: 68)
+            .background(Capsule().fill(color))
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 12)
     }
 
     private func capacityBadge(max: Int) -> some View {

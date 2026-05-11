@@ -5,13 +5,6 @@
 //  Created by ahmed on 01/05/2026.
 //
 
-//
-//  ProfileCoordinator.swift
-//  sbud
-//
-//  Created by ahmed on 01/05/2026.
-//
-
 import Foundation
 import Combine
 import OSLog
@@ -66,14 +59,14 @@ class ProfileCoordinator: ObservableObject {
             navigationPath.append(.friendRequest)
         }
     }
-    
-    func goToHostRequests(){
+
+    func goToHostRequests() {
         if currentRoute == .myProfile {
             navigationPath.append(.hostsRequests)
         }
     }
-    
-    func goToMyEvents(){
+
+    func goToMyEvents() {
         if currentRoute == .myProfile {
             navigationPath.append(.myEvents)
         }
@@ -101,6 +94,10 @@ class ProfileCoordinator: ObservableObject {
 
     func goToMyEventDetails(eventId: String) {
         navigationPath.append(.viewMyEventDetails(eventId: eventId))
+    }
+
+    func goToHostEventDetails(eventId: String) {
+        navigationPath.append(.viewHostEventDetails(eventId: eventId))
     }
 
     func goToProfileFromQueue(userId: String) {

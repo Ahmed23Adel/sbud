@@ -70,6 +70,10 @@ class ViewModelMoreInfoEvent {
     var isJoiningLoading = false
     var isCurrentUserHost = false
 
+    var queueResponse: JoinQueueResponse? = nil
+    var isLoadingQueue = false
+    var showQueue = false
+
     private let joinRequester = JoinEventRequester()
 
     init(eventId: String) {
@@ -81,9 +85,11 @@ class ViewModelMoreInfoEvent {
     private func loadDetails() async {
         await MainActor.run { isLoading = true }
         do {
-            let details = try await EventByIdRequester().fetchEvent(eventId: eventId)
-            let uid = Auth.auth().currentUser?.uid ?? ""
-            let isHost = !uid.isEmpty && details.creator.id == uid
+            async let detailsTask = EventByIdRequester().fetchEvent(eventId: eventId)
+            async let roleTask = EventRoleService.getRole(eventId: eventId)
+
+            let (details, role) = try await (detailsTask, roleTask)
+            let isHost = role == .creator || role == .acceptedHost
 
             await MainActor.run {
                 fullDetails = details
@@ -92,10 +98,12 @@ class ViewModelMoreInfoEvent {
                 isCurrentUserHost = isHost
             }
 
-            if !isHost {
+            if isHost {
+                await loadQueue()
+            } else {
                 await loadMyStatus()
             }
-            logger.log("Full event loaded \(self.eventId)")
+            logger.log("Full event loaded \(self.eventId), isHost: \(isHost)")
         } catch {
             logger.error("loadDetails error: \(error)")
             await MainActor.run {
@@ -103,6 +111,36 @@ class ViewModelMoreInfoEvent {
                 isLoading = false
             }
             PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
+        }
+    }
+
+    func loadQueue() async {
+        await MainActor.run { isLoadingQueue = true }
+        do {
+            let q = try await joinRequester.getPendingQueue(eventId: eventId)
+            await MainActor.run { queueResponse = q; isLoadingQueue = false }
+        } catch {
+            await MainActor.run { isLoadingQueue = false }
+            logger.error("loadQueue error: \(error)")
+        }
+    }
+
+    func respondToRequest(requesterId: String, accept: Bool) async {
+        do {
+            _ = try await joinRequester.respondToRequest(eventId: eventId, requesterId: requesterId, accept: accept)
+            await MainActor.run {
+                if var q = queueResponse {
+                    q.pendingUsers.removeAll { $0.userId == requesterId }
+                    if accept { q.confirmedCount += 1 } else { q.pendingCount = max(0, q.pendingCount - 1) }
+                    q.isCapacityFull = (q.capacity != nil && q.confirmedCount >= q.capacity!)
+                    queueResponse = q
+                }
+                PopUpGenerator.shared.show(msg: accept ? "Confirmed" : "Rejected.", type: accept ? .notification : .information)
+            }
+            await loadQueue()
+        } catch {
+            PopUpGenerator.shared.show(msg: "Error: \(error.localizedDescription)", type: .error)
+            await loadQueue()
         }
     }
 
