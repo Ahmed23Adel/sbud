@@ -102,6 +102,8 @@ struct ViewMyEventDetails: View {
                                 Image(systemName: "tray.fill")
                                     .font(.system(size: 20))
                                 Text("View Messages")
+                                
+                                EventUnreadBadge(eventId: viewModel.eventId)
                             }
                             .font(.system(size: 17, weight: .heavy))
                             .foregroundColor(.black)

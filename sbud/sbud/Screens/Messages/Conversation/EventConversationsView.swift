@@ -62,9 +62,10 @@ struct EventConversationsView: View {
         .toolbarBackground(Color.darkBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .task {
-            
-            await viewModel.loadData()
+        .onAppear {
+            Task {
+                await viewModel.loadData()
+            }
         }
     }
 }

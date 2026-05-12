@@ -25,6 +25,7 @@ struct Message: Identifiable, Hashable, Decodable {
     let text: String
     
     var eventId: String?
+    var isRead: Bool? //to show notifications of unread messages
     
     var user: UserProfile?
     

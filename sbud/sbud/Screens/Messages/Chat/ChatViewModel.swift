@@ -84,7 +84,8 @@ class ChatViewModel: ObservableObject {
                                             "fromId": currentUid,
                                             "toId": uid,
                                             "eventId": eventId,
-                                            "timestamp": Timestamp(date: Date())]
+                                            "timestamp": Timestamp(date: Date()),
+                                            "isRead": false]
         
         
         currentUserRef.setData(data) { error in
@@ -109,4 +110,25 @@ class ChatViewModel: ObservableObject {
         }
     }
     
+    func markMessagesAsRead() {
+        guard let currentUid = Auth.auth().currentUser?.uid else { return }
+        
+        // L'ID del documento nei recent-messages (come lo hai salvato nel sendMessage)
+        let chatRoomIdForCurrent = "\(user.id)_\(eventId)"
+        
+        let currentRecentRef = Firestore.firestore()
+            .collection("messages")
+            .document(currentUid)
+            .collection("recent-messages")
+            .document(chatRoomIdForCurrent)
+        
+        // Update the isRead field:
+        currentRecentRef.updateData(["isRead": true]) { error in
+            if let error = error {
+                print("❌ Errore durante l'aggiornamento di isRead: \(error.localizedDescription)")
+            } else {
+                print("✅ Messaggio segnato come letto!")
+            }
+        }
+    }
 }
