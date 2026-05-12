@@ -51,6 +51,26 @@ struct OwnProfileView: View {
                     }
                 }
             }
+            
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button {
+                        coordinator.goToQRCode()
+                    } label: {
+                        Image(systemName: "qrcode")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.black)
+                            .frame(width: 54, height: 54)
+                            .background(Color("palelime"))
+                            .clipShape(Circle())
+                            .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 4)
+                    }
+                    .padding(.trailing, 24)
+                    .padding(.bottom, 25) // above tab bar
+                }
+            }
         }
         .task { await vm.load() }
     }

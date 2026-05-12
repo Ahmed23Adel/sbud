@@ -77,6 +77,8 @@ struct ProfileAppCoordinator: View {
             ProfileAppCoordinator(userId: userId, isEmbedded: true)
         case .eventConversations(let eventId, let eventTitle):
             EventConversationsView(eventId: eventId, eventTitle: eventTitle)
+        case .scannedProfile(let userId):
+            ProfileAppCoordinator(userId: userId, isEmbedded: true)
         }
     }
 
@@ -85,6 +87,11 @@ struct ProfileAppCoordinator: View {
         switch sheet {
         case .hosts(let eventId):
             ViewHosts(eventId: eventId, userId: coordinator.currUserId)
+        case .qrCode:
+            QRCodeSheetView(userId: coordinator.currUserId) { scannedId in
+                coordinator.sheetType = nil
+                coordinator.goToScannedProfile(scannedId)
+            }
         }
     }
 }

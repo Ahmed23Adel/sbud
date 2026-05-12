@@ -27,9 +27,10 @@ class ProfileCoordinator: ObservableObject {
     var userIsCurUser: Bool {
         currUserId == (ProfileManager.shared.getLocalProfile()?.id ?? "")
     }
-
-    init(userId: String) {
+    
+    init(userId: String){
         self.currUserId = userId
+        
         if let localProfileId = ProfileManager.shared.getLocalProfile()?.id, userId == localProfileId {
             currentRoute = .myProfile
         } else {
@@ -102,7 +103,6 @@ class ProfileCoordinator: ObservableObject {
     func goToMyEventDetails(eventId: String) {
         navigationPath.append(.viewMyEventDetails(eventId: eventId))
     }
-
     func goToProfileFromQueue(userId: String) {
         navigationPath.append(.viewOthersProfile(userId: userId))
     }
@@ -115,5 +115,16 @@ class ProfileCoordinator: ObservableObject {
         if currentRoute == .myProfile {
             sheetType = .hosts(eventId: eventId)
         }
+    }    
+    func goToQRCode() {
+        sheetType = .qrCode
+    }
+    
+    func goToScannedProfile(_ userId: String) {
+        guard !userId.isEmpty else {
+            return
+        }
+        sheetType = nil
+        navigationPath.append(.scannedProfile(userId: userId))
     }
 }
