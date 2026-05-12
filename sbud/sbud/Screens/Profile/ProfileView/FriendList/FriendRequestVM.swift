@@ -24,7 +24,7 @@ final class FriendRequestsVM: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let ids = try await friendManager.fetchPendingRequests(userId: uid)
+            let ids = try await friendManager.fetchFriendsPendingRequests(userId: uid)
             var profiles: [UserProfile] = []
             for id in ids {
                 if let profile = try await userRepository.fetchProfile(id) {

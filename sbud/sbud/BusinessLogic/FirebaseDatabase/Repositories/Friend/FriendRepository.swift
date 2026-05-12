@@ -164,12 +164,23 @@ class FriendRepository {
         return snapshot.documents.map { $0.documentID }
     }
 
-    func fetchPendingRequests(userId: String) async throws -> [String] {
+    func fetchPendingFriendsRequests(userId: String) async throws -> [String] {
         let snapshot = try await db
             .collection("users").document(userId)
             .collection("friendRequests")
             .whereField("status", isEqualTo: "pending")
             .getDocuments()
         return snapshot.documents.map { $0.documentID }
+    }
+    
+    
+    func fetchPendingHostsRequests(userId: String) async throws -> [String] {
+        let snapshot = try await db
+            .collection("users")
+            .document(userId)
+            .collection("hostInvitations")
+            .whereField("status", isEqualTo: HostInvitationStatus.pending.rawValue)
+            .getDocuments()
+        return snapshot.documents.map { $0.documentID } // documentID = eventId
     }
 }

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		C55F44D52F6C4A51001AEFEC /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = C55F44D42F6C4A51001AEFEC /* FirebaseStorage */; };
 		C5A99CF62F7033C00072B161 /* PhoneNumberKit in Frameworks */ = {isa = PBXBuildFile; productRef = C5A99CF52F7033C00072B161 /* PhoneNumberKit */; };
+		E2359D452FA7DD860064676E /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = E2359D442FA7DD860064676E /* FirebaseMessaging */; };
 		E256EF3E2EFB2F6E000D5E8A /* Geohash in Frameworks */ = {isa = PBXBuildFile; productRef = E256EF3D2EFB2F6E000D5E8A /* Geohash */; };
 		E2843DB42F26533F0028825D /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = E2843DB32F26533F0028825D /* FirebaseFunctions */; };
 		E289D7B62EE832FA005F9F37 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E289D7B52EE832FA005F9F37 /* FirebaseAnalytics */; };
@@ -107,6 +108,7 @@
 				E289D7BD2EE83372005F9F37 /* GoogleSignIn in Frameworks */,
 				E2A90D0A2F09E59300C287FD /* AdelsonValidator in Frameworks */,
 				E289D7E82EE83A93005F9F37 /* FirebaseCore in Frameworks */,
+				E2359D452FA7DD860064676E /* FirebaseMessaging in Frameworks */,
 				E2CB89BA2EF9924A0007AB32 /* FirebaseFirestore in Frameworks */,
 				E2EBBD0A2F2F7535002307D8 /* Alamofire in Frameworks */,
 				E2EBBBC62F2EAB1A002307D8 /* AdelsonAuthManager in Frameworks */,
@@ -204,6 +206,7 @@
 				E2EBBD092F2F7535002307D8 /* Alamofire */,
 				C55F44D42F6C4A51001AEFEC /* FirebaseStorage */,
 				C5A99CF52F7033C00072B161 /* PhoneNumberKit */,
+				E2359D442FA7DD860064676E /* FirebaseMessaging */,
 			);
 			productName = sbud;
 			productReference = E24825A02EE2DCA200330DC2 /* sbud.app */;
@@ -786,6 +789,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C5A99CF42F7032CB0072B161 /* XCRemoteSwiftPackageReference "PhoneNumberKit" */;
 			productName = PhoneNumberKit;
+		};
+		E2359D442FA7DD860064676E /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E289D7B42EE832FA005F9F37 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 		E256EF3D2EFB2F6E000D5E8A /* Geohash */ = {
 			isa = XCSwiftPackageProductDependency;

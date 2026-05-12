@@ -66,8 +66,14 @@ class ProfileCoordinator: ObservableObject {
             navigationPath.append(.friendRequest)
         }
     }
-
-    func goToMyEvents() {
+    
+    func goToHostRequests(){
+        if currentRoute == .myProfile {
+            navigationPath.append(.hostsRequests)
+        }
+    }
+    
+    func goToMyEvents(){
         if currentRoute == .myProfile {
             navigationPath.append(.myEvents)
         }
