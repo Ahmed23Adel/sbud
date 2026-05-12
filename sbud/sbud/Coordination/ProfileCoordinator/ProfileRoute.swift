@@ -28,7 +28,7 @@ enum ProfileRoutePushed: Equatable, Hashable {
 
 enum ProfileSheetType: Equatable, Hashable, Identifiable {
     case hosts(eventId: String)
-
+    case qrCode
     
     var id: String {
         switch self {
