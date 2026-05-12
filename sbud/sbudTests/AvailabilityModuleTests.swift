@@ -25,7 +25,7 @@ final class MockAvailabilityDataFetcher: AvailabilityDataFetcher {
     var fetchClustersCallCount = 0
     var fetchIndividualsCallCount = 0
 
-    override func fetchClusters(
+    func fetchClusters(
         selectedStartTime: Date,
         selectedEndTime: Date,
         topLeft: GeoPoint,
@@ -37,7 +37,7 @@ final class MockAvailabilityDataFetcher: AvailabilityDataFetcher {
         return stubbedClusters
     }
 
-    override func fetchIndividuals(
+    func fetchIndividuals(
         in region: MKCoordinateRegion,
         selectedStartDateTime: Date,
         selectedEndDateTime: Date,
