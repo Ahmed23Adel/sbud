@@ -225,17 +225,41 @@ final class ProfileSetupVM: ObservableObject {
         }
     }
 
+    // MARK: - Location
+
     func loadCurrentLocation() async {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
 
-        requestCurrentLocation()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.fillLocationFromDevice()
-            self.fillAddressDetails()
+        locationManager.requestPermission()
+
+        // Wait up to 8 seconds for a valid coordinate
+        let coordinate = await waitForLocation(timeout: 8.0)
+
+        guard let coordinate else {
+            errorMessage = "Location could not be retrieved. Please try again."
+            return
         }
-        isLoading = false
+
+        profile.location.latitude = coordinate.latitude
+        profile.location.longitude = coordinate.longitude
+        fillAddressDetails()
+    }
+
+    private func waitForLocation(timeout: TimeInterval) async -> CLLocationCoordinate2D? {
+        locationManager.startUpdating()
+
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if let coordinate = locationManager.userLocation {
+                locationManager.stopUpdating()
+                return coordinate
+            }
+            try? await Task.sleep(nanoseconds: 300_000_000) // poll every 0.3s
+        }
+        locationManager.stopUpdating()
+        return nil
     }
 
     func handleSelectedPhoto() async {
