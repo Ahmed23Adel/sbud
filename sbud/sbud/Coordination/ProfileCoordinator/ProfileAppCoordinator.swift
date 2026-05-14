@@ -79,6 +79,8 @@ struct ProfileAppCoordinator: View {
             EventConversationsView(eventId: eventId, eventTitle: eventTitle)
         case .scannedProfile(let userId):
             ProfileAppCoordinator(userId: userId, isEmbedded: true)
+        case .viewOthersEventDetails(eventId: let eventId):
+            ViewOthersEventDetails(eventId: eventId)
         }
     }
 

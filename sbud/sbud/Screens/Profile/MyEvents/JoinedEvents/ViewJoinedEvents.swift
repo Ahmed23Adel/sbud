@@ -29,7 +29,7 @@ struct ViewJoinedEvents: View {
                                         .padding(.horizontal, 16)
                                         .environmentObject(coordinator)
                                         .onTapGesture{
-//                                            coordinator.goToMyEventDetails(eventId: event.eventId)
+                                            coordinator.goToOthersEventDetails(eventId: event.eventId)
                                         }
                                 }
                             }

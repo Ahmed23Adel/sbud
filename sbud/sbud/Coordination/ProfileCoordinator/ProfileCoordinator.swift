@@ -103,6 +103,11 @@ class ProfileCoordinator: ObservableObject {
     func goToMyEventDetails(eventId: String) {
         navigationPath.append(.viewMyEventDetails(eventId: eventId))
     }
+    
+    func goToOthersEventDetails(eventId: String) {
+        navigationPath.append(.viewOthersEventDetails(eventId: eventId))
+    }
+    
     func goToProfileFromQueue(userId: String) {
         navigationPath.append(.viewOthersProfile(userId: userId))
     }
