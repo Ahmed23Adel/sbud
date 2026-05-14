@@ -75,14 +75,15 @@ struct ViewOthersEventDetails: View {
                             .padding()
                     }
                 }
-                .padding(.horizontal) 
+                .padding(.horizontal)
                 .padding(.top, 280)
+                .padding(.bottom, 100)
             }
-            .ignoresSafeArea() // ← this is the key change
+            .ignoresSafeArea()
         }
     }
 }
 
-//#Preview {
-//    ViewOthersEventDetails()
-//}
+#Preview {
+    ViewOthersEventDetails(eventId: "eventId")
+}
