@@ -11,6 +11,7 @@ struct ViewMyEventDetails: View {
     @State var viewModel: ViewModelMyEventDetails
     @EnvironmentObject private var coordinator: ProfileCoordinator
     @State private var showingConfirmationSheet = false
+    @State private var chatUser: UserProfile? = nil
 
     init(eventId: String) {
         _viewModel = State(wrappedValue: ViewModelMyEventDetails(eventId: eventId))
@@ -64,21 +65,23 @@ struct ViewMyEventDetails: View {
                             iconString: "pencil",
                             text: details.notes ?? ""
                         )
-                        
-                        if let role = viewModel.role, role == .acceptedHost {
-                            if let details = viewModel.myEventDertails {
-                                CreatorContactDetailed(
-                                    creatorInfo: details.creator,
-                                    onTapProfile: {
-                                        coordinator.goToProfileFromQueue(userId: details.creator.id)
-                                    },
-                                    onTapContact: {
-                                        coordinator.goToEventConversations(eventId: viewModel.eventId, eventTitle: details.title)
-                                    }
-                                )
-                            }
+
+                        if viewModel.role == .acceptedHost {
+                            CreatorContactDetailed(
+                                creatorInfo: details.creator,
+                                onTapProfile: {
+                                    coordinator.goToProfileFromQueue(userId: details.creator.id)
+                                },
+                                onTapContact: {
+                                    var user = UserProfile(id: details.creator.id)
+                                    user.name = details.creator.name
+                                    user.surName = details.creator.surName
+                                    user.profileImageUrl = details.creator.profileImageUrl
+                                    chatUser = user
+                                }
+                            )
                         }
-                        
+
                         LocationMapCard(dateLocations: details.dateLocations).padding()
 
                         if let role = viewModel.role {
@@ -172,6 +175,25 @@ struct ViewMyEventDetails: View {
                         }
                     }
                 )
+            }
+        }
+        .fullScreenCover(item: $chatUser) { user in
+            NavigationStack {
+                ChatView(
+                    user: user,
+                    eventId: viewModel.eventId,
+                    eventTitle: viewModel.myEventDertails?.title ?? ""
+                )
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button {
+                            chatUser = nil
+                        } label: {
+                            Image(systemName: "xmark")
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
             }
         }
     }

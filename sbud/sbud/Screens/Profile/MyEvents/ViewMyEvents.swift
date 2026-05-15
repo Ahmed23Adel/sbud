@@ -11,6 +11,7 @@
 // completed
 import SwiftUI
 import Kingfisher
+
 struct ViewMyEvents: View {
     @State var viewModel: ViewModelMyEvents
     @EnvironmentObject var coordinator: ProfileCoordinator
@@ -32,16 +33,19 @@ struct ViewMyEvents: View {
                 .padding(.top, 12)
                 .padding(.bottom, 8)
 
-                switch viewModel.selectedTab {
-                case .created:
+                TabView(selection: $viewModel.selectedTab) {
                     createdContent
-                case .hosting:
+                        .tag(MyEventsTab.created)
                     hostingContent
+                        .tag(MyEventsTab.hosting)
                 }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .animation(.easeInOut(duration: 0.25), value: viewModel.selectedTab)
             }
         }
         .navigationTitle("My Events")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .alert("Error", isPresented: $viewModel.isShowAlert) {
             Button("Ok", role: .cancel) {}
         } message: {
@@ -161,7 +165,9 @@ struct ViewMyEvents: View {
     // MARK: - Shared
     private func tabButton(title: String, tab: MyEventsTab) -> some View {
         Button {
-            viewModel.selectedTab = tab
+            withAnimation(.easeInOut(duration: 0.25)) {
+                viewModel.selectedTab = tab
+            }
         } label: {
             Text(title)
                 .font(.system(size: 14, weight: .semibold))
