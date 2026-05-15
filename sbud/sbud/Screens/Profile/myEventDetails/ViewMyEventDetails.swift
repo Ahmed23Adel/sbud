@@ -12,7 +12,7 @@ struct ViewMyEventDetails: View {
     @EnvironmentObject private var coordinator: ProfileCoordinator
     @State private var showingConfirmationSheet = false
     @EnvironmentObject private var mainCoordinator: MainCoordinator
-    
+    @State var isPulsing = false
     init(eventId: String) {
         _viewModel = State(wrappedValue: ViewModelMyEventDetails(eventId: eventId))
     }
@@ -40,8 +40,23 @@ struct ViewMyEventDetails: View {
                     Spacer()
                     HStack {
                         Spacer()
-                        BasicFloatingButton(iconName: "flag.pattern.checkered"){
-                            viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
+                        if viewModel.isSessionCreated {
+                            BasicFloatingButton(iconName: "flag.pattern.checkered"){
+                                viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
+                            }
+                            .padding(.trailing)
+                            .scaleEffect(isPulsing ? 1.4 : 1.0)
+                            .animation(
+                                .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
+                                value: isPulsing
+                            )
+                            .onAppear{
+                                isPulsing = true
+                            }
+                        } else {
+                            BasicFloatingButton(iconName: "flag.pattern.checkered"){
+                                viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
+                            }
                         }
                     }
                 }

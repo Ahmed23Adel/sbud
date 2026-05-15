@@ -32,10 +32,22 @@ class ViewModelMyEventDetails {
 
     private var mainCoordinator: MainCoordinator?
     var activeSheet: MyEventDetailsSheet?
+    
+    
+    var isSessionCreated = false
+    
     init(eventId: String) {
         logger.info("eventId: \(eventId)")
         self.eventId = eventId
         Task { await loadDetails() }
+        Task {
+            do {
+                isSessionCreated = try await isSessionCreated()
+                logger.info("isSessionCreated \(self.isSessionCreated)")
+            } catch {
+                logger.fault("Error calling isSessionCreated \(error)")
+            }
+        }
     }
 
     func setMainCoordinator(mainCoordinator: MainCoordinator){
@@ -184,19 +196,25 @@ class ViewModelMyEventDetails {
     func navigateToConfirmationForSessionOrNavigateToSessionDetails() {
         // TODO: Cache the results
         Task {
-            let repo = OnGoingSessionRepository()
-            var queryRef = repo.initQueryBuilderObject()
-            queryRef = queryRef.appendFilter(Filter(field: repo.constants.eventId, operation: .isEqualTo, value: eventId))
-            let sessions = try await repo.fetch(query: queryRef)
-            logger.info("sessions count: \(sessions.count)")
-            if sessions.count == 0 {
+            if !isSessionCreated {
                 activeSheet = .startSessionConfirmation
             } else {
                 if let mainCoordinator {
                     mainCoordinator.navigateTo(.session(eventId: eventId, isSessionCreated: true))
                 }
             }
+            
         }
         
+    }
+    
+    private func isSessionCreated() async throws -> Bool{
+        let repo = OnGoingSessionRepository()
+        var queryRef = repo.initQueryBuilderObject()
+        queryRef = queryRef.appendFilter(Filter(field: repo.constants.eventId, operation: .isEqualTo, value: eventId))
+        let sessions = try await repo.fetch(query: queryRef)
+        logger.info("sessions count: \(sessions.count), \(sessions.count != 0)")
+        return sessions.count != 0
+            
     }
 }

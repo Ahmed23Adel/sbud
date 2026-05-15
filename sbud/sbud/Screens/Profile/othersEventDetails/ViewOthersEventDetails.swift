@@ -11,6 +11,8 @@ struct ViewOthersEventDetails: View {
     @State var viewModel: ViewModelOthersEventDetails
     @EnvironmentObject private var coordinator: ProfileCoordinator
     
+    @State var isPulsing = false
+    
     init(eventId: String){
         _viewModel = State(initialValue: ViewModelOthersEventDetails(eventId: eventId))
     }
@@ -80,6 +82,28 @@ struct ViewOthersEventDetails: View {
                 .padding(.bottom, 100)
             }
             .ignoresSafeArea()
+            
+            if !viewModel.isLoading && viewModel.isShowJoinSessionButton{
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        BasicFloatingButton(iconName: "flag.pattern.checkered"){
+                            
+                        }
+                        .padding(.trailing)
+                        .scaleEffect(isPulsing ? 1.4 : 1.0)
+                        .animation(
+                            .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
+                            value: isPulsing
+                        )
+                        .onAppear{
+                            isPulsing = true
+                        }
+                        
+                    }
+                }
+            }
         }
     }
 }

@@ -18,10 +18,12 @@ class ViewModelOthersEventDetails{
     var isLoading: Bool = false
     var eventId: String
     
+    var isShowJoinSessionButton = false
     init(eventId: String) {
         logger.info("eventId: \(eventId)")
         self.eventId = eventId
         Task { await loadDetails() }
+        isSessionCreated(eventId: eventId)
     }
 
     private func loadDetails() async {
@@ -38,6 +40,21 @@ class ViewModelOthersEventDetails{
             logger.error("Error: \(error)")
             await MainActor.run { isLoading = false }
             PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
+        }
+    }
+    
+    private func isSessionCreated(eventId: String){
+        Task {
+            let repo = OnGoingSessionRepository()
+            var queryRef = repo.initQueryBuilderObject()
+            queryRef = queryRef.appendFilter(Filter(field: repo.constants.eventId, operation: .isEqualTo, value: eventId))
+            let sessions = try await repo.fetch(query: queryRef)
+            logger.info("sessions count: \(sessions.count)")
+            if sessions.count == 0 {
+                isShowJoinSessionButton = false
+            } else {
+                isShowJoinSessionButton = true
+            }
         }
     }
 }
