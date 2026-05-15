@@ -5,149 +5,127 @@
 //  Created by Erdal on 23.03.2026.
 //
 
+
+import Foundation
+import FirebaseAuth
+import Combine
 import Foundation
 import FirebaseAuth
 import Combine
 import PhoneNumberKit
 import _PhotosUI_SwiftUI
-
-
 @MainActor
 final class ProfileSetupVM: ObservableObject {
 
+    // MARK: - Shared form state
+
     @Published var profile: UserProfile
-    @Published var isSaving: Bool = false
-    @Published var currentStep: Int = 0
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
     @Published var phoneNumber: String = ""
-    @Published var profileImageData: Data?
-    @Published var selectedItem: PhotosPickerItem?
-    @Published var selectedProfileImage: UIImage?
- 
-    @Published var isUploadingPhoto: Bool = false
-    var uploadedProfileImageUrl: String?
+    @Published var errorMessage: String?
+    @Published var isSaving = false
+
+    // MARK: - Child services (injected for testability)
+
+    // Pull selectedItem up — PhotosPicker binds to this directly
+    @Published var selectedPhotoItem: PhotosPickerItem?
+
+    // photo and location stay @Published for observation
+    @Published var photo: PhotoService
+    @Published var location: LocationService
+
+    // MARK: - Dependencies
 
     private let profileManager: ProfileManager
-    private let locationManager: LocationManager
-    private let phoneUtil = PhoneNumberUtility()
-    
+
+    // MARK: - Init
 
     init(
         profileManager: ProfileManager = .shared,
-        locationManager: LocationManager = .shared
+        photoService: PhotoService? = nil,
+        locationService: LocationService? = nil
     ) {
         self.profileManager = profileManager
-        self.locationManager = locationManager
+        self.photo    = photoService    ?? PhotoService()
+        self.location = locationService ?? LocationService()
 
         let uid = Auth.auth().currentUser?.uid ?? ""
         self.profile = UserProfile(id: uid)
     }
-
-    func clearError() {
-        errorMessage = nil
-    }
-
-    private func trimmed(_ value: String) -> String {
-        value.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    // MARK: - OnBoarding
     
-    func goNext() {
-        currentStep += 1
-    }
+    // MARK: - Error helpers
 
-    func goBack() {
-        currentStep = max(0, currentStep - 1)
-    }
+    func clearError() { errorMessage = nil }
 
-    func validateCurrentStep() -> Bool {
-        switch currentStep {
-        case 0:
-            return validateStepOne()
-        case 1:
-            return validateStepTwo()
-        case 2:
-            return validateStepThree()
-        default:
-            return true
-        }
-    }
-
-    // MARK: - Step Validations
+    // MARK: - Step validators
+    // Each returns true/false and sets errorMessage on failure.
+    // These are the validation closures passed to the coordinator.
 
     func validateStepOne() -> Bool {
-        guard profile.profileImageUrl != nil else {
+        guard photo.uploadedURL != nil else {
             errorMessage = "Profile image is required."
             return false
         }
-        
-        if trimmed(profile.name).isEmpty {
+        guard !profile.name.trimmed.isEmpty else {
             errorMessage = "First name is required."
             return false
         }
-
-        if trimmed(profile.surName).isEmpty {
+        guard !profile.surName.trimmed.isEmpty else {
             errorMessage = "Last name is required."
             return false
         }
-
         errorMessage = nil
         return true
     }
 
     func validateStepTwo() -> Bool {
-        
-        if !validatePhone() {
+        guard PhoneService.validate(phoneNumber) else {
+            errorMessage = phoneNumber.trimmed.isEmpty
+                ? "Phone number is required."
+                : "Invalid phone number."
             return false
         }
-
-        if trimmed(profile.gender ?? "").isEmpty {
+        guard let gender = profile.gender, !gender.trimmed.isEmpty else {
             errorMessage = "Please select your gender."
             return false
         }
-        
-        guard profile.birthDate != nil else {
+        guard let birthDate = profile.birthDate else {
             errorMessage = "Please select your birth date."
             return false
         }
-        
-        if let age = profile.age {
-            if age < 18 {
-                errorMessage = "Under 18 years old not allowed."
-                return false
-            }
+        if let age = profile.age, age < 18 {
+            errorMessage = "Under 18 years old not allowed."
+            return false
         }
-    
         errorMessage = nil
         return true
     }
 
     func validateStepThree() -> Bool {
-        if trimmed(profile.bio).isEmpty {
+        guard !profile.bio.trimmed.isEmpty else {
             errorMessage = "Bio is required."
             return false
         }
-
         errorMessage = nil
         return true
     }
 
-    func validateLocationStep() -> Bool {
-        if profile.location.latitude == 0 || profile.location.longitude == 0 {
+    func validateStepFour() -> Bool {
+        guard location.isAcquired else {
             errorMessage = "Location could not be determined."
             return false
         }
-
         errorMessage = nil
         return true
     }
 
-    // MARK: - Phone Number Configurationsn
+    // MARK: - Persist
 
-    func validatePhone() -> Bool {
-        let trimmedPhone = trimmed(phoneNumber)
+    func save() async -> Bool {
+        guard validateStepOne(),
+              validateStepTwo(),
+              validateStepThree(),
+              validateStepFour()
+        else { return false }
 
         guard !trimmedPhone.isEmpty else {
             errorMessage = "Phone number is required."
@@ -336,34 +314,24 @@ final class ProfileSetupVM: ObservableObject {
             errorMessage = "User not authenticated."
             return false
         }
-
-        profile.email = user.email ?? ""
-        
-        guard let normalized = normalizedPhoneNumber() else {
+        guard let e164 = PhoneService.e164(phoneNumber) else {
+            errorMessage = "Invalid phone number."
             return false
         }
-        profile.phoneNumber = normalized
 
-        return true
-    }
-    
-    
-    
-    func save() async -> Bool {
-        errorMessage = nil
-        
-        guard validateStepOne() else { return false }
-        guard validateStepTwo() else { return false }
-        guard validateStepThree() else { return false }
-        guard validateLocationStep() else { return false }
-        guard await prepareProfileForSave() else { return false }
+        // Hydrate fields from services before writing to Firestore.
+        profile.email       = user.email ?? ""
+        profile.phoneNumber = e164
+        profile.profileImageUrl = photo.uploadedURL
+        profile.location.latitude    = location.latitude
+        profile.location.longitude   = location.longitude
+        profile.city                 = location.city
+        profile.country              = location.country
+        profile.location.fullAddress = location.fullAddress
 
         isSaving = true
         defer { isSaving = false }
-        
-//        guard await uploadProfileImageIfNeeded() else {
-//                return false
-//            }
+
         do {
             profile.isProfileCompleted = true
             try await profileManager.saveProfileToDatabase(profile: profile)
@@ -371,9 +339,20 @@ final class ProfileSetupVM: ObservableObject {
             return true
         } catch {
             errorMessage = error.localizedDescription
-            print("Database save error:", error.localizedDescription)
             profile.isProfileCompleted = false
             return false
         }
     }
+    
+    func handlePhotoSelection() async {
+        guard let item = selectedPhotoItem else { return }
+        photo.selectedItem = item          // hand off to the service
+        await photo.handleSelection()
+    }
+}
+
+// MARK: - String helper (private to this module)
+
+private extension String {
+    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
 }
