@@ -14,11 +14,11 @@ struct ImageItem: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: imageName)
-                .font(.system(size: 150))
+                .font(.system(size: 100))
                 .foregroundColor(.mainColor)
 
             Text(name)
-                .font(.system(size: 48))
+                .font(.system(size: 33))
                 .foregroundColor(.mainColor)
 
         }

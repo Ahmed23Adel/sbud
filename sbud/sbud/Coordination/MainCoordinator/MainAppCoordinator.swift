@@ -30,9 +30,6 @@ struct MainAppCoordinator: View {
         switch coordinator.currentRoute {
         case .homePage:
             HomeTabsView()
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)))
                 .ignoresSafeArea()
 
         case .signUp:

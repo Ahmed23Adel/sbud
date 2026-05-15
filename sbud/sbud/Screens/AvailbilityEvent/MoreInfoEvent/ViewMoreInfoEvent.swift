@@ -10,6 +10,7 @@ import FirebaseFirestore
 import Kingfisher
 import Lottie
 import OSLog
+import FirebaseAuth
 
 struct ViewMoreInfoEvent: View {
     @State var viewModel: ViewModelMoreInfoEvent
@@ -75,21 +76,23 @@ struct ViewMoreInfoEvent: View {
                             text: details.notes!
                         )
 
-                        CreatorContactDetailed(
-                            creatorInfo: details.creator,
-                            onTapProfile: {
-                                coordinator.push(.profileView(userId: details.creator.id))
-                            },
-                            onTapContact: {
-                                var chatUser = UserProfile(id: details.creator.id)
-                                chatUser.name = details.creator.name
-                                chatUser.surName = details.creator.surName
-                                chatUser.profileImageUrl = details.creator.profileImageUrl
-                                coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId, eventTitle: details.title))
-                            }
-                        )
+                        if Auth.auth().currentUser?.uid != details.creator.id {
+                            CreatorContactDetailed(
+                                creatorInfo: details.creator,
+                                onTapProfile: {
+                                    logger.info("details.creator.id: \(details.creator.id)")
+                                    coordinator.push(.profileView(userId: details.creator.id))
+                                },
+                                onTapContact: {
+                                    var chatUser = UserProfile(id: details.creator.id)
+                                    chatUser.name = details.creator.name
+                                    chatUser.surName = details.creator.surName
+                                    chatUser.profileImageUrl = details.creator.profileImageUrl
+                                    coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId, eventTitle: details.title))
+                                }
+                            )
+                        }
 
-                        // Hosts listesi butonu
                         Button {
                             showHostsList = true
                         } label: {

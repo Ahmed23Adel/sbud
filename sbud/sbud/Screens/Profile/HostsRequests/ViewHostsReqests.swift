@@ -18,9 +18,8 @@ struct ViewHostsRequests: View {
                 Divider().background(Color(white: 0.12))
 
                 if vm.isLoading {
-                    Spacer()
-                    ProgressView().tint(Color("palelime"))
-                    Spacer()
+                    LoadingView()
+                        .ignoresSafeArea()
                 } else if vm.invitations.isEmpty {
                     Spacer()
                     VStack(spacing: 12) {

@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>863852529120-hr37cpjvgq3rb56mbi41cd39va19tek2.apps.googleusercontent.com</string>
+	<string>863852529120-f082rdgc1ucvss39g2ael0n05nrjvaaq.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.863852529120-hr37cpjvgq3rb56mbi41cd39va19tek2</string>
+	<string>com.googleusercontent.apps.863852529120-f082rdgc1ucvss39g2ael0n05nrjvaaq</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBjo0EhJdtexS123YEnefg-Jrs4mpNu0kI</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.sbud.app</string>
+	<string>com.polimicrsprojformobile.sbud</string>
 	<key>PROJECT_ID</key>
 	<string>sbud-e5bdd</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:863852529120:ios:0dbbacc9c8f7ace2cb9785</string>
+	<string>1:863852529120:ios:7a33cac776245894cb9785</string>
 </dict>
 </plist>

@@ -26,7 +26,7 @@ struct ViewMyEventDetails: View {
                     FadingEventImage(coverImgURL: coverImg).ignoresSafeArea()
                     Spacer()
                 } else {
-                    ProgressView().padding(.top, 50)
+                    LoadingView().ignoresSafeArea()
                     Spacer()
                 }
             }
@@ -138,8 +138,7 @@ struct ViewMyEventDetails: View {
             }
 
             if viewModel.isLoading {
-                Color.black.opacity(0.4).ignoresSafeArea()
-                ProgressView().tint(.white).scaleEffect(1.5)
+                LoadingView().ignoresSafeArea()
             }
         }
         .sheet(isPresented: $showingConfirmationSheet) {

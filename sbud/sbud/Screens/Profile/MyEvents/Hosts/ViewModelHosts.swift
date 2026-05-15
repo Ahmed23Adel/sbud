@@ -42,8 +42,9 @@ class ViewModelHosts{
     private func loadHostsInvitationsAndFriendAndCombine() async {
         do {
             try await  loadFriends()
+            logger.info("friends count \(self.friendsProfiles.count)")
             try await loadHostsInvitations()
-            logger.info("friends count \(self.friendsProfiles.count), hosts count: \(self.hostsInvitations.count)")
+            logger.info("hosts count: \(self.hostsInvitations.count)")
             combine()
             
         } catch {

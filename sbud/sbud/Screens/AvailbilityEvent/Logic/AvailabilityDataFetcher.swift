@@ -25,13 +25,16 @@ class AvailabilityDataFetcher {
         in region: MKCoordinateRegion,
         selectedStartDateTime: Date,
         selectedEndDateTime: Date,
-        selectedActivityType: ActivityType
+        selectedActivityType: ActivityType,
+        extraFilters: [String: String]
     ) async throws -> [AnchorAvailabilityEvent] {
         let requestParams = createQueryForIndividual(
             region: region,
             selectedStartDateTime: selectedStartDateTime,
             selectedEndDateTime: selectedEndDateTime,
-            selectedActivityType: selectedActivityType)
+            selectedActivityType: selectedActivityType,
+            extraFilters: extraFilters
+        )
         logger.info("Individual request: \(requestParams)")
         let requester = FlattenedEventsRequester()
         let results = try await requester.fetchIndividuals(requestParams: requestParams)
@@ -44,7 +47,8 @@ class AvailabilityDataFetcher {
         region: MKCoordinateRegion,
         selectedStartDateTime: Date,
         selectedEndDateTime: Date,
-        selectedActivityType: ActivityType
+        selectedActivityType: ActivityType,
+        extraFilters: [String: String]
     ) -> FlattenedEventsRequest {
 
         let request = FlattenedEventsRequest(
@@ -52,8 +56,8 @@ class AvailabilityDataFetcher {
             bottomRight: region.bottomRight,
             selectedActivityType: selectedActivityType.rawValue,
             selectedStartTime: selectedStartDateTime,
-            selectedEndTime: selectedEndDateTime
-
+            selectedEndTime: selectedEndDateTime,
+            extraFilters: extraFilters
        )
         logger.info("requestParams for individuals: \(request)")
         return request
@@ -65,14 +69,16 @@ class AvailabilityDataFetcher {
         selectedEndTime: Date,
         topLeft: GeoPoint,
         bottomRight: GeoPoint,
-        selectedActivityType: ActivityType
+        selectedActivityType: ActivityType,
+        extraFilters: [String: String]
     ) async throws -> [AnchorCluster] {
         let requestParams = createRequestParamsForClusters(
             selectedStartTime: selectedStartTime,
             selectedEndTime: selectedEndTime,
             topLeft: topLeft,
             bottomRight: bottomRight,
-            selectedActivityType: selectedActivityType
+            selectedActivityType: selectedActivityType,
+            extraFilters: extraFilters
         )
         logger.info("requestParams for clusters: \(requestParams)")
         let requester = AvailbilityClusterRequester()
@@ -85,15 +91,16 @@ class AvailabilityDataFetcher {
                                                 selectedEndTime: Date,
                                                 topLeft: GeoPoint,
                                                 bottomRight: GeoPoint,
-                                                selectedActivityType: ActivityType) -> AvailabilityClusterModelRequest {
+                                                selectedActivityType: ActivityType,
+                                                extraFilters: [String: String] ) -> AvailabilityClusterModelRequest {
         let request = AvailabilityClusterModelRequest(
             topLeft: topLeft,
             bottomRight: bottomRight,
             selectedActivityType: selectedActivityType.rawValue,
             selectedStartTime: selectedStartTime,
             selectedEndTime: selectedEndTime,
-            precision: GeohashPrecision.district.rawValue
-
+            precision: GeohashPrecision.district.rawValue,
+            extraFilters: extraFilters
         )
 
         return request
