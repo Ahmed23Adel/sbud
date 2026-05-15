@@ -18,209 +18,139 @@ struct ViewMyEventDetails: View {
 
     var body: some View {
         ZStack {
-            Color.darkBackground
-                .ignoresSafeArea()
+            Color.darkBackground.ignoresSafeArea()
 
-            VStack {
-                if let coverImg = viewModel.myEventDertails?.eventImage {
-                    FadingEventImage(coverImgURL: coverImg)
-                        .ignoresSafeArea()
-                    Spacer()
-                } else {
-                    LoadingView()
-                        .ignoresSafeArea()
-                    Spacer()
-                }
-            }
-            .ignoresSafeArea()
+            EventDetailBackground(coverImgURL: viewModel.myEventDertails?.eventImage)
 
             ScrollView {
-                VStack {
-                    if let details = viewModel.myEventDertails {
-
-                        ProposalVsDeterminedPhase(
-                            isDateConfirmed: details.isDateConfirmed,
-                            isLocationConfirmed: details.isLocationConfirmed
-                        )
-
-                        HStack {
-                            JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
-                            VisibilityDetailed(isPublic: details.isPublic)
-                            if let max = details.maxAllowedToJoin {
-                                CapacityBadge(max: max)
+                if let details = viewModel.myEventDertails {
+                    eventContent(details)
+                        .padding(.top, 200)
+                        .toolbar {
+                            ToolbarItem {
+                                Button("Edit") { }
                             }
-                            Spacer()
                         }
-                        .padding(.leading, 14)
-
-                        HStack {
-                            Text(details.title)
-                                .font(.title)
-                                .foregroundColor(.white)
-                                .italic()
-                                .padding(.horizontal)
-                            Spacer()
-                        }
-
-                        ViewActivityTypeForDetails(activityType: details.activityType)
-                        PerformanceTargetDetailedConditional(activityDetails: details.activityDetails)
-
-                        GenericMultilineTextView(
-                            fieldName: "Description",
-                            placeholder: "Ex: Come join us",
-                            iconString: "pencil",
-                            text: details.notes ?? ""
-                        )
-
-                        LocationMapCard(dateLocations: details.dateLocations)
-                            .padding()
-
-                        if !details.isDateConfirmed || !details.isLocationConfirmed {
-                            Button {
-                                showingConfirmationSheet = true
-                            } label: {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "checkmark.seal.fill")
-                                        .font(.system(size: 20))
-                                    Text("Confirm Final Details")
-                                }
-                                .font(.system(size: 17, weight: .heavy))
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 68)
-                                .background(Color.mainColor)
-                                .clipShape(Capsule())
-                            }
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 12)
-                        }
-
-                        Button {
-                            coordinator.goToEventConversations(eventId: viewModel.eventId, eventTitle: details.title)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "tray.fill")
-                                    .font(.system(size: 20))
-                                Text("View Messages")
-                            }
-                            .font(.system(size: 17, weight: .heavy))
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 68)
-                            .background(
-                                Capsule()
-                                    .fill(Color.mainColor)
-                            )
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 12)
-
-                        Button {
-                            coordinator.showHostsSheet(eventId: viewModel.eventId)
-                        } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "person.2.wave.2")
-                                    .font(.system(size: 17, weight: .heavy))
-                                    .foregroundColor(.black)
-
-                                Text("Invite/Edit hosts")
-                                    .font(.system(size: 17, weight: .heavy))
-                                    .foregroundColor(.black)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 68)
-                            .background(
-                                Capsule()
-                                    .fill(Color("palelime"))
-                            )
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 12)
-                        .transition(.opacity)
-
-                        Button {
-                            Task {
-                                await viewModel.loadQueue()
-                                viewModel.showQueue = true
-                            }
-                        } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "person.badge.clock")
-                                    .font(.system(size: 15, weight: .semibold))
-                                let pending = viewModel.queueResponse?.pendingCount ?? 0
-                                let wl = viewModel.queueResponse?.waitlistCount ?? 0
-                                Text(pending > 0
-                                     ? "Review Requests (\(pending) pending\(wl > 0 ? ", \(wl) waitlist" : ""))"
-                                     : "No Pending Requests")
-                                    .font(.system(size: 15, weight: .semibold))
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(
-                                viewModel.queueResponse?.pendingCount ?? 0 > 0
-                                    ? Color.mainColor
-                                    : Color.backgroundColor.opacity(0.5)
-                            )
-                            .foregroundColor(
-                                viewModel.queueResponse?.pendingCount ?? 0 > 0 ? .black : .white
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 20)
-
-                        Spacer().frame(height: 40)
-                    }
-                }
-                .padding(.top, 200)
-                .toolbar {
-                    ToolbarItem {
-                        Button("Edit") { }
-                    }
                 }
             }
 
+            if !viewModel.isLoading{
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        BasicFloatingButton(iconName: "flag.pattern.checkered"){
+                            viewModel.activeSheet = .startSessionConfirmation
+                        }
+                    }
+                }
+            }
             if viewModel.isLoading {
-                LoadingView()
-                    .ignoresSafeArea()
+                LoadingView().ignoresSafeArea()
             }
         }
-        .sheet(isPresented: $showingConfirmationSheet) {
-            if let details = viewModel.myEventDertails {
-                ConfirmEventSheet(dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
-                    showingConfirmationSheet = false
-                    Task {
-                        await viewModel.confirmEventFinalChoice(
-                            selectedDateEntry: selectedDateEntry,
-                            selectedLocation: selectedLoc,
-                            finalStartDate: finalStart,
-                            finalEndDate: finalEnd
-                        )
-                    }
-                }
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
+        .sheet(item: $viewModel.activeSheet) { (sheet: MyEventDetailsSheet) in
+            switch sheet {
+            case .confirmation:
+                confirmationSheet
+            case .startSessionConfirmation:
+                StartSessionConfirmation(eventId: viewModel.eventId)
+                    .environmentObject(coordinator)
             }
+                
         }
         .fullScreenCover(isPresented: $viewModel.showQueue) {
-            if let q = viewModel.queueResponse {
-                QueueView(
-                    queueResponse: q,
-                    isLoading: viewModel.isLoadingQueue,
-                    onRespond: { userId, accept in
-                        Task { await viewModel.respondToRequest(requesterId: userId, accept: accept) }
-                    },
-                    onDismiss: {
-                        viewModel.showQueue = false
-                    },
-                    onTapProfile: { userId in
-                        viewModel.showQueue = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                            coordinator.goToProfileFromQueue(userId: userId)
-                        }
+            queueCover
+        }
+    }
+
+    // MARK: - Subviews
+
+    @ViewBuilder
+    private func eventContent(_ details: EventFullDetails) -> some View {
+        VStack {
+            EventMetaBadgesRow(
+                isDateConfirmed: details.isDateConfirmed,
+                isLocationConfirmed: details.isLocationConfirmed,
+                joinCondition: details.joinCondition,
+                isPublic: details.isPublic,
+                maxAllowedToJoin: details.maxAllowedToJoin
+            )
+
+            EventInfoSection(
+                title: details.title,
+                activityType: details.activityType,
+                activityDetails: details.activityDetails,
+                notes: details.notes,
+                dateLocations: details.dateLocations
+            )
+
+            EventActionButtons(
+                eventId: viewModel.eventId,
+                eventTitle: details.title,
+                isDateConfirmed: details.isDateConfirmed,
+                isLocationConfirmed: details.isLocationConfirmed,
+                queueResponse: viewModel.queueResponse,
+                onConfirmTap: { showingConfirmationSheet = true },
+                onMessagesTap: {
+                    coordinator.goToEventConversations(
+                        eventId: viewModel.eventId,
+                        eventTitle: details.title
+                    )
+                },
+                onHostsTap: {
+                    coordinator.showHostsSheet(eventId: viewModel.eventId)
+                },
+                onQueueTap: {
+                    Task {
+                        await viewModel.loadQueue()
+                        viewModel.showQueue = true
                     }
-                )
+                }
+            )
+
+            Spacer().frame(height: 40)
+        }
+    }
+
+    @ViewBuilder
+    private var confirmationSheet: some View {
+        if let details = viewModel.myEventDertails {
+            ConfirmEventSheet(dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
+                showingConfirmationSheet = false
+                Task {
+                    await viewModel.confirmEventFinalChoice(
+                        selectedDateEntry: selectedDateEntry,
+                        selectedLocation: selectedLoc,
+                        finalStartDate: finalStart,
+                        finalEndDate: finalEnd
+                    )
+                }
             }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
+    }
+
+    @ViewBuilder
+    private var queueCover: some View {
+        if let q = viewModel.queueResponse {
+            QueueView(
+                queueResponse: q,
+                isLoading: viewModel.isLoadingQueue,
+                onRespond: { userId, accept in
+                    Task { await viewModel.respondToRequest(requesterId: userId, accept: accept) }
+                },
+                onDismiss: {
+                    viewModel.showQueue = false
+                },
+                onTapProfile: { userId in
+                    viewModel.showQueue = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        coordinator.goToProfileFromQueue(userId: userId)
+                    }
+                }
+            )
         }
     }
 }

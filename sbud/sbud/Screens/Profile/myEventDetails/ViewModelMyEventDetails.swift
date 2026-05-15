@@ -9,6 +9,13 @@ import Foundation
 import OSLog
 import FirebaseFirestore
 
+enum MyEventDetailsSheet: Identifiable {
+    case confirmation
+    case startSessionConfirmation
+
+    var id: Self { self }
+}
+
 @Observable
 class ViewModelMyEventDetails {
     let logger = Logger(subsystem: "sBud", category: "ViewModelMyEventDetails")
@@ -23,6 +30,7 @@ class ViewModelMyEventDetails {
 
     private let joinRequester = JoinEventRequester()
 
+    var activeSheet: MyEventDetailsSheet?
     init(eventId: String) {
         logger.info("eventId: \(eventId)")
         self.eventId = eventId

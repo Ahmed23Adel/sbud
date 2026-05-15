@@ -59,6 +59,9 @@ struct MainAppCoordinator: View {
                     insertion: .move(edge: .trailing).combined(with: .opacity),
                     removal: .move(edge: .leading).combined(with: .opacity)))
                 .ignoresSafeArea()
+            
+        case .session(let eventId):
+            ViewOwnerSession(eventId: eventId)
         default:
             EmptyView()
         
