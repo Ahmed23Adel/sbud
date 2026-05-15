@@ -112,16 +112,6 @@ struct StepFourView: View {
     private var allowButton: some View {
         Button {
             Task {
-                // Re-attempt location fetch if still missing (e.g. permission just granted)
-                if vm.profile.location.latitude == 0 {
-                    await vm.loadCurrentLocation()
-                }
-
-                guard vm.profile.location.latitude != 0 else {
-                    // Location still failed — don't save with empty coords
-                    return
-                }
-
                 let success = await vm.save()
                 if success { appCoordinator.goToHome() }
             }
