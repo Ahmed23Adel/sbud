@@ -6,36 +6,58 @@
 //
 
 import SwiftUI
+// StepTwoView.swift
+// Details step: phone, gender, birth date, preferred activity.
+//
+// Key design change: showGenderPicker and showCalendar are now
+// @State inside this view. The parent never needs to know about them,
+// so they don't belong in the parent (ISP / encapsulation).
+
+import SwiftUI
 
 struct StepTwoView: View {
-    @EnvironmentObject var vm: ProfileSetupVM
 
-    @Binding var showGenderPicker: Bool
-    @Binding var showCalendar: Bool
+    @EnvironmentObject private var vm: ProfileSetupVM
 
-    let cardBG = Color(white: 0.12)
+    // Overlay state lives here, closest to where it is used.
+    @State private var showGenderPicker = false
+    @State private var showCalendar = false
+    @State private var calendarSelection = Date()
+
+    private let cardBG = Color(white: 0.12)
+    private let genders = ["Male", "Female"]
+
+    private var isOverlayOpen: Bool { showGenderPicker || showCalendar }
 
     var body: some View {
+        ZStack {
+            mainContent
+                .blur(radius: isOverlayOpen ? 6 : 0)
+                .allowsHitTesting(!isOverlayOpen)
+                .animation(.easeInOut(duration: 0.25), value: isOverlayOpen)
+
+            if showGenderPicker { genderPickerOverlay }
+            if showCalendar     { calendarOverlay }
+        }
+    }
+
+    // MARK: - Main scroll content
+
+    private var mainContent: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
-                headerSection
+                header
                 phoneSection
                 HStack(alignment: .top, spacing: 12) {
                     genderButton
-                        .onChange(of: vm.profile.gender) { _ in
-                            vm.clearError()
-                        }
                     dateButton
-                        .onChange(of: vm.profile.birthDate) { _ in
-                            vm.clearError()
-                        }
                 }
                 activitySection
-                if let err = vm.errorMessage {
-                    Text(err)
+
+                if let error = vm.errorMessage {
+                    Text(error)
                         .font(.caption)
                         .foregroundColor(Color("palelime"))
-                        .padding(.top, -2)
                 }
             }
             .padding(.bottom, 80)
@@ -44,7 +66,7 @@ struct StepTwoView: View {
 
     // MARK: - Header
 
-    private var headerSection: some View {
+    private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("COMPLETE YOUR\nDETAILS")
                 .font(.system(size: 32, weight: .black))
@@ -52,7 +74,7 @@ struct StepTwoView: View {
                 .lineSpacing(2)
 
             Text("Configure your details to reach the best experience.")
-               .font(.system(size: 13))
+                .font(.system(size: 13))
                 .foregroundColor(.gray)
                 .lineSpacing(4)
         }
@@ -62,11 +84,7 @@ struct StepTwoView: View {
 
     private var phoneSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("PHONE NUMBER")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundColor(.gray)
-                .kerning(1.2)
-
+            fieldLabel("PHONE NUMBER")
             PhoneNumberView(text: $vm.phoneNumber)
                 .font(.system(size: 16, weight: .semibold, design: .monospaced))
                 .foregroundColor(.white)
@@ -77,22 +95,21 @@ struct StepTwoView: View {
                 .onChange(of: vm.phoneNumber) { _ in vm.clearError() }
         }
     }
-    // MARK: - Gender Button
+
+    // MARK: - Gender
 
     private var genderButton: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("GENDER")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundColor(.gray)
-                .kerning(1.2)
-
-            Button {
-                withAnimation(.spring()) { showGenderPicker = true }
-            } label: {
+            fieldLabel("GENDER")
+            Button { withAnimation(.spring()) { showGenderPicker = true } } label: {
                 HStack {
                     Text(vm.profile.gender?.uppercased() ?? "SELECT")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(vm.profile.gender == nil ? Color("turquoise").opacity(0.4) : Color("turquoise"))
+                        .foregroundColor(
+                            vm.profile.gender == nil
+                            ? Color("turquoise").opacity(0.4)
+                            : Color("turquoise")
+                        )
                     Spacer()
                     Image(systemName: "chevron.down")
                         .font(.system(size: 11))
@@ -105,20 +122,15 @@ struct StepTwoView: View {
             }
         }
         .frame(maxWidth: .infinity)
+        .onChange(of: vm.profile.gender) { _ in vm.clearError() }
     }
 
-    // MARK: - Date Button
+    // MARK: - Birth date
 
     private var dateButton: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("BIRTH DATE")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundColor(.gray)
-                .kerning(1.2)
-
-            Button {
-                withAnimation(.spring()) { showCalendar = true }
-            } label: {
+            fieldLabel("BIRTH DATE")
+            Button { withAnimation(.spring()) { showCalendar = true } } label: {
                 HStack {
                     if let bd = vm.profile.birthDate {
                         Text(bd, format: .dateTime.month(.twoDigits).day(.twoDigits).year())
@@ -141,60 +153,138 @@ struct StepTwoView: View {
             }
         }
         .frame(maxWidth: .infinity)
+        .onChange(of: vm.profile.birthDate) { _ in vm.clearError() }
     }
 
-    // MARK: - Activity
+    // MARK: - Activity grid
 
     private var activitySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("PREFERRED ACTIVITY")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundColor(.gray)
-                .kerning(1.2)
-            
-            HStack(alignment: .top, spacing: 12) {
-                ActivityRow(icon: "figure.run", title: "RUNNING",
-                            isSelected: vm.profile.preferredActivity == .running
-                ) { vm.profile.preferredActivity = .running }
-                
-                ActivityRow(icon: "figure.outdoor.cycle", title: "CYCLING",
-                            isSelected: vm.profile.preferredActivity == .cycling
-                ) { vm.profile.preferredActivity = .cycling }
+            fieldLabel("PREFERRED ACTIVITY")
+
+            let activities: [(icon: String, title: String, sport: ActivityType)] = [
+                ("figure.run",              "RUNNING",  .running),
+                ("figure.outdoor.cycle",    "CYCLING",  .cycling),
+                ("dumbbell.fill",           "GYM",      .gym),
+                ("figure.skiing.downhill",  "SKIING",   .skiing),
+                ("figure.pool.swim",        "SWIMMING", .swimming),
+                ("figure.hiking",           "HIKING",   .hiking),
+                ("figure.yoga",             "YOGA",     .yoga),
+                ("figure.tennis",           "TENNIS",   .tennis),
+            ]
+
+            // Pair them into rows of 2
+            let rows = stride(from: 0, to: activities.count, by: 2).map {
+                Array(activities[$0 ..< min($0 + 2, activities.count)])
             }
-            HStack(alignment: .top, spacing: 12) {
-                ActivityRow(icon: "dumbbell.fill", title: "GYM",
-                            isSelected: vm.profile.preferredActivity == .gym
-                ) { vm.profile.preferredActivity = .gym }
-                
-                ActivityRow(icon: "figure.skiing.downhill", title: "SKIING",
-                            isSelected: vm.profile.preferredActivity == .skiing
-                ) { vm.profile.preferredActivity = .skiing }
-            }
-            HStack(alignment: .top, spacing: 12) {
-                ActivityRow(icon: "figure.pool.swim", title: "SWIMMING",
-                            isSelected: vm.profile.preferredActivity == .swimming
-                ) { vm.profile.preferredActivity = .swimming }
-                
-                ActivityRow(icon: "figure.hiking", title: "HIKING",
-                            isSelected: vm.profile.preferredActivity == .hiking
-                ) { vm.profile.preferredActivity = .hiking }
-            }
-            HStack(alignment: .top, spacing: 12) {
-                ActivityRow(icon: "figure.yoga", title: "YOGA",
-                            isSelected: vm.profile.preferredActivity == .yoga
-                ) { vm.profile.preferredActivity = .yoga }
-                
-                ActivityRow(icon: "figure.tennis", title: "TENNIS",
-                            isSelected: vm.profile.preferredActivity == .tennis
-                ) { vm.profile.preferredActivity = .tennis }
+
+            ForEach(rows, id: \.first?.title) { row in
+                HStack(alignment: .top, spacing: 12) {
+                    ForEach(row, id: \.title) { item in
+                        ActivityRow(
+                            icon: item.icon,
+                            title: item.title,
+                            isSelected: vm.profile.preferredActivity == item.sport
+                        ) {
+                            vm.profile.preferredActivity = item.sport
+                        }
+                    }
+                }
             }
         }
     }
+
+    // MARK: - Overlays
+
+    private var genderPickerOverlay: some View {
+        ZStack(alignment: .bottom) {
+            Color.black.opacity(0.5)
+                .ignoresSafeArea()
+                .onTapGesture { withAnimation(.spring()) { showGenderPicker = false } }
+
+            VStack(spacing: 0) {
+                Text("SELECT GENDER")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.gray)
+                    .kerning(1.2)
+                    .padding(.vertical, 14)
+
+                ForEach(genders, id: \.self) { gender in
+                    Divider().background(Color.white.opacity(0.08))
+                    Button {
+                        withAnimation {
+                            vm.profile.gender = gender
+                            vm.clearError()
+                            showGenderPicker = false
+                        }
+                    } label: {
+                        Text(gender.uppercased())
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 64)
+                            .background(Color(white: 0.10))
+                    }
+                }
+            }
+            .background(Color(white: 0.08))
+            .cornerRadius(4)
+            .padding(.horizontal, 12)
+            .padding(.bottom, 80)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+
+    private var calendarOverlay: some View {
+        ZStack(alignment: .bottom) {
+            Color.black.opacity(0.5)
+                .ignoresSafeArea()
+                .onTapGesture { withAnimation(.spring()) { showCalendar = false } }
+
+            VStack(spacing: 0) {
+                CustomCalendarView(selectedDate: $calendarSelection)
+                    .frame(maxWidth: .infinity)
+
+                Button {
+                    withAnimation(.spring()) {
+                        vm.profile.birthDate = calendarSelection
+                        vm.clearError()
+                        showCalendar = false
+                    }
+                } label: {
+                    Text("CONFIRM")
+                        .font(.system(size: 13, weight: .black))
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color("palelime"))
+                        .cornerRadius(4)
+                }
+                .padding([.horizontal, .bottom], 15)
+                .padding(.top, 8)
+            }
+            .background(Color(white: 0.08))
+            .cornerRadius(4)
+            .padding(.horizontal, 12)
+            .padding(.bottom, 80)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func fieldLabel(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 10, weight: .bold))
+            .foregroundColor(.gray)
+            .kerning(1.2)
+    }
 }
 
-// MARK: - Activity Row
+// MARK: - Activity Row (private, only used here)
 
 private struct ActivityRow: View {
+
     let icon: String
     let title: String
     let isSelected: Bool
@@ -217,12 +307,10 @@ private struct ActivityRow: View {
 
                 ZStack {
                     Circle()
-                        .stroke(isSelected ? Color("turquoise") : Color.gray, lineWidth: 1.5)
+                        .stroke(isSelected ? Color("turquoise") : .gray, lineWidth: 1.5)
                         .frame(width: 18, height: 18)
                     if isSelected {
-                        Circle()
-                            .fill(Color("turquoise"))
-                            .frame(width: 9, height: 9)
+                        Circle().fill(Color("turquoise")).frame(width: 9, height: 9)
                     }
                 }
             }
@@ -232,10 +320,14 @@ private struct ActivityRow: View {
             .cornerRadius(4)
             .overlay(
                 RoundedRectangle(cornerRadius: 4)
-                    .stroke(isSelected ? Color("turquoise").opacity(0.3) : Color.clear, lineWidth: 1)
+                    .stroke(
+                        isSelected ? Color("turquoise").opacity(0.3) : .clear,
+                        lineWidth: 1
+                    )
             )
             .animation(nil, value: isSelected)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
     }
 }

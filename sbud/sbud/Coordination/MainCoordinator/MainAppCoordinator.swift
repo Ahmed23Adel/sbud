@@ -50,7 +50,7 @@ struct MainAppCoordinator: View {
             ProfileSetupView()
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)))
+                    removal:   .move(edge: .leading).combined(with: .opacity)))
                 .ignoresSafeArea()
 
         case .loadingPage:
