@@ -30,6 +30,7 @@ class ViewModelMyEventDetails {
 
     private let joinRequester = JoinEventRequester()
 
+    private var mainCoordinator: MainCoordinator?
     var activeSheet: MyEventDetailsSheet?
     init(eventId: String) {
         logger.info("eventId: \(eventId)")
@@ -37,6 +38,9 @@ class ViewModelMyEventDetails {
         Task { await loadDetails() }
     }
 
+    func setMainCoordinator(mainCoordinator: MainCoordinator){
+        self.mainCoordinator = mainCoordinator
+    }
     private func loadDetails() async {
         await MainActor.run { isLoading = true }
         do {
@@ -174,5 +178,25 @@ class ViewModelMyEventDetails {
             await MainActor.run { isLoading = false }
             PopUpGenerator.shared.show(msg: "Error confirming event", type: .error)
         }
+    }
+    
+    
+    func navigateToConfirmationForSessionOrNavigateToSessionDetails() {
+        // TODO: Cache the results
+        Task {
+            let repo = OnGoingSessionRepository()
+            var queryRef = repo.initQueryBuilderObject()
+            queryRef = queryRef.appendFilter(Filter(field: repo.constants.eventId, operation: .isEqualTo, value: eventId))
+            let sessions = try await repo.fetch(query: queryRef)
+            logger.info("sessions count: \(sessions.count)")
+            if sessions.count == 0 {
+                activeSheet = .startSessionConfirmation
+            } else {
+                if let mainCoordinator {
+                    mainCoordinator.navigateTo(.session(eventId: eventId, isSessionCreated: true))
+                }
+            }
+        }
+        
     }
 }

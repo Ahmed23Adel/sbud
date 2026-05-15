@@ -21,7 +21,7 @@ struct StartSessionConfirmation: View {
                 
             
             Button("Yes"){
-                coordinator.navigateTo(.session(eventId: eventId))
+                coordinator.navigateTo(.session(eventId: eventId, isSessionCreated: false))
             }
             .buttonStyle(PrimaryButton())
             

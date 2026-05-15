@@ -11,7 +11,8 @@ struct ViewMyEventDetails: View {
     @State var viewModel: ViewModelMyEventDetails
     @EnvironmentObject private var coordinator: ProfileCoordinator
     @State private var showingConfirmationSheet = false
-
+    @EnvironmentObject private var mainCoordinator: MainCoordinator
+    
     init(eventId: String) {
         _viewModel = State(wrappedValue: ViewModelMyEventDetails(eventId: eventId))
     }
@@ -40,7 +41,7 @@ struct ViewMyEventDetails: View {
                     HStack {
                         Spacer()
                         BasicFloatingButton(iconName: "flag.pattern.checkered"){
-                            viewModel.activeSheet = .startSessionConfirmation
+                            viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
                         }
                     }
                 }
@@ -58,6 +59,9 @@ struct ViewMyEventDetails: View {
                     .environmentObject(coordinator)
             }
                 
+        }
+        .onAppear{
+            viewModel.setMainCoordinator(mainCoordinator: mainCoordinator)
         }
         .fullScreenCover(isPresented: $viewModel.showQueue) {
             queueCover

@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import OSLog
+
 class MainCoordinator: ObservableObject {
     @Published var currentRoute: MainRoute
     let logger = Logger(subsystem: "sbud", category: "MainCoordinator")
@@ -16,7 +17,7 @@ class MainCoordinator: ObservableObject {
     let profManager = ProfileManager.shared
 
     private var routeStack: [MainRoute] = []
-
+    
     init() {
         self.currentRoute = .loadingPage
         checkAppFlow()
@@ -84,8 +85,6 @@ class MainCoordinator: ObservableObject {
             return .profileSetup
         }
     }
-    
-    
-    
+
     
 }
