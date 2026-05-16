@@ -10,7 +10,6 @@ import SwiftUI
 struct ViewMyEventDetails: View {
     @State var viewModel: ViewModelMyEventDetails
     @EnvironmentObject private var coordinator: ProfileCoordinator
-    @State private var showingConfirmationSheet = false
     @EnvironmentObject private var mainCoordinator: MainCoordinator
     @State var isPulsing = false
     init(eventId: String) {
@@ -113,7 +112,10 @@ struct ViewMyEventDetails: View {
                 isDateConfirmed: details.isDateConfirmed,
                 isLocationConfirmed: details.isLocationConfirmed,
                 queueResponse: viewModel.queueResponse,
-                onConfirmTap: { showingConfirmationSheet = true },
+                onConfirmTap: {
+                    print("onConfirmTap")
+                    viewModel.activeSheet = .confirmation
+                },
                 onMessagesTap: {
                     coordinator.goToEventConversations(
                         eventId: viewModel.eventId,
@@ -139,7 +141,7 @@ struct ViewMyEventDetails: View {
     private var confirmationSheet: some View {
         if let details = viewModel.myEventDertails {
             ConfirmEventSheet(dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
-                showingConfirmationSheet = false
+                viewModel.activeSheet = nil
                 Task {
                     await viewModel.confirmEventFinalChoice(
                         selectedDateEntry: selectedDateEntry,

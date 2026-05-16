@@ -10,57 +10,50 @@ import Kingfisher
 struct ViewAddNewEventStep1: View {
     @Bindable var eventBuilder: NewEventBuilder
     var body: some View {
-        ZStack{
-            Color.darkBackground
-                .ignoresSafeArea()
-            ScrollView{
-                VStack{
-                    ViewEventImageSelection(eventBuidler: eventBuilder)
-                        .padding(.top, 30)
-                    
-                    GenericTextInputView(
-                        fieldName: "Title",
-                        placeholder: "Ex: Midnight Runners",
-                        iconString: "text.rectangle",
-                        text: $eventBuilder.title)
-                    
-                    GenericMultilineTextInputView(
-                        fieldName: "Description",
-                        placeholder: "Ex: Come join us",
-                        iconString: "pencil",
-                        text: $eventBuilder.description)
-                    
-                    ActivityTypeSelector(selectedActivityType: $eventBuilder.activityType, extraArgsHolder: $eventBuilder.activityExtraArgs)
-                    
-                    ViewConditionalExtraArgs(argsHolder: eventBuilder.activityExtraArgs)
-                        .padding(.bottom, 100)
-                }
+        ScrollView {
+            VStack {
+                ViewEventImageSelection(eventBuidler: eventBuilder)
+                    .padding(.top, 30)
+                    .padding(.horizontal)
                 
+                GenericTextInputView(
+                    fieldName: "Title",
+                    placeholder: "Ex: Midnight Runners",
+                    iconString: "text.rectangle",
+                    text: $eventBuilder.title)
+                .padding(.horizontal, 30)
+                
+                
+                GenericMultilineTextInputView(
+                    fieldName: "Description",
+                    placeholder: "Ex: Come join us",
+                    iconString: "pencil",
+                    text: $eventBuilder.description)
+                .padding(.horizontal, 30)
+                
+                ActivityTypeSelector(selectedActivityType: $eventBuilder.activityType, extraArgsHolder: $eventBuilder.activityExtraArgs)
+                    .padding(.horizontal, 30)
+                
+                ViewConditionalExtraArgs(argsHolder: eventBuilder.activityExtraArgs)
+                    .padding(.bottom, 100)
+                    .padding(.horizontal, 30)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .scrollDismissesKeyboard(.interactively)
-            .toolbar {                                    // ← Single toolbar here
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("✓") {
-                        // UIKIT organizes the views
-                        // first responder is the one that has focus now
-                        // to dismiss, whoever the first responder is, resign
-                        // UIApplication.shared: running instance of app
-                        // #selector(UIResponder.resignFirstResponder) — the action to perform.
-                        // to: nil — the target. nil means "don't send it to a specific object" — instead, walk the responder chain and let whoever can handle it respond
-                        // from: nil — the sender. Who is triggering this action. nil means anonymous/unspecified
-                        UIApplication.shared.sendAction(
-                                #selector(UIResponder.resignFirstResponder),
-                                to: nil, from: nil, for: nil
-                            )
-                    }
+            .frame(maxWidth: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.darkBackground.ignoresSafeArea())
+        .scrollDismissesKeyboard(.interactively)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("✓") {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil, from: nil, for: nil
+                    )
                 }
             }
         }
-        //only ignores edge insets (notch/home bar)
-        // otherwise, it will ignore the keyboard as well
-//        .ignoresSafeArea(.container)
     }
 }
 

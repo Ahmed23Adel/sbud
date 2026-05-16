@@ -13,6 +13,7 @@ struct ViewOwnerSession: View {
     @EnvironmentObject private var mainCoordinator: MainCoordinator
     @Environment(\.modelContext) private var context
     
+    
     init(eventDetails: EventFullDetails, isSessionCreated: Bool) {
         _viewModel = State(initialValue: ViewModelOwnerSession(eventDetails: eventDetails, isSessionCreated: isSessionCreated))
     }
@@ -25,6 +26,11 @@ struct ViewOwnerSession: View {
                 SessionTimerView(startDate: viewModel.startDateTime)
                     .padding(.top, 100)
                 ViewEventSummary(event: viewModel.eventDetails)
+                
+                ViewMetricsSummaryConditional(
+                    metricCollector: viewModel.metricsCollector,
+                    activityType: viewModel.eventDetails.activityType)
+                
                 Spacer()
                 Button("End session"){
                     

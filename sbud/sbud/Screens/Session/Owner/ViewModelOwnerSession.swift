@@ -18,9 +18,12 @@ class ViewModelOwnerSession{
     var startDateTime = Date()
     var isSessionCreated: Bool
     
+    var metricsCollector: MetricsCollector?
+    
     init(eventDetails: EventFullDetails, isSessionCreated: Bool){
         self.eventDetails = eventDetails
         self.isSessionCreated = isSessionCreated
+        initMetricsCollector()
         Task {
             do {
                 if !isSessionCreated {
@@ -31,6 +34,17 @@ class ViewModelOwnerSession{
                 showError("Error occured while starting the session, pleaes try again")
                 logger.fault("Error with pinging: \(error)")
             }
+        }
+    }
+    
+    private func initMetricsCollector(){
+        switch eventDetails.activityType{
+            
+        case .running:
+            metricsCollector = MetricsCollectorRun()
+            (metricsCollector as! MetricsCollectorRun).startRun()
+        default:
+            return
         }
     }
     

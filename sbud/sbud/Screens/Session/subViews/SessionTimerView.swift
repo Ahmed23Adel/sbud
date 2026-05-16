@@ -29,6 +29,7 @@ struct SessionTimerView: View {
     }
 
     private func startTimer() {
+        timer?.invalidate()
         seconds = Int(Date().timeIntervalSince(startDate))
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             seconds += 1

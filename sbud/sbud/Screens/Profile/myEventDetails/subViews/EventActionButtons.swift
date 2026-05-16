@@ -39,8 +39,7 @@ struct EventActionButtons: View {
             }
         }
         .buttonStyle(PrimaryButton())
-        .padding(.horizontal, 24)
-        .padding(.bottom, 12)
+
     }
 
     private var messagesButton: some View {
