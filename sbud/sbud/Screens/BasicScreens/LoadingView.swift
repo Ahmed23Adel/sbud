@@ -11,7 +11,7 @@ import Lottie
 struct LoadingView: View {
     var body: some View {
         ZStack {
-            Color.backgroundColor
+            Color.darkBackground
                 .ignoresSafeArea()
                 .opacity(0.9)
 

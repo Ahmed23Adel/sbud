@@ -7,10 +7,18 @@
 
 import Foundation
 
+enum HostInvitationStatus: String{
+    case pending
+    case accepted
+    case rejected
+    case notInvited 
+}
 
 struct HostInvitation{
     var id = UUID()
     var invitedAt: Date
     var respondedAt: Date?
-    var status: String
+    var status: HostInvitationStatus
+    var userId: String
+    
 }

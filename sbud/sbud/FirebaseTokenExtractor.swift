@@ -22,5 +22,7 @@ class FirebaseTokenExtractor: @unchecked Sendable {
         }
 
    }
+    
+    
 
 }

@@ -27,8 +27,8 @@ struct ViewMyEventDetails: View {
                         .ignoresSafeArea()
                     Spacer()
                 } else {
-                    ProgressView()
-                        .padding(.top, 50)
+                    LoadingView()
+                        .ignoresSafeArea()
                     Spacer()
                 }
             }
@@ -120,12 +120,21 @@ struct ViewMyEventDetails: View {
                         Button {
                             coordinator.showHostsSheet(eventId: viewModel.eventId)
                         } label: {
-                            Text("Invite/Edit hosts")
-                                .font(.system(size: 17, weight: .heavy))
-                                .foregroundColor(Color(red: 0.15, green: 0.25, blue: 0.0))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 68)
-                                .background(Capsule().fill(Color("palelime")))
+                            HStack(spacing: 10) {
+                                Image(systemName: "person.2.wave.2")
+                                    .font(.system(size: 17, weight: .heavy))
+                                    .foregroundColor(.black)
+
+                                Text("Invite/Edit hosts")
+                                    .font(.system(size: 17, weight: .heavy))
+                                    .foregroundColor(.black)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 68)
+                            .background(
+                                Capsule()
+                                    .fill(Color("palelime"))
+                            )
                         }
                         .padding(.horizontal, 24)
                         .padding(.bottom, 12)
@@ -138,18 +147,14 @@ struct ViewMyEventDetails: View {
                             }
                         } label: {
                             HStack(spacing: 10) {
-                                if viewModel.isLoadingQueue {
-                                    ProgressView().tint(.black)
-                                } else {
-                                    Image(systemName: "person.badge.clock")
-                                        .font(.system(size: 15, weight: .semibold))
-                                    let pending = viewModel.queueResponse?.pendingCount ?? 0
-                                    let wl = viewModel.queueResponse?.waitlistCount ?? 0
-                                    Text(pending > 0
-                                         ? "Review Requests (\(pending) pending\(wl > 0 ? ", \(wl) waitlist" : ""))"
-                                         : "No Pending Requests")
-                                        .font(.system(size: 15, weight: .semibold))
-                                }
+                                Image(systemName: "person.badge.clock")
+                                    .font(.system(size: 15, weight: .semibold))
+                                let pending = viewModel.queueResponse?.pendingCount ?? 0
+                                let wl = viewModel.queueResponse?.waitlistCount ?? 0
+                                Text(pending > 0
+                                     ? "Review Requests (\(pending) pending\(wl > 0 ? ", \(wl) waitlist" : ""))"
+                                     : "No Pending Requests")
+                                    .font(.system(size: 15, weight: .semibold))
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
@@ -178,8 +183,8 @@ struct ViewMyEventDetails: View {
             }
 
             if viewModel.isLoading {
-                Color.black.opacity(0.4).ignoresSafeArea()
-                ProgressView().tint(.white).scaleEffect(1.5)
+                LoadingView()
+                    .ignoresSafeArea()
             }
         }
         .sheet(isPresented: $showingConfirmationSheet) {

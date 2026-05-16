@@ -15,6 +15,7 @@ enum ProfileRoute: Equatable, Hashable {
 enum ProfileRoutePushed: Equatable, Hashable {
     case settings
     case friendRequest
+    case hostsRequests
     case myEvents
     case othersEvents
     case friendsList
@@ -22,14 +23,17 @@ enum ProfileRoutePushed: Equatable, Hashable {
     case viewMyEventDetails(eventId: String)
     case viewOthersProfile(userId: String)
     case eventConversations(eventId: String, eventTitle: String)
+    case scannedProfile(userId: String)
 }
 
 enum ProfileSheetType: Equatable, Hashable, Identifiable {
     case hosts(eventId: String)
-
+    case qrCode
+    
     var id: String {
         switch self {
-        case .hosts(let eventId): return "hosts-\(eventId)"
+            case .hosts(let eventId): return "hosts-\(eventId)"
+            case .qrCode:             return "qrCode"
         }
     }
 }

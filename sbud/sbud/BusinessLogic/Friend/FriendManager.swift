@@ -73,9 +73,15 @@ class FriendManager {
         try await repository.fetchFriends(userId: userId)
     }
 
-    func fetchPendingRequests(userId: String) async throws -> [String] {
-        try await repository.fetchPendingRequests(userId: userId)
+    func fetchFriendsPendingRequests(userId: String) async throws -> [String] {
+        try await repository.fetchPendingFriendsRequests(userId: userId)
     }
+    
+    func fetchHostsPendingRequests(userId: String) async throws -> [String] {
+        try await repository.fetchPendingHostsRequests(userId: userId)
+    }
+    
+    
 }
 
 enum FriendError: LocalizedError {

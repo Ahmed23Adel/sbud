@@ -26,75 +26,78 @@ struct Wheel: View {
     @State private var lastHapticIndex: Int = 0
     private let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
     var body: some View {
-        VStack(spacing: 30) {
-            Spacer()
-            // Image carousel above the wheel
-            ImageCarousel(
-                imageNames: imageNames,
-                names: names,
-                rotation: currentRotation + dragRotation
-            )
-            .popUp()
-            .scaleEffect(wheelScale)
-            .onAppear {
-                startInactivityTimer()
-            }
-            .onDisappear {
-                cancelInactivityTimer()
-            }
-
-            RadialLinesView()
-                .onAppear {
-                    if selectedIndex != 0 {
-                        let initialRotation = -Double(selectedIndex) * 90
-                        currentRotation = initialRotation
-                        lastRotation = currentRotation
-                    }
-                }
-                .rotationEffect(Angle(degrees: currentRotation + dragRotation))
-                .popUp()
-                .gesture(
-                    DragGesture()
-                        .updating($dragRotation) { value, state, _ in
-                            let angle = calculateAngle(from: value.translation)
-                            let proposedRotation = lastRotation + angle
-                            let clampedRotation = clampRotation(rotation: proposedRotation)
-                            state = clampedRotation - lastRotation
-                            triggerHapticRotation(rotation: clampedRotation)
-                            scaleUpWheel()
-                        }
-                        .onEnded { value in
-                            let dragAngle = calculateAngle(from: value.translation)
-                            let totalRotation = lastRotation + dragAngle
-                            let clampedRotation = clampRotation(rotation: totalRotation)
-                            // Always snap to nearest 90° based on current position
-                            let snappedRotation = round(clampedRotation / 90.0) * 90.0
-                            let finalRotation = clampRotation(rotation: snappedRotation)
-                            // Immediately update currentRotation to prevent jump when dragRotation resets to 0
-                            //  You're spinning a roulette wheel
-                            //  When you let go, it's at -210° (between slots)
-                            //  We first "freeze" it at -210° (prevent jump)
-                            //  When smoothly rotate it to -180° (nearest slot)
-                            // bcz look @ ".rotationEffect(Angle(degrees: currentRotation + dragRotation))"
-                            currentRotation = clampedRotation
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                currentRotation = finalRotation
-                                lastRotation = finalRotation
-                            }
-
-                            //  Converts rotation angle to "how many items forward"
-                            // snappedRotation = 0° → steps = 0
-                            // snappedRotation = -90° → steps = 1
-                            // why -ve? Swiping left (negative rotation) moves FORWARD in the list
-                            // steps = -1
-                            // (-1 % 6) = -1          // First modulo: still negative
-                            // -1 + 6 = 5             // Add array length: now positive
-                            // 5 % 6 = 5              // Second modulo: final answer
-                            let steps = Int(round(finalRotation / 90.0))
-                            selectedIndex = abs(steps) // Since rotation is negative, use absolute value
-                            startInactivityTimer()
-                        }
+        GeometryReader { geo in
+            VStack(spacing: 30) {
+                Spacer()
+                // Image carousel above the wheel
+                ImageCarousel(
+                    imageNames: imageNames,
+                    names: names,
+                    rotation: currentRotation + dragRotation
                 )
+                .popUp()
+                .offset(y: (wheelScale == scaledDownSize) ? (geo.size.height + 300) : 0)
+                .scaleEffect(wheelScale)
+                .onAppear {
+                    startInactivityTimer()
+                }
+                .onDisappear {
+                    cancelInactivityTimer()
+                }
+                
+                RadialLinesView()
+                    .onAppear {
+                        if selectedIndex != 0 {
+                            let initialRotation = -Double(selectedIndex) * 90
+                            currentRotation = initialRotation
+                            lastRotation = currentRotation
+                        }
+                    }
+                    .rotationEffect(Angle(degrees: currentRotation + dragRotation))
+                    .popUp()
+                    .gesture(
+                        DragGesture()
+                            .updating($dragRotation) { value, state, _ in
+                                let angle = calculateAngle(from: value.translation)
+                                let proposedRotation = lastRotation + angle
+                                let clampedRotation = clampRotation(rotation: proposedRotation)
+                                state = clampedRotation - lastRotation
+                                triggerHapticRotation(rotation: clampedRotation)
+                                scaleUpWheel()
+                            }
+                            .onEnded { value in
+                                let dragAngle = calculateAngle(from: value.translation)
+                                let totalRotation = lastRotation + dragAngle
+                                let clampedRotation = clampRotation(rotation: totalRotation)
+                                // Always snap to nearest 90° based on current position
+                                let snappedRotation = round(clampedRotation / 90.0) * 90.0
+                                let finalRotation = clampRotation(rotation: snappedRotation)
+                                // Immediately update currentRotation to prevent jump when dragRotation resets to 0
+                                //  You're spinning a roulette wheel
+                                //  When you let go, it's at -210° (between slots)
+                                //  We first "freeze" it at -210° (prevent jump)
+                                //  When smoothly rotate it to -180° (nearest slot)
+                                // bcz look @ ".rotationEffect(Angle(degrees: currentRotation + dragRotation))"
+                                currentRotation = clampedRotation
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                    currentRotation = finalRotation
+                                    lastRotation = finalRotation
+                                }
+                                
+                                //  Converts rotation angle to "how many items forward"
+                                // snappedRotation = 0° → steps = 0
+                                // snappedRotation = -90° → steps = 1
+                                // why -ve? Swiping left (negative rotation) moves FORWARD in the list
+                                // steps = -1
+                                // (-1 % 6) = -1          // First modulo: still negative
+                                // -1 + 6 = 5             // Add array length: now positive
+                                // 5 % 6 = 5              // Second modulo: final answer
+                                let steps = Int(round(finalRotation / 90.0))
+                                selectedIndex = abs(steps) // Since rotation is negative, use absolute value
+                                startInactivityTimer()
+                            }
+                    )
+            }
         }
     }
     /// Based on the movement, horizentally or vertically, it calculates the angle

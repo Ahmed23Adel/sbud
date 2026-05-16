@@ -49,6 +49,7 @@ class AuthenticationManager: IAuthenticationManager {
     // MARK: Google sign in
     func signUp() async throws {
         try await signInMethodManager?.signUp()
+        
     }
 
     func signIn() async throws {

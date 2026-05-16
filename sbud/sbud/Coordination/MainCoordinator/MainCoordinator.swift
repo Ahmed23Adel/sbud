@@ -71,11 +71,16 @@ class MainCoordinator: ObservableObject {
     private func checkProfileStatus() async -> MainRoute {
         guard authManager.checkAuthStatus() else { return .signUp }
         if profManager.isProfileSetupComplete { return .homePage }
-
         do {
             try await profManager.syncProfileAfterLogin()
-            return profManager.isProfileSetupComplete ? .homePage : .profileSetup
+            if profManager.isProfileSetupComplete {
+                return .homePage
+            } else {
+                await FCMExtractor().saveFCMToken()
+                return .profileSetup
+            }
         } catch {
+            await FCMExtractor().saveFCMToken()
             return .profileSetup
         }
     }

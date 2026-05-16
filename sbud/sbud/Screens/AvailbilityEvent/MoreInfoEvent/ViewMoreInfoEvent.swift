@@ -11,7 +11,6 @@ import Kingfisher
 import Lottie
 import OSLog
 import FirebaseAuth
-
 struct ViewMoreInfoEvent: View {
     @State var viewModel: ViewModelMoreInfoEvent
     @EnvironmentObject var coordinator: AvailabilityCoordinator
@@ -83,6 +82,7 @@ struct ViewMoreInfoEvent: View {
                             iconString: "pencil",
                             text: details.notes ?? ""
                         )
+
 
                         if Auth.auth().currentUser?.uid != details.creator.id {
                             CreatorContactDetailed(
