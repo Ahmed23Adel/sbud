@@ -10,7 +10,9 @@ import SwiftUI
 struct StartSessionConfirmation: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var coordinator: MainCoordinator
-    let eventId: String
+    let eventDetails: EventFullDetails
+    
+    
     var body: some View {
         VStack{
             Text("Start session now?")
@@ -21,7 +23,7 @@ struct StartSessionConfirmation: View {
                 
             
             Button("Yes"){
-                coordinator.navigateTo(.session(eventId: eventId, isSessionCreated: false))
+                coordinator.navigateTo(.session(eventDetails: eventDetails, isSessionCreated: false))
             }
             .buttonStyle(PrimaryButton())
             
@@ -38,7 +40,7 @@ struct StartSessionConfirmation: View {
         .background(Color.darkBackground)
     }
 }
-
-#Preview {
-    StartSessionConfirmation(eventId: "")
-}
+//
+//#Preview {
+//    StartSessionConfirmation(eventId: "")
+//}

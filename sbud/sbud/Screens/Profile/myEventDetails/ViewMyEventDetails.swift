@@ -27,6 +27,8 @@ struct ViewMyEventDetails: View {
                 if let details = viewModel.myEventDertails {
                     eventContent(details)
                         .padding(.top, 200)
+                        .padding(.horizontal, 24)
+                        .frame(maxWidth: .infinity)
                         .toolbar {
                             ToolbarItem {
                                 Button("Edit") { }
@@ -57,6 +59,7 @@ struct ViewMyEventDetails: View {
                             BasicFloatingButton(iconName: "flag.pattern.checkered"){
                                 viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
                             }
+                            .padding(.trailing)
                         }
                     }
                 }
@@ -70,7 +73,7 @@ struct ViewMyEventDetails: View {
             case .confirmation:
                 confirmationSheet
             case .startSessionConfirmation:
-                StartSessionConfirmation(eventId: viewModel.eventId)
+                StartSessionConfirmation(eventDetails: viewModel.myEventDertails ?? .empty)
                     .environmentObject(coordinator)
             }
                 

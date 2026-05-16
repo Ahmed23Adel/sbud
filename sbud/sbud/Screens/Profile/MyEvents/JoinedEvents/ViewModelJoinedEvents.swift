@@ -12,7 +12,6 @@ import OSLog
 class ViewModelJoinedEvents{
     let userId = ProfileManager.shared.getLocalProfile()?.id
     var participatedEvents: [UsersEvent] = []
-    
     var sections: [(UsersEventStatus, [UsersEvent])] {
         let order: [UsersEventStatus] = [.confirmed, .proposed, .completed]
         let grouped = Dictionary(grouping: participatedEvents, by: \.status)
@@ -31,7 +30,7 @@ class ViewModelJoinedEvents{
             Task {
                 do {
                     participatedEvents = try await getParticipatedEvents(forUserId: userId)
-                    print("participatedEvents len", participatedEvents.count)
+                    logger.info("participatedEvents len \(self.participatedEvents.count)")
                 } catch {
                     logger.fault("Error with loading events: \(error)")
                     showAlert(msg: "Error with loading participated events, please try again later")

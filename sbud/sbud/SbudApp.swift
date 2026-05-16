@@ -14,7 +14,7 @@ import FirebaseAuth
 import FirebaseMessaging
 import OSLog
 import FirebaseFirestore
-
+import SwiftData
 
 // Note: Used to enable push notification in future
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -73,6 +73,7 @@ struct SbudApp: App {
             
 
         }
+        .modelContainer(for: LocalOnGoingSession.self)
 
     }
 }

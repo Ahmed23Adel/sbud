@@ -13,4 +13,5 @@ struct OnGoingSession: Codable, Identifiable {
     var startDateTime: Date
     var numberOfParticipants = 0
     var creatorId: String
+    var activityType: ActivityType
 }

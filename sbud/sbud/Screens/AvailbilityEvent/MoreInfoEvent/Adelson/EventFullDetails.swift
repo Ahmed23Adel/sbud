@@ -35,7 +35,7 @@ nonisolated struct DateLocationEntry: Decodable, Sendable, Identifiable {
 
 // MARK: - Top-level response
 
-nonisolated struct EventFullDetails: Decodable, Sendable {
+nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
     var id: String
     var title: String
     var creator: CreatorInfo
@@ -110,6 +110,14 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
         default: joinCondition = .requestFromHost
         }
     }
+    
+    static func == (lhs: EventFullDetails, rhs: EventFullDetails) -> Bool {
+        return lhs.id ==  rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher){
+        hasher.combine(id)
+    }
 }
 
 // MARK: - Samples
@@ -152,6 +160,24 @@ extension EventFullDetails {
         joinCondition: .requestFromHost,
         maxAllowedToJoin: 150,
         notes: "Come join me",
+        createdAt: Date(),
+        dateLocations: [.sample, .sample]
+    )
+}
+
+extension EventFullDetails {
+    static let empty = EventFullDetails(
+        id: "",
+        title: "",
+        creator: .sample,
+        activityDetails: ExtraArgsHolder(),
+        eventImage: "",
+        isDateConfirmed: false,
+        isLocationConfirmed: false,
+        isPublic: true,
+        joinCondition: .requestFromHost,
+        maxAllowedToJoin: 150,
+        notes: "",
         createdAt: Date(),
         dateLocations: [.sample, .sample]
     )
