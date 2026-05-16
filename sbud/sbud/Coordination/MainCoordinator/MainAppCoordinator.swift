@@ -60,9 +60,11 @@ struct MainAppCoordinator: View {
                     removal: .move(edge: .leading).combined(with: .opacity)))
                 .ignoresSafeArea()
             
-        case .session(let eventDetails, let isSessionCreated):
+        case .creatorSession(let eventDetails, let isSessionCreated):
             ViewOwnerSession(eventDetails: eventDetails, isSessionCreated: isSessionCreated)
                 .environmentObject(coordinator)
+        case .othersSession(let eventDetails):
+            ViewOthersSession(eventDetails: eventDetails, isSessionCreated: true)
         default:
             EmptyView()
         

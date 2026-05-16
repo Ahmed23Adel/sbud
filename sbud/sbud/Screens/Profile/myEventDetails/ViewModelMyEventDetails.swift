@@ -200,7 +200,7 @@ class ViewModelMyEventDetails {
                 activeSheet = .startSessionConfirmation
             } else {
                 if let mainCoordinator {
-                    mainCoordinator.navigateTo(.session(eventDetails: myEventDertails!, isSessionCreated: true))
+                    mainCoordinator.navigateTo(.creatorSession(eventDetails: myEventDertails!, isSessionCreated: true))
                 }
             }
             

@@ -10,7 +10,7 @@ import SwiftUI
 struct ViewOthersEventDetails: View {
     @State var viewModel: ViewModelOthersEventDetails
     @EnvironmentObject private var coordinator: ProfileCoordinator
-    
+    @EnvironmentObject private var mainCoordinator: MainCoordinator
     @State var isPulsing = false
     
     init(eventId: String){
@@ -89,7 +89,7 @@ struct ViewOthersEventDetails: View {
                     HStack {
                         Spacer()
                         BasicFloatingButton(iconName: "flag.pattern.checkered"){
-                            
+                            mainCoordinator.navigateTo(.othersSession(eventDetails: viewModel.myEventDertails!))
                         }
                         .padding(.trailing)
                         .scaleEffect(isPulsing ? 1.4 : 1.0)

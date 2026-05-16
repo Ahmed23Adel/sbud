@@ -55,6 +55,7 @@ struct ViewMoreInfoEvent: View {
                             isDateConfirmed: details.isDateConfirmed,
                             isLocationConfirmed: details.isLocationConfirmed
                         )
+                        .padding(.horizontal)
 
                         HStack {
                             JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
@@ -65,16 +66,20 @@ struct ViewMoreInfoEvent: View {
                             Spacer()
                         }
                         .padding(.leading, 14)
+                        .padding(.horizontal)
 
                         HStack {
                             Text(details.title)
                                 .font(.title).foregroundColor(.white).italic()
                                 .padding(.horizontal)
+                                .padding(.horizontal)
                             Spacer()
                         }
 
                         ViewActivityTypeForDetails(activityType: details.activityType)
+                            .padding(.horizontal)
                         PerformanceTargetDetailedConditional(activityDetails: details.activityDetails)
+                            .padding(.horizontal)
 
                         GenericMultilineTextView(
                             fieldName: "Description",
@@ -82,8 +87,7 @@ struct ViewMoreInfoEvent: View {
                             iconString: "pencil",
                             text: details.notes ?? ""
                         )
-
-
+                        .padding(.horizontal)
                         if Auth.auth().currentUser?.uid != details.creator.id {
                             CreatorContactDetailed(
                                 creatorInfo: details.creator,
@@ -102,10 +106,10 @@ struct ViewMoreInfoEvent: View {
                                     coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle))
                                 }
                             )
+                            .padding(.horizontal)
                         }
-
                         LocationMapCard(dateLocations: details.dateLocations).padding()
-
+                            .padding(.horizontal)
                         if !viewModel.isCurrentUserHost {
                             JoinEventButton(
                                 joinCondition: details.joinCondition,
@@ -115,6 +119,7 @@ struct ViewMoreInfoEvent: View {
                                 onWithdraw: { Task { await viewModel.withdraw() } },
                                 onLeave: { Task { await viewModel.leave() } }
                             )
+                            .padding(.horizontal)
                             .padding(.vertical, 8)
                         }
 

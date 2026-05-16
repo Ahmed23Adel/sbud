@@ -15,5 +15,6 @@ enum MainRoute: Equatable, Hashable {
     case homePage
     case profilePage(userId: String)
     case editMyEvent(userId: String)
-    case session(eventDetails: EventFullDetails, isSessionCreated: Bool)
+    case creatorSession(eventDetails: EventFullDetails, isSessionCreated: Bool)
+    case othersSession(eventDetails: EventFullDetails)
 }
