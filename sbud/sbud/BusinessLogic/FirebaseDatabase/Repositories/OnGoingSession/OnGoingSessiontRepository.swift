@@ -52,7 +52,17 @@ class OnGoingSessionRepository: IFirebaesRepository{
     }
     
     func delete(_ id: String) async throws {
-        
+        try await db.collection(collectionPath).document(id).delete()
+    }
+    
+    func deleteByEventId(_ eventId: String) async throws {
+        let snapshot = try await db.collection(collectionPath)
+            .whereField("eventId", isEqualTo: eventId)
+            .getDocuments()
+
+        for document in snapshot.documents {
+            try await document.reference.delete()
+        }
     }
     
     func initQueryBuilderObject() -> any IQueryBuilder {

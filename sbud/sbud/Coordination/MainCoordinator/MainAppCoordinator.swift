@@ -62,6 +62,7 @@ struct MainAppCoordinator: View {
             
         case .session(let eventDetails, let isSessionCreated):
             ViewOwnerSession(eventDetails: eventDetails, isSessionCreated: isSessionCreated)
+                .environmentObject(coordinator)
         default:
             EmptyView()
         

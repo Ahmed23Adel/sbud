@@ -10,6 +10,7 @@ import OSLog
 import SwiftData
 @Observable
 class ViewModelOwnerSession{
+    var mainCoordinator: MainCoordinator?
     let logger = Logger(subsystem: "sbud", category: "ViewModelOwnerSession")
     let eventDetails: EventFullDetails
     var isShowAlert = false
@@ -19,6 +20,8 @@ class ViewModelOwnerSession{
     var isSessionCreated: Bool
     
     var metricsCollector: MetricsCollector?
+    
+    var isLoading = false
     
     init(eventDetails: EventFullDetails, isSessionCreated: Bool){
         self.eventDetails = eventDetails
@@ -37,12 +40,16 @@ class ViewModelOwnerSession{
         }
     }
     
+    func setMainCoordinator(_ mainCoordinator: MainCoordinator){
+        self.mainCoordinator = mainCoordinator
+    }
+    
     private func initMetricsCollector(){
         switch eventDetails.activityType{
             
         case .running:
-            metricsCollector = MetricsCollectorRun()
-            (metricsCollector as! MetricsCollectorRun).startRun()
+            metricsCollector = MetricsCollectorRun(isCreator: true)
+            (metricsCollector as! MetricsCollectorRun).startSession()
         default:
             return
         }
@@ -102,5 +109,38 @@ class ViewModelOwnerSession{
     }
     
     
+    
+    func endSession(){
+        isLoading = true
+        Task {
+            do {
+                try await metricsCollector?.endSession(event: eventDetails)
+                let repo = OnGoingSessionRepository()
+                try await repo.deleteByEventId(eventDetails.id)
+                deleteLocalSession()
+                await MainActor.run{
+                    isLoading = false
+                }
+                logger.info("navigating to home ")
+                print("main coord", mainCoordinator)
+                mainCoordinator?.navigateTo(.homePage)
+               
+            } catch {
+                logger.fault("Error with ending session: \(error)")
+                showError("Error with ending the session, please try again")
+            }
+            
+        }
+    }
+    
+    private func deleteLocalSession() {
+        let eventId = eventDetails.id
+        let descriptor = FetchDescriptor<LocalOnGoingSession>(
+            predicate: #Predicate { $0.eventId == eventId }
+        )
+        if let sessions = try? context?.fetch(descriptor) {
+            sessions.forEach { context?.delete($0) }
+        }
+    }
 }
 

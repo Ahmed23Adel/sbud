@@ -7,10 +7,11 @@
 
 import Foundation
 
-struct Split: Identifiable {
+struct Split: Identifiable, Codable {
     var id = UUID()
     let number: Int
     let paceInMinPerKm: Double
+    let dateTimeCreated = Date()
 
     var formatted: String {
         let mins = Int(paceInMinPerKm)

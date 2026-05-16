@@ -32,7 +32,7 @@ struct ViewMetricsSummaryRun: View {
                     .font(.title3)
                     .foregroundColor(Color.mainColor)
                 
-                Text(String(collector.currentPaceMinPerKm))
+                Text(String(format: "%.2f", collector.currentPaceMinPerKm))
                     .font(.title3)
                     .foregroundColor(Color.mainColor)
                 
@@ -47,7 +47,7 @@ struct ViewMetricsSummaryRun: View {
                     .font(.title3)
                     .foregroundColor(Color.mainColor)
                 
-                Text(String(collector.averagePaceMinPerKm))
+                Text(String(format: "%.2f", collector.averagePaceMinPerKm))
                     .font(.title3)
                     .foregroundColor(Color.mainColor)
                 
