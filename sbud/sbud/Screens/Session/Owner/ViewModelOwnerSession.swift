@@ -22,7 +22,7 @@ class ViewModelOwnerSession{
     var metricsCollector: MetricsCollector?
     
     var isLoading = false
-    
+    var isShowEndConfirm = false
     init(eventDetails: EventFullDetails, isSessionCreated: Bool){
         self.eventDetails = eventDetails
         self.isSessionCreated = isSessionCreated
@@ -50,8 +50,27 @@ class ViewModelOwnerSession{
         case .running:
             metricsCollector = MetricsCollectorRun(isCreator: true)
             (metricsCollector as! MetricsCollectorRun).startSession()
-        default:
-            return
+        case .cycling:
+            metricsCollector = MetricsCollectorCycling(isCreator: true)
+            (metricsCollector as! MetricsCollectorCycling).startSession()
+        case .gym:
+            metricsCollector = MetricsCollectorGym(isCreator: true)
+            (metricsCollector as! MetricsCollectorGym).startSession()
+        case .skiing:
+            metricsCollector = MetricsCollectorSkiing(isCreator: true)
+            (metricsCollector as! MetricsCollectorSkiing).startSession()
+        case .swimming:
+            metricsCollector = MetricsCollectorSwimming(isCreator: true)
+            (metricsCollector as! MetricsCollectorSwimming).startSession()
+        case .hiking:
+            metricsCollector = MetricsCollectorHiking(isCreator: true)
+            (metricsCollector as! MetricsCollectorHiking).startSession()
+        case .yoga:
+            metricsCollector = MetricsCollectorYoga(isCreator: true)
+            (metricsCollector as! MetricsCollectorYoga).startSession()
+        case .tennis:
+            metricsCollector = MetricsCollectorTennis(isCreator: true)
+            (metricsCollector as! MetricsCollectorTennis).startSession()
         }
     }
     

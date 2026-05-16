@@ -38,7 +38,7 @@ struct ViewOwnerSession: View {
                         
                         Spacer()
                         Button("End session"){
-                            viewModel.endSession()
+                            viewModel.isShowEndConfirm = true
                         }
                         .buttonStyle(DestructiveButton())
                         .padding(.bottom)
@@ -48,6 +48,16 @@ struct ViewOwnerSession: View {
                     Button("OK", role: .cancel) {
                         mainCoordinator.navigateTo(.homePage)
                     }
+                }
+                .confirmationDialog(
+                    "End Session",
+                    isPresented: $viewModel.isShowEndConfirm,
+                    titleVisibility: .visible
+                ) {
+                    Button("End session", role: .destructive) { viewModel.endSession() }
+                    Button("Cancel", role: .cancel) { }
+                } message: {
+                    Text("Are you sure you want to end the session?")
                 }
                 .onAppear {
                     viewModel.setModelContext(context: context)

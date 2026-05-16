@@ -1,0 +1,27 @@
+//
+//  MetricsCollectedTennis.swift
+//  sbud
+//
+//  Created by ahmed on 17/05/2026.
+//
+
+
+import Foundation
+import FirebaseFirestore
+
+struct MetricsCollectedTennis: Codable {
+    var startDateTime: Date
+    var endDateTime: Date
+    var metricsCreatorType: MetricsCreatorType
+    var endedBeforeCreator: Bool = false
+
+    func upload(eventId: String, userId: String) async throws {
+        let db = Firestore.firestore()
+        let docRef = db
+            .collection("Events")
+            .document(eventId)
+            .collection("metrics")
+            .document(userId)
+        try docRef.setData(from: self)
+    }
+}

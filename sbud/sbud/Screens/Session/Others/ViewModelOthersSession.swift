@@ -54,8 +54,27 @@ class ViewModelOthersSession {
         case .running:
             metricsCollector = MetricsCollectorRun(isCreator: false)
             (metricsCollector as! MetricsCollectorRun).startSession()
-        default:
-            return
+        case .cycling:
+            metricsCollector = MetricsCollectorCycling(isCreator: false)
+            (metricsCollector as! MetricsCollectorCycling).startSession()
+        case .gym:
+            metricsCollector = MetricsCollectorGym(isCreator: false)
+            (metricsCollector as! MetricsCollectorGym).startSession()
+        case .skiing:
+            metricsCollector = MetricsCollectorSkiing(isCreator: false)
+            (metricsCollector as! MetricsCollectorSkiing).startSession()
+        case .swimming:
+            metricsCollector = MetricsCollectorSwimming(isCreator: false)
+            (metricsCollector as! MetricsCollectorSwimming).startSession()
+        case .hiking:
+            metricsCollector = MetricsCollectorHiking(isCreator: false)
+            (metricsCollector as! MetricsCollectorHiking).startSession()
+        case .yoga:
+            metricsCollector = MetricsCollectorYoga(isCreator: false)
+            (metricsCollector as! MetricsCollectorYoga).startSession()
+        case .tennis:
+            metricsCollector = MetricsCollectorTennis(isCreator: false)
+            (metricsCollector as! MetricsCollectorTennis).startSession()
         }
     }
 
