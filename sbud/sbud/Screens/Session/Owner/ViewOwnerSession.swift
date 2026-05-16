@@ -24,24 +24,30 @@ struct ViewOwnerSession: View {
                 LoadingView()
                     .ignoresSafeArea()
             } else {
-                ZStack{
+                ZStack {
                     Color.darkBackground
                         .ignoresSafeArea()
-                    VStack{
-                        SessionTimerView(startDate: viewModel.startDateTime)
-                            .padding(.top, 100)
-                        ViewEventSummary(event: viewModel.eventDetails)
+                    
+                    VStack(spacing: 0) {
+                        ScrollView {
+                            VStack {
+                                SessionTimerView(startDate: viewModel.startDateTime)
+                                    .padding(.top, 100)
+                                ViewEventSummary(event: viewModel.eventDetails)
+                                
+                                ViewMetricsSummaryConditional(
+                                    metricCollector: viewModel.metricsCollector,
+                                    activityType: viewModel.eventDetails.activityType)
+                            }
+                        }
                         
-                        ViewMetricsSummaryConditional(
-                            metricCollector: viewModel.metricsCollector,
-                            activityType: viewModel.eventDetails.activityType)
-                        
-                        Spacer()
-                        Button("End session"){
+                        Button("End session") {
                             viewModel.isShowEndConfirm = true
                         }
                         .buttonStyle(DestructiveButton())
                         .padding(.bottom)
+                        .padding(.horizontal)
+                        .background(Color.darkBackground)
                     }
                 }
                 .alert(viewModel.alertMsg, isPresented: $viewModel.isShowAlert) {

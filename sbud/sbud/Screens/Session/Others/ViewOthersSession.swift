@@ -26,22 +26,28 @@ struct ViewOthersSession: View {
                 ZStack {
                     Color.darkBackground
                         .ignoresSafeArea()
-                    VStack {
-                        SessionTimerView(startDate: viewModel.startDateTime)
-                            .padding(.top, 100)
-                        ViewEventSummary(event: viewModel.eventDetails)
-                        ViewMetricsSummaryConditional(
-                            metricCollector: viewModel.metricsCollector,
-                            activityType: viewModel.eventDetails.activityType)
-                        Spacer()
+                    
+                    VStack(spacing: 0) {
+                        ScrollView {
+                            VStack {
+                                SessionTimerView(startDate: viewModel.startDateTime)
+                                    .padding(.top, 100)
+                                ViewEventSummary(event: viewModel.eventDetails)
+                                ViewMetricsSummaryConditional(
+                                    metricCollector: viewModel.metricsCollector,
+                                    activityType: viewModel.eventDetails.activityType)
+                            }
+                        }
+                        
                         Button("End session") {
                             viewModel.onEndSessionTapped()
                         }
                         .buttonStyle(DestructiveButton())
                         .padding(.bottom)
+                        .padding(.horizontal)
+                        .background(Color.darkBackground)
                     }
-                }
-                // 1. Creator already ended — just confirm
+                }                // 1. Creator already ended — just confirm
                 .confirmationDialog(
                     "End Session",
                     isPresented: $viewModel.isShowSimpleConfirm,
