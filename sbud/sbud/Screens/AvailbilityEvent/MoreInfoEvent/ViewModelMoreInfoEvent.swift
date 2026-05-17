@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import OSLog
+import FirebaseFirestore
 
 enum JoinState: Equatable {
     case idle
@@ -69,7 +70,11 @@ class ViewModelMoreInfoEvent {
     var joinState: JoinState = .idle
     var isJoiningLoading = false
     var isCurrentUserHost = false
-
+    
+    // NUOVE VARIABILI PER I PARTECIPANTI
+    var confirmedParticipants: [UserProfile] = []
+    var isLoadingParticipants = false
+    
     private let joinRequester = JoinEventRequester()
 
     init(eventId: String) {
@@ -95,6 +100,9 @@ class ViewModelMoreInfoEvent {
             if !isHost {
                 await loadMyStatus()
             }
+            
+            await fetchParticipants()
+            
             logger.log("Full event loaded \(self.eventId)")
         } catch {
             logger.error("loadDetails error: \(error)")
@@ -105,7 +113,50 @@ class ViewModelMoreInfoEvent {
             PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
         }
     }
-
+    
+    private func fetchParticipants() async {
+        await MainActor.run { isLoadingParticipants = true }
+        do {
+            let db = Firestore.firestore()
+            
+            // 1. Leggi la sotto-collezione 'participants' dell'evento dove lo status è "confirmed"
+            let snapshot = try await db.collection("Events")
+                .document(eventId)
+                .collection("participants")
+                .whereField("status", isEqualTo: "confirmed")
+                .getDocuments()
+            
+            var profiles: [UserProfile] = []
+            
+            // 2. Itera sui risultati e recupera i profili degli utenti
+            for doc in snapshot.documents {
+                // Lo screen mostra che l'ID del documento è proprio lo userId
+                let userId = doc.documentID
+                
+                let userDoc = try await db.collection("users").document(userId).getDocument()
+                
+                // Mappatura manuale sicura (evita crash se UserProfile Codable fallisce per campi mancanti in DB)
+                if let data = userDoc.data() {
+                    var profile = UserProfile(id: userId)
+                    profile.name = data["name"] as? String ?? "Utente"
+                    profile.surName = data["surName"] as? String ?? ""
+                    profile.profileImageUrl = data["profileImageUrl"] as? String
+                    
+                    profiles.append(profile)
+                }
+            }
+            
+            await MainActor.run {
+                self.confirmedParticipants = profiles
+                self.isLoadingParticipants = false
+            }
+            
+        } catch {
+            logger.error("fetchParticipants error: \(error.localizedDescription)")
+            await MainActor.run { isLoadingParticipants = false }
+        }
+    }
+    
     private func loadMyStatus() async {
         do {
             let resp = try await joinRequester.getMyStatus(eventId: eventId)

@@ -117,7 +117,9 @@ struct ViewMoreInfoEvent: View {
                             )
                             .padding(.vertical, 8)
                         }
-
+                        
+                        participantsSection
+                        
                         Spacer()
                     }
                 }
@@ -128,7 +130,71 @@ struct ViewMoreInfoEvent: View {
         }
         .ignoresSafeArea()
     }
-
+    
+    private var participantsSection: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text("Participants")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                
+                if viewModel.isLoadingParticipants {
+                    ProgressView().tint(.white)
+                        .scaleEffect(0.8)
+                        .padding(.leading, 5)
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.top, 16)
+            
+            if !viewModel.confirmedParticipants.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: 16) {
+                        ForEach(viewModel.confirmedParticipants) { user in
+                            VStack {
+                                
+                                if let imageUrl = user.profileImageUrl, let url = URL(string: imageUrl) {
+                                    KFImage(url)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 50, height: 50)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                                } else {
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(Color.gray)
+                                }
+                                
+                                
+                                Text(user.name)
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                    .frame(width: 60)
+                            }
+                            .onTapGesture {
+                                coordinator.push(.profileView(userId: user.id))
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                }
+            } else if !viewModel.isLoadingParticipants {
+                // Nessun partecipante (o solo l'host)
+                Text("No participants yet.")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .italic()
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+            }
+        }
+    }
+    
     private func capacityBadge(max: Int) -> some View {
         HStack(spacing: 4) {
             Image(systemName: "person.2").font(.system(size: 9))
