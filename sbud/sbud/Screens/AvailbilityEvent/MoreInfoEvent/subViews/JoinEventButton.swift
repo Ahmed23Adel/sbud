@@ -63,11 +63,11 @@ struct JoinEventButton: View {
         switch joinState {
         case .idle:
             return joinCondition == .autoJoin ? "Join Activity" : "Request to Join"
-        case .withdrawn, .left, .rejected:
+        case .withdrawn, .rejected:
             return joinCondition == .autoJoin ? "Join Again" : "Request Again"
         case .pending:
             return "Pending Approval"
-        case .waitlisted(let pos):
+        case .waitlisted:
             return "Waitlisted"
         case .confirmed:
             return "Joined"
@@ -78,17 +78,17 @@ struct JoinEventButton: View {
 
     private var buttonColor: Color {
         switch joinState {
-        case .idle, .withdrawn, .rejected, .left: return Color.mainColor
-        case .confirmed:                          return Color(red: 0, green: 227/255, blue: 253/255)
-        case .pending:                            return Color.backgroundColor
-        case .waitlisted:                         return Color.backgroundColor.opacity(0.7)
-        case .full:                               return Color.gray.opacity(0.35)
+        case .idle, .withdrawn, .rejected: return Color.mainColor
+        case .confirmed:                   return Color(red: 0, green: 227/255, blue: 253/255)
+        case .pending:                     return Color.backgroundColor
+        case .waitlisted:                  return Color.backgroundColor.opacity(0.7)
+        case .full:                        return Color.gray.opacity(0.35)
         }
     }
 
     private var foregroundColor: Color {
         switch joinState {
-        case .idle, .withdrawn, .rejected, .left, .confirmed: return .black
+        case .idle, .withdrawn, .rejected, .confirmed: return .black
         default: return .white
         }
     }

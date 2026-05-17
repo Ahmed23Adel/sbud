@@ -16,19 +16,18 @@ enum JoinState: Equatable {
     case confirmed
     case rejected
     case withdrawn
-    case left
     case full
 
     var isDisabled: Bool {
         switch self {
-        case .idle, .withdrawn, .rejected, .left: return false
+        case .idle, .withdrawn, .rejected: return false
         default: return true
         }
     }
 
     var labelText: String {
         switch self {
-        case .idle, .withdrawn, .left: return "Join Activity"
+        case .idle, .withdrawn:        return "Join Activity"
         case .pending:                 return "Request Sent"
         case .waitlisted(let pos):     return "Waitlist #\(pos)"
         case .confirmed:               return "Joined ✓"
@@ -39,11 +38,11 @@ enum JoinState: Equatable {
 
     var iconName: String {
         switch self {
-        case .idle, .withdrawn, .rejected, .left: return "door.left.hand.open"
-        case .pending:                            return "clock"
-        case .waitlisted:                         return "list.number"
-        case .confirmed:                          return "checkmark.circle.fill"
-        case .full:                               return "person.fill.xmark"
+        case .idle, .withdrawn, .rejected: return "door.left.hand.open"
+        case .pending:                     return "clock"
+        case .waitlisted:                  return "list.number"
+        case .confirmed:                   return "checkmark.circle.fill"
+        case .full:                        return "person.fill.xmark"
         }
     }
 
@@ -152,8 +151,7 @@ class ViewModelMoreInfoEvent {
                 case "pending":    joinState = .pending
                 case "confirmed":  joinState = .confirmed
                 case "rejected":   joinState = .rejected
-                case "withdrawn":  joinState = .withdrawn
-                case "left":       joinState = .left
+                case "withdrawn", "left": joinState = .withdrawn
                 case "waitlisted": joinState = .waitlisted(position: resp.waitlistPosition ?? 0)
                 default:           joinState = .idle
                 }
@@ -171,6 +169,9 @@ class ViewModelMoreInfoEvent {
             await MainActor.run {
                 isJoiningLoading = false
                 switch resp.status {
+                case "confirmed":
+                    joinState = .confirmed
+                    PopUpGenerator.shared.show(msg: "You have joined the event!", type: .notification)
                 case "pending":
                     joinState = .pending
                     PopUpGenerator.shared.show(msg: "Request sent, awaiting host approval.", type: .notification)
@@ -214,8 +215,8 @@ class ViewModelMoreInfoEvent {
         do {
             _ = try await joinRequester.leave(eventId: eventId)
             await MainActor.run {
-                joinState = .left
-                PopUpGenerator.shared.show(msg: "You have left the event.", type: .information)
+                joinState = .withdrawn
+                PopUpGenerator.shared.show(msg: "You have left the event. You can re-join anytime.", type: .information)
             }
         } catch {
             PopUpGenerator.shared.show(msg: "Error: \(error.localizedDescription)", type: .error)
