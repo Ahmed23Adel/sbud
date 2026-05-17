@@ -85,6 +85,9 @@ class MetricsCollectorRun: MetricsCollector {
 
     init(isCreator: Bool) {
         self.isCreator = isCreator
+        // sink: subscribe to locations
+        // why store it in cancellable? When you subscribe to something, you need a way to cancel that subscription so it doesn't run forever and leak memory.
+        // When your screen or class is dismissed and destroyed, the bag is also destroyed, which automatically cancels all your subscriptions safely.
         locationManager.$lastLocation
             .compactMap { $0 }
             .sink { [weak self] location in
@@ -103,7 +106,7 @@ class MetricsCollectorRun: MetricsCollector {
         startDate = Date()
         lastSplitDate = Date()
         isTracking = true
-
+        // Every 1 second
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, let start = self.startDate else { return }
             self.elapsedSeconds = Date().timeIntervalSince(start)
@@ -163,6 +166,8 @@ class MetricsCollectorRun: MetricsCollector {
         ])
     }
 
+    
+    
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
@@ -316,10 +321,15 @@ class MetricsCollectorRun: MetricsCollector {
 
     private func restoreDefaultConfig() {
         locationManager.applyConfiguration {
+            // This tells iOS how the user is moving so the device can optimize its internal hardware
+            // Optimized for pedestrian activities like running, walking, or cycling
             $0.activityType = .other
+            // This defines the minimum distance (in meters) a user must move horizontally before the app is notified of a new location.
+            //This turns off the filter completely. You will receive updates for every single movement detected by the hardware
             $0.distanceFilter = kCLDistanceFilterNone
-            $0.allowsBackgroundLocationUpdates = false
-            $0.pausesLocationUpdatesAutomatically = true
+            $0.allowsBackgroundLocationUpdates = true
+            // This determines whether iOS can temporarily turn off location tracking to save the user's battery.
+            $0.pausesLocationUpdatesAutomatically = false
         }
     }
 
