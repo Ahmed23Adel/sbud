@@ -11,7 +11,7 @@ import OSLog
 import FirebaseFirestore
 
 @Observable
-class MetricsCollectorYoga: MetricsCollector {
+class MetricsCollectorYoga: MetricsCollector, MetricsCollectorTimeable {
 
     let startDateTime = Date()
 
@@ -31,8 +31,10 @@ class MetricsCollectorYoga: MetricsCollector {
 
     // MARK: - Control
 
-    func startSession() {
-        logger.info("Starting yoga session")
+    /// eventId unused for time-only collectors — startDate is restored
+    /// from LocalOnGoingSession in the view model, not from a checkpoint.
+    func startSession(eventId: String) {
+        logger.info("Starting Tennis session")
         reset()
         startDate = Date()
         isTracking = true
@@ -41,6 +43,13 @@ class MetricsCollectorYoga: MetricsCollector {
             guard let self, let start = self.startDate else { return }
             self.elapsedSeconds = Date().timeIntervalSince(start)
         }
+    }
+
+    /// Called by the view model after reading LocalOnGoingSession.
+    /// Rewinds elapsedSeconds so the timer view shows the correct
+    /// total time including time before a crash/relaunch.
+    func restoreStartDate(_ date: Date) {
+        startDate = date
     }
 
     func endSession(event: EventFullDetails) async throws {
@@ -62,7 +71,7 @@ class MetricsCollectorYoga: MetricsCollector {
     private func creatorEndsSession(eventId: String, userId: String) async throws {
         let endDateTime = Date()
 
-        let metrics = MetricsCollectedYoga(
+        let metrics = MetricsCollectedGym(
             startDateTime: startDateTime,
             endDateTime: endDateTime,
             metricsCreatorType: .creator
@@ -81,41 +90,34 @@ class MetricsCollectorYoga: MetricsCollector {
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
-        let db = Firestore.firestore()
-        let snapshot = try await db.collection("Events").document(eventId).getDocument()
+        guard let data = try await db.collection("Events").document(eventId)
+            .getDocument().data() else { throw MetricsError.eventNotFound }
 
-        guard let data = snapshot.data() else {
-            throw MetricsError.eventNotFound
-        }
-
-        let creatorEndedSession = data["finalEndDateTime"] != nil
-
-        if !creatorEndedSession {
+        guard let finalEndDateTime = try await MetricsCollectorUtils
+            .readFinalEndDateTime(eventId: eventId) else {
             logger.info("Yoga participant ended before creator — storing data only")
-            let metrics = MetricsCollectedYoga(
+            try await MetricsCollectedGym(
                 startDateTime: startDateTime,
                 endDateTime: Date(),
                 metricsCreatorType: .normalParticipant,
                 endedBeforeCreator: true
-            )
-            try await metrics.upload(eventId: eventId, userId: userId)
+            ).upload(eventId: eventId, userId: userId)
             return
         }
 
-        let finalEndDateTime = (data["finalEndDateTime"] as! Timestamp).dateValue()
-
-        let metrics = MetricsCollectedYoga(
+        try await MetricsCollectedGym(
             startDateTime: startDateTime,
             endDateTime: finalEndDateTime,
             metricsCreatorType: .normalParticipant,
             endedBeforeCreator: false
-        )
+        ).upload(eventId: eventId, userId: userId)
 
-        try await metrics.upload(eventId: eventId, userId: userId)
         logger.info("Yoga participant metrics uploaded")
     }
 
     // MARK: - Helpers
+
+    private var db: Firestore { Firestore.firestore() }
 
     private func reset() {
         elapsedSeconds = 0

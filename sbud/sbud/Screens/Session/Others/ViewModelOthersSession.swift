@@ -53,28 +53,28 @@ class ViewModelOthersSession {
         switch eventDetails.activityType {
         case .running:
             metricsCollector = MetricsCollectorRun(isCreator: false)
-            (metricsCollector as! MetricsCollectorRun).startSession()
+            (metricsCollector as! MetricsCollectorRun).startSession(eventId: eventDetails.id)
         case .cycling:
             metricsCollector = MetricsCollectorCycling(isCreator: false)
-            (metricsCollector as! MetricsCollectorCycling).startSession()
+            (metricsCollector as! MetricsCollectorCycling).startSession(eventId: eventDetails.id)
         case .gym:
             metricsCollector = MetricsCollectorGym(isCreator: false)
-            (metricsCollector as! MetricsCollectorGym).startSession()
+            (metricsCollector as! MetricsCollectorGym).startSession(eventId: eventDetails.id)
         case .skiing:
             metricsCollector = MetricsCollectorSkiing(isCreator: false)
-            (metricsCollector as! MetricsCollectorSkiing).startSession()
+            (metricsCollector as! MetricsCollectorSkiing).startSession(eventId: eventDetails.id)
         case .swimming:
             metricsCollector = MetricsCollectorSwimming(isCreator: false)
-            (metricsCollector as! MetricsCollectorSwimming).startSession()
+            (metricsCollector as! MetricsCollectorSwimming).startSession(eventId: eventDetails.id)
         case .hiking:
             metricsCollector = MetricsCollectorHiking(isCreator: false)
-            (metricsCollector as! MetricsCollectorHiking).startSession()
+            (metricsCollector as! MetricsCollectorHiking).startSession(eventId: eventDetails.id)
         case .yoga:
             metricsCollector = MetricsCollectorYoga(isCreator: false)
-            (metricsCollector as! MetricsCollectorYoga).startSession()
+            (metricsCollector as! MetricsCollectorYoga).startSession(eventId: eventDetails.id)
         case .tennis:
             metricsCollector = MetricsCollectorTennis(isCreator: false)
-            (metricsCollector as! MetricsCollectorTennis).startSession()
+            (metricsCollector as! MetricsCollectorTennis).startSession(eventId: eventDetails.id)
         }
     }
 
@@ -93,15 +93,30 @@ class ViewModelOthersSession {
     }
 
     func readLocalSessionDetails() {
-        logger.info("Reading participant session from local db")
+        logger.info("Reading from local db")
         let eventId = eventDetails.id
         var descriptor = FetchDescriptor<LocalOnGoingSession>(
             predicate: #Predicate { $0.eventId == eventId }
         )
         descriptor.fetchLimit = 1
-        if let result = try? context?.fetch(descriptor).first {
-            logger.info("Start datetime read: \(result.startDateTime)")
-            startDateTime = result.startDateTime
+
+        guard let result = try? context?.fetch(descriptor).first else { return }
+        logger.info("Start datetime read: \(result.startDateTime)")
+        startDateTime = result.startDateTime
+
+        // For time-only collectors, rewind the elapsed timer to
+        // account for time before the crash/relaunch
+        switch metricsCollector {
+        case let gym as MetricsCollectorGym:
+            gym.restoreStartDate(result.startDateTime)
+        case let swim as MetricsCollectorSwimming:
+            swim.restoreStartDate(result.startDateTime)
+        case let yoga as MetricsCollectorYoga:
+            yoga.restoreStartDate(result.startDateTime)
+        case let tennis as MetricsCollectorTennis:
+            tennis.restoreStartDate(result.startDateTime)
+        default:
+            break
         }
     }
 

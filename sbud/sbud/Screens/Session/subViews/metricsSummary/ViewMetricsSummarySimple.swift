@@ -12,7 +12,7 @@ import SwiftUI
 // No map, no fake metrics. Just a focused, immersive timer screen.
 
 struct ViewMetricsSummarySimple: View {
-    let startDateTime: Date
+    let collector: (any MetricsCollectorTimeable)
     let activityType: ActivityType  // drives the icon + colour accent
 
     private var accent: Color {
@@ -84,7 +84,7 @@ struct ViewMetricsSummarySimple: View {
                         .tracking(3)
                         .foregroundColor(.labelGray)
 
-                    SessionTimerView(startDate: startDateTime)
+                    SessionTimerView(collector: collector)
                 }
 
                 // ── Tagline ───────────────────────────────────────────────
@@ -101,10 +101,10 @@ struct ViewMetricsSummarySimple: View {
 
 // MARK: - Preview
 
-#Preview {
-    ViewMetricsSummarySimple(
-        startDateTime: Date(),
-        activityType: .yoga
-    )
-    .preferredColorScheme(.dark)
-}
+//#Preview {
+//    ViewMetricsSummarySimple(
+//        startDateTime: Date(),
+//        activityType: .yoga
+//    )
+//    .preferredColorScheme(.dark)
+//}

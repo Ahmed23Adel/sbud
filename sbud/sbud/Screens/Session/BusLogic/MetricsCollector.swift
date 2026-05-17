@@ -9,6 +9,6 @@ import Foundation
 
 protocol MetricsCollector {
     var startDateTime: Date { get }
-    func startSession() -> Void
+    func startSession(eventId: String) -> Void
     func endSession(event: EventFullDetails) async throws -> Void
 }

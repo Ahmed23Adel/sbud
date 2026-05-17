@@ -49,28 +49,28 @@ class ViewModelOwnerSession{
             
         case .running:
             metricsCollector = MetricsCollectorRun(isCreator: true)
-            (metricsCollector as! MetricsCollectorRun).startSession()
+            (metricsCollector as! MetricsCollectorRun).startSession(eventId: eventDetails.id)
         case .cycling:
             metricsCollector = MetricsCollectorCycling(isCreator: true)
-            (metricsCollector as! MetricsCollectorCycling).startSession()
+            (metricsCollector as! MetricsCollectorCycling).startSession(eventId: eventDetails.id)
         case .gym:
             metricsCollector = MetricsCollectorGym(isCreator: true)
-            (metricsCollector as! MetricsCollectorGym).startSession()
+            (metricsCollector as! MetricsCollectorGym).startSession(eventId: eventDetails.id)
         case .skiing:
             metricsCollector = MetricsCollectorSkiing(isCreator: true)
-            (metricsCollector as! MetricsCollectorSkiing).startSession()
+            (metricsCollector as! MetricsCollectorSkiing).startSession(eventId: eventDetails.id)
         case .swimming:
             metricsCollector = MetricsCollectorSwimming(isCreator: true)
-            (metricsCollector as! MetricsCollectorSwimming).startSession()
+            (metricsCollector as! MetricsCollectorSwimming).startSession(eventId: eventDetails.id)
         case .hiking:
             metricsCollector = MetricsCollectorHiking(isCreator: true)
-            (metricsCollector as! MetricsCollectorHiking).startSession()
+            (metricsCollector as! MetricsCollectorHiking).startSession(eventId: eventDetails.id)
         case .yoga:
             metricsCollector = MetricsCollectorYoga(isCreator: true)
-            (metricsCollector as! MetricsCollectorYoga).startSession()
+            (metricsCollector as! MetricsCollectorYoga).startSession(eventId: eventDetails.id)
         case .tennis:
             metricsCollector = MetricsCollectorTennis(isCreator: true)
-            (metricsCollector as! MetricsCollectorTennis).startSession()
+            (metricsCollector as! MetricsCollectorTennis).startSession(eventId: eventDetails.id)
         }
     }
     

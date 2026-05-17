@@ -89,6 +89,53 @@ enum MetricsCollectorUtils {
         guard let timestamp = data["finalEndDateTime"] as? Timestamp else { return nil }
         return timestamp.dateValue()
     }
+    
+
+    static func computeVerticalDrop(from locations: [CLLocation]) -> Double {
+        guard locations.count > 1 else { return 0 }
+        var drop = 0.0
+        for i in 1..<locations.count {
+            let delta = locations[i].altitude - locations[i - 1].altitude
+            if delta < 0 { drop += abs(delta) }
+        }
+        return drop
+    }
+
+    static func computeNumberOfRuns(from locations: [CLLocation]) -> Int {
+        guard locations.count > 1 else { return 0 }
+        var runs = 0
+        var wasDescending = false
+        for i in 1..<locations.count {
+            let delta = locations[i].altitude - locations[i - 1].altitude
+            if delta < 0 && !wasDescending {
+                runs += 1
+                wasDescending = true
+            } else if delta >= 0 {
+                wasDescending = false
+            }
+        }
+        return runs
+    }
+    
+    func computeElevationLoss(from locations: [CLLocation]) -> Double {
+        guard locations.count > 1 else { return 0 }
+        var loss = 0.0
+        for i in 1..<locations.count {
+            let delta = locations[i].altitude - locations[i - 1].altitude
+            if delta < 0 { loss += abs(delta) }
+        }
+        return loss
+    }
+    
+    static func computeElevationLoss(from locations: [CLLocation]) -> Double {
+        guard locations.count > 1 else { return 0 }
+        var loss = 0.0
+        for i in 1..<locations.count {
+            let delta = locations[i].altitude - locations[i - 1].altitude
+            if delta < 0 { loss += abs(delta) }
+        }
+        return loss
+    }
 }
 
 extension Collection where Element == (Date, CLLocation) {

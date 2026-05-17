@@ -60,7 +60,7 @@ struct ViewMetricsSummaryRun: View {
             HStack(alignment: .center, spacing: 0) {
 
                 // Timer (left)
-                SessionTimerView(startDate: collector.startDateTime)
+                SessionTimerView(collector: collector)
                     .frame(maxWidth: .infinity)
 
                 // Divider

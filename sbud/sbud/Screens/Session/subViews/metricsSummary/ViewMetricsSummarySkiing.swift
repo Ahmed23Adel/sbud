@@ -86,7 +86,7 @@ struct ViewMetricsSummarySkiing: View {
 
             // ── Timer + distance row ──────────────────────────────────────
             HStack(alignment: .center, spacing: 0) {
-                SessionTimerView(startDate: collector.startDateTime)
+                SessionTimerView(collector: collector)
                     .frame(maxWidth: .infinity)
 
                 Rectangle()

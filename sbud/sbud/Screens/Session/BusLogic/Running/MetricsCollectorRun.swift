@@ -54,9 +54,19 @@ import CoreLocation
 import Combine
 import OSLog
 import FirebaseFirestore
+//
+//  MetricsCollectorRun.swift
+//  sbud
+//
+
+import Foundation
+import CoreLocation
+import Combine
+import OSLog
+import FirebaseFirestore
 
 @Observable
-class MetricsCollectorRun: MetricsCollector {
+class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCollectorPersistable {
 
     let startDateTime = Date()
 
@@ -76,10 +86,13 @@ class MetricsCollectorRun: MetricsCollector {
     private var lastLocation: CLLocation?
     private var startDate: Date?
     private var timer: Timer?
+    private var checkpointTimer: Timer?
     private var distanceSinceLastSplit: Double = 0
     private var lastSplitDate: Date?
+    private var currentEventId: String?
     private var cancellables = Set<AnyCancellable>()
     private let splitEveryMeters: Double = 1000
+    private let checkpointIntervalSeconds: Double = 30
     let isCreator: Bool
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorRun")
 
@@ -95,19 +108,38 @@ class MetricsCollectorRun: MetricsCollector {
 
     // MARK: - Control
 
-    func startSession() {
-        logger.info("Starting running session")
-        reset()
+    func startSession(eventId: String) {
+        currentEventId = eventId
+
+        // Try to restore a previous crash checkpoint first
+        if restoreCheckpoint(eventId: eventId) {
+            logger.info("Restored crash checkpoint for eventId: \(eventId)")
+            // Don't reset — continue from restored state
+        } else {
+            logger.info("No checkpoint found, starting fresh")
+            reset()
+            startDate = Date()
+            lastSplitDate = Date()
+        }
+
         configureForRun()
         locationManager.startUpdating()
-        startDate = Date()
-        lastSplitDate = Date()
         isTracking = true
 
+        // Main 1-second tick
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, let start = self.startDate else { return }
             self.elapsedSeconds = Date().timeIntervalSince(start)
             self.updateAveragePace()
+        }
+
+        // Checkpoint every 30 seconds
+        checkpointTimer = Timer.scheduledTimer(
+            withTimeInterval: checkpointIntervalSeconds,
+            repeats: true
+        ) { [weak self] _ in
+            guard let self, let eventId = self.currentEventId else { return }
+            self.saveCheckpoint(eventId: eventId)
         }
     }
 
@@ -116,6 +148,8 @@ class MetricsCollectorRun: MetricsCollector {
         locationManager.stopUpdating()
         timer?.invalidate()
         timer = nil
+        checkpointTimer?.invalidate()
+        checkpointTimer = nil
         isTracking = false
 
         let userId = ProfileManager.shared.getLocalProfile()!.id
@@ -125,6 +159,73 @@ class MetricsCollectorRun: MetricsCollector {
         } else {
             try await participantEndsSession(eventId: event.id, userId: userId)
         }
+
+        // Only clear checkpoint after successful upload
+        clearCheckpoint(eventId: event.id)
+    }
+
+    // MARK: - Checkpoint persistence
+
+    func saveCheckpoint(eventId: String) {
+        guard let startDate else { return }
+
+        let snapshot = RunSessionSnapshot(
+            eventId: eventId,
+            startDate: startDate,
+            lastSplitDate: lastSplitDate,
+            totalDistanceMeters: totalDistanceMeters,
+            distanceSinceLastSplit: distanceSinceLastSplit,
+            elapsedSeconds: elapsedSeconds,
+            minPace: minPace,
+            maxPace: maxPace,
+            splits: splits,
+            trackPoints: trackedLocations.toTrackPoints()
+        )
+
+        guard let data = try? JSONEncoder().encode(snapshot) else {
+            logger.error("Failed to encode RunSessionSnapshot")
+            return
+        }
+
+        UserDefaults.standard.set(data, forKey: checkpointKey(eventId: eventId))
+        logger.info("Checkpoint saved for eventId: \(eventId), \(self.trackedLocations.count) points")
+    }
+
+    /// Returns true if a checkpoint was found and restored, false if starting fresh.
+    func restoreCheckpoint(eventId: String) -> Bool {
+        guard let data = UserDefaults.standard.data(forKey: checkpointKey(eventId: eventId)),
+              let snapshot = try? JSONDecoder().decode(RunSessionSnapshot.self, from: data)
+        else { return false }
+
+        // Restore scalar state
+        startDate = snapshot.startDate
+        lastSplitDate = snapshot.lastSplitDate
+        totalDistanceMeters = snapshot.totalDistanceMeters
+        distanceSinceLastSplit = snapshot.distanceSinceLastSplit
+        elapsedSeconds = snapshot.elapsedSeconds
+        minPace = snapshot.minPace
+        maxPace = snapshot.maxPace
+        splits = snapshot.splits
+
+        // Reconstruct (Date, CLLocation) from stored TrackPoints
+        trackedLocations = snapshot.trackPoints.map { point in
+            let location = CLLocation(
+                coordinate: CLLocationCoordinate2D(
+                    latitude: point.latitude,
+                    longitude: point.longitude
+                ),
+                altitude: 0,
+                horizontalAccuracy: 10,
+                verticalAccuracy: 10,
+                timestamp: point.timestamp
+            )
+            return (point.timestamp, location)
+        }
+
+        // Seed lastLocation so distance delta continues correctly
+        lastLocation = trackedLocations.last?.1
+
+        return true
     }
 
     // MARK: - Creator end
@@ -161,9 +262,7 @@ class MetricsCollectorRun: MetricsCollector {
         let db = Firestore.firestore()
         let eventRef = db.collection("Events").document(eventId)
 
-        // 1. Check if creator has ended
         guard let finalEndDateTime = try await MetricsCollectorUtils.readFinalEndDateTime(eventId: eventId) else {
-            // Creator hasn't ended — store as-is, excluded from averages
             logger.info("Participant ended before creator — storing data, skipping avg update")
             let metrics = MetricsCollectedRun(
                 startDateTime: startDateTime,
@@ -178,14 +277,12 @@ class MetricsCollectorRun: MetricsCollector {
             return
         }
 
-        // 2. Trim data to finalEndDateTime
         let trimmedTrack = MetricsCollectorUtils.trimTrack(trackedLocations, to: finalEndDateTime)
         let trimmedSplits = splits.filter { $0.dateTimeCreated <= finalEndDateTime }
         let trimmedDistance = MetricsCollectorUtils.computeDistance(from: trimmedTrack.map { $0.1 })
         let trimmedElapsed = MetricsCollectorUtils.trimmedElapsed(from: trimmedTrack, fallback: elapsedSeconds)
         let trimmedAvgPace = trimmedDistance > 0 ? (trimmedElapsed / 60) / (trimmedDistance / 1000) : 0
 
-        // 3. Upload trimmed metrics
         let metrics = MetricsCollectedRun(
             startDateTime: startDateTime,
             endDateTime: finalEndDateTime,
@@ -197,7 +294,6 @@ class MetricsCollectorRun: MetricsCollector {
         )
         try await metrics.upload(eventId: eventId, userId: userId)
 
-        // 4. Transaction: update event averages
         guard trimmedAvgPace > 0 else {
             logger.warning("Participant avg pace is 0, skipping event metrics update")
             return
@@ -271,7 +367,9 @@ class MetricsCollectorRun: MetricsCollector {
     // MARK: - Location handling
 
     private func handleNewLocation(_ location: CLLocation) {
-        guard isTracking, MetricsCollectorUtils.isValidLocation(location, lastLocation: lastLocation) else { return }
+        guard isTracking,
+              MetricsCollectorUtils.isValidLocation(location, lastLocation: lastLocation)
+        else { return }
 
         trackedLocations.append((Date(), location))
 
@@ -320,5 +418,7 @@ class MetricsCollectorRun: MetricsCollector {
         lastLocation = nil
         distanceSinceLastSplit = 0
         lastSplitDate = nil
+        minPace = .infinity
+        maxPace = -.infinity
     }
 }

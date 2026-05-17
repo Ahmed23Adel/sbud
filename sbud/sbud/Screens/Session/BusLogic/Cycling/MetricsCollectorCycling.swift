@@ -26,7 +26,7 @@ struct SplitForCycling: Identifiable, Codable {
 }
 
 @Observable
-class MetricsCollectorCycling: MetricsCollector {
+class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, MetricsCollectorPersistable {
 
     let startDateTime = Date()
 
@@ -41,17 +41,19 @@ class MetricsCollectorCycling: MetricsCollector {
     var isTracking = false
     var minSpeedKmH: Double = Double.infinity
     var maxSpeedKmH: Double = -Double.infinity
-    var avgSpeedKmH: Double = 0
 
     // MARK: - Private
     private let locationManager = LocationManager.shared
     private var lastLocation: CLLocation?
     private var startDate: Date?
     private var timer: Timer?
+    private var checkpointTimer: Timer?
     private var distanceSinceLastSplit: Double = 0
     private var lastSplitDate: Date?
+    private var currentEventId: String?
     private var cancellables = Set<AnyCancellable>()
     private let splitEveryMeters: Double = 1000
+    private let checkpointIntervalSeconds: Double = 30
     let isCreator: Bool
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorCycling")
 
@@ -67,19 +69,34 @@ class MetricsCollectorCycling: MetricsCollector {
 
     // MARK: - Control
 
-    func startSession() {
-        logger.info("Starting cycling session")
-        reset()
+    func startSession(eventId: String) {
+        currentEventId = eventId
+
+        if restoreCheckpoint(eventId: eventId) {
+            logger.info("Restored crash checkpoint for eventId: \(eventId)")
+        } else {
+            logger.info("No checkpoint found, starting fresh")
+            reset()
+            startDate = Date()
+            lastSplitDate = Date()
+        }
+
         configureForCycling()
         locationManager.startUpdating()
-        startDate = Date()
-        lastSplitDate = Date()
         isTracking = true
 
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, let start = self.startDate else { return }
             self.elapsedSeconds = Date().timeIntervalSince(start)
             self.updateAverageSpeed()
+        }
+
+        checkpointTimer = Timer.scheduledTimer(
+            withTimeInterval: checkpointIntervalSeconds,
+            repeats: true
+        ) { [weak self] _ in
+            guard let self, let eventId = self.currentEventId else { return }
+            self.saveCheckpoint(eventId: eventId)
         }
     }
 
@@ -88,6 +105,8 @@ class MetricsCollectorCycling: MetricsCollector {
         locationManager.stopUpdating()
         timer?.invalidate()
         timer = nil
+        checkpointTimer?.invalidate()
+        checkpointTimer = nil
         isTracking = false
 
         let userId = ProfileManager.shared.getLocalProfile()!.id
@@ -97,6 +116,69 @@ class MetricsCollectorCycling: MetricsCollector {
         } else {
             try await participantEndsSession(eventId: event.id, userId: userId)
         }
+
+        clearCheckpoint(eventId: event.id)
+    }
+
+    // MARK: - Checkpoint persistence
+
+    func saveCheckpoint(eventId: String) {
+        guard let startDate else { return }
+
+        let snapshot = CyclingSessionSnapshot(
+            eventId: eventId,
+            startDate: startDate,
+            lastSplitDate: lastSplitDate,
+            totalDistanceMeters: totalDistanceMeters,
+            distanceSinceLastSplit: distanceSinceLastSplit,
+            elevationGainMeters: elevationGainMeters,
+            elapsedSeconds: elapsedSeconds,
+            minSpeedKmH: minSpeedKmH,
+            maxSpeedKmH: maxSpeedKmH,
+            splits: splits,
+            trackPoints: trackedLocations.toTrackPoints()
+        )
+
+        guard let data = try? JSONEncoder().encode(snapshot) else {
+            logger.error("Failed to encode CyclingSessionSnapshot")
+            return
+        }
+
+        UserDefaults.standard.set(data, forKey: checkpointKey(eventId: eventId))
+        logger.info("Checkpoint saved for eventId: \(eventId), \(self.trackedLocations.count) points")
+    }
+
+    func restoreCheckpoint(eventId: String) -> Bool {
+        guard let data = UserDefaults.standard.data(forKey: checkpointKey(eventId: eventId)),
+              let snapshot = try? JSONDecoder().decode(CyclingSessionSnapshot.self, from: data)
+        else { return false }
+
+        startDate = snapshot.startDate
+        lastSplitDate = snapshot.lastSplitDate
+        totalDistanceMeters = snapshot.totalDistanceMeters
+        distanceSinceLastSplit = snapshot.distanceSinceLastSplit
+        elevationGainMeters = snapshot.elevationGainMeters
+        elapsedSeconds = snapshot.elapsedSeconds
+        minSpeedKmH = snapshot.minSpeedKmH
+        maxSpeedKmH = snapshot.maxSpeedKmH
+        splits = snapshot.splits
+
+        trackedLocations = snapshot.trackPoints.map { point in
+            let location = CLLocation(
+                coordinate: CLLocationCoordinate2D(
+                    latitude: point.latitude,
+                    longitude: point.longitude
+                ),
+                altitude: 0,
+                horizontalAccuracy: 10,
+                verticalAccuracy: 10,
+                timestamp: point.timestamp
+            )
+            return (point.timestamp, location)
+        }
+
+        lastLocation = trackedLocations.last?.1
+        return true
     }
 
     // MARK: - Creator end
@@ -104,17 +186,11 @@ class MetricsCollectorCycling: MetricsCollector {
     private func creatorEndsSession(eventId: String, userId: String) async throws {
         let endDateTime = Date()
 
-        let track = trackedLocations.map {
-            TrackPoint(timestamp: $0.0,
-                       latitude: $0.1.coordinate.latitude,
-                       longitude: $0.1.coordinate.longitude)
-        }
-
         let metrics = MetricsCollectedCycling(
             startDateTime: startDateTime,
             endDateTime: endDateTime,
             metricsCreatorType: .creator,
-            track: track,
+            track: trackedLocations.toTrackPoints(),
             totalDistance: totalDistanceMeters,
             elevationGain: elevationGainMeters,
             splits: splits
@@ -140,23 +216,13 @@ class MetricsCollectorCycling: MetricsCollector {
         let db = Firestore.firestore()
         let eventRef = db.collection("Events").document(eventId)
 
-        let snapshot = try await eventRef.getDocument()
-        guard let data = snapshot.data() else { throw MetricsError.eventNotFound }
-
-        let creatorEndedSession = data["finalEndDateTime"] != nil
-
-        if !creatorEndedSession {
+        guard let finalEndDateTime = try await MetricsCollectorUtils.readFinalEndDateTime(eventId: eventId) else {
             logger.info("Cycling participant ended before creator — storing data only")
-            let track = trackedLocations.map {
-                TrackPoint(timestamp: $0.0,
-                           latitude: $0.1.coordinate.latitude,
-                           longitude: $0.1.coordinate.longitude)
-            }
             let metrics = MetricsCollectedCycling(
                 startDateTime: startDateTime,
                 endDateTime: Date(),
                 metricsCreatorType: .normalParticipant,
-                track: track,
+                track: trackedLocations.toTrackPoints(),
                 totalDistance: totalDistanceMeters,
                 elevationGain: elevationGainMeters,
                 splits: splits,
@@ -166,41 +232,25 @@ class MetricsCollectorCycling: MetricsCollector {
             return
         }
 
-        let finalEndDateTime = (data["finalEndDateTime"] as! Timestamp).dateValue()
-
-        let trimmedTrack = trackedLocations.filter { $0.0 <= finalEndDateTime }
+        let trimmedTrack = MetricsCollectorUtils.trimTrack(trackedLocations, to: finalEndDateTime)
         let trimmedSplits = splits.filter { $0.dateTimeCreated <= finalEndDateTime }
-        let trimmedDistance = computeDistance(from: trimmedTrack.map { $0.1 })
-        let trimmedElevation = computeElevationGain(from: trimmedTrack.map { $0.1 })
-
-        let trimmedElapsed: Double
-        if let first = trimmedTrack.first?.0, let last = trimmedTrack.last?.0 {
-            trimmedElapsed = last.timeIntervalSince(first)
-        } else {
-            trimmedElapsed = elapsedSeconds
-        }
-
+        let trimmedDistance = MetricsCollectorUtils.computeDistance(from: trimmedTrack.map { $0.1 })
+        let trimmedElevation = MetricsCollectorUtils.computeElevationGain(from: trimmedTrack.map { $0.1 })
+        let trimmedElapsed = MetricsCollectorUtils.trimmedElapsed(from: trimmedTrack, fallback: elapsedSeconds)
         let trimmedAvgSpeed = trimmedElapsed > 0
             ? (trimmedDistance / 1000) / (trimmedElapsed / 3600)
             : 0
-
-        let trackPoints = trimmedTrack.map {
-            TrackPoint(timestamp: $0.0,
-                       latitude: $0.1.coordinate.latitude,
-                       longitude: $0.1.coordinate.longitude)
-        }
 
         let metrics = MetricsCollectedCycling(
             startDateTime: startDateTime,
             endDateTime: finalEndDateTime,
             metricsCreatorType: .normalParticipant,
-            track: trackPoints,
+            track: trimmedTrack.toTrackPoints(),
             totalDistance: trimmedDistance,
             elevationGain: trimmedElevation,
             splits: trimmedSplits,
             endedBeforeCreator: false
         )
-
         try await metrics.upload(eventId: eventId, userId: userId)
 
         guard trimmedAvgSpeed > 0 else {
@@ -276,7 +326,9 @@ class MetricsCollectorCycling: MetricsCollector {
     // MARK: - Location handling
 
     private func handleNewLocation(_ location: CLLocation) {
-        guard isTracking, isValid(location) else { return }
+        guard isTracking,
+              MetricsCollectorUtils.isValidLocation(location, lastLocation: lastLocation)
+        else { return }
 
         trackedLocations.append((Date(), location))
 
@@ -293,20 +345,6 @@ class MetricsCollectorCycling: MetricsCollector {
         }
 
         lastLocation = location
-    }
-
-    private func isValid(_ location: CLLocation) -> Bool {
-        guard location.horizontalAccuracy >= 0,
-              location.horizontalAccuracy < 20,
-              location.speed >= 0
-        else { return false }
-
-        if let last = lastLocation {
-            let timeDelta = location.timestamp.timeIntervalSince(last.timestamp)
-            guard timeDelta >= 1 else { return false }
-        }
-
-        return true
     }
 
     private func updateCurrentSpeed(from location: CLLocation) {
@@ -333,25 +371,6 @@ class MetricsCollectorCycling: MetricsCollector {
         splits.append(SplitForCycling(number: splits.count + 1, paceInMinPerKm: 0, speedKmH: speedKmH))
         distanceSinceLastSplit = 0
         lastSplitDate = location.timestamp
-    }
-
-    private func computeDistance(from locations: [CLLocation]) -> Double {
-        guard locations.count > 1 else { return 0 }
-        var total = 0.0
-        for i in 1..<locations.count {
-            total += locations[i].distance(from: locations[i - 1])
-        }
-        return total
-    }
-
-    private func computeElevationGain(from locations: [CLLocation]) -> Double {
-        guard locations.count > 1 else { return 0 }
-        var gain = 0.0
-        for i in 1..<locations.count {
-            let delta = locations[i].altitude - locations[i - 1].altitude
-            if delta > 0 { gain += delta }
-        }
-        return gain
     }
 
     private func reset() {

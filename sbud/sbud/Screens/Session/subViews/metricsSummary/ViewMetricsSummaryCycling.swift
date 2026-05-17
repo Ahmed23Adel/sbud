@@ -88,8 +88,9 @@ struct ViewMetricsSummaryCycling: View {
             // ── Timer + distance row ──────────────────────────────────────
             HStack(alignment: .center, spacing: 0) {
 
-                SessionTimerView(startDate: collector.startDateTime)
-                    .frame(maxWidth: .infinity)
+                if let collector = collector as? any MetricsCollectorTimeable {
+                    SessionTimerView(collector: collector)
+                }
 
                 Rectangle()
                     .fill(Color.neonCyan.opacity(0.2))

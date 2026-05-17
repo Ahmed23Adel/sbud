@@ -35,15 +35,15 @@ struct ViewMetricsSummaryConditional: View {
         // ── Timer-only activities ─────────────────────────────────────────
         case .gym:
             if let c = metricCollector as? MetricsCollectorGym {
-                SimpleWrapper(startDateTime: c.startDateTime, activityType: activityType)
+                SimpleWrapper(activityType: activityType, collector: c)
             }
         case .yoga:
             if let c = metricCollector as? MetricsCollectorYoga {
-                SimpleWrapper(startDateTime: c.startDateTime, activityType: activityType)
+                SimpleWrapper(activityType: activityType, collector: c)
             }
         case .tennis:
             if let c = metricCollector as? MetricsCollectorTennis {
-                SimpleWrapper(startDateTime: c.startDateTime, activityType: activityType)
+                SimpleWrapper(activityType: activityType, collector: c)
             }
 
         default:
@@ -76,9 +76,9 @@ private struct HikingSummaryWrapper: View {
 }
 
 private struct SimpleWrapper: View {
-    let startDateTime: Date
     let activityType: ActivityType
+    let collector: (any MetricsCollectorTimeable)
     var body: some View {
-        ViewMetricsSummarySimple(startDateTime: startDateTime, activityType: activityType)
+        ViewMetricsSummarySimple(collector: collector, activityType: activityType)
     }
 }
