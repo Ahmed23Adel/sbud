@@ -13,61 +13,72 @@ struct ViewMetricsSummaryConditional: View {
 
     var body: some View {
         switch activityType {
+
+        // ── Location + metrics activities ─────────────────────────────────
         case .running:
-            if let runCollector = metricCollector as? MetricsCollectorRun {
-                RunSummaryWrapper(runCollector: runCollector)
+            if let c = metricCollector as? MetricsCollectorRun {
+                RunSummaryWrapper(collector: c)
             }
         case .cycling:
-            if let cyclingCollector = metricCollector as? MetricsCollectorCycling {
-                CyclingSummaryWrapper(cyclingCollector: cyclingCollector)
+            if let c = metricCollector as? MetricsCollectorCycling {
+                CyclingSummaryWrapper(collector: c)
             }
-        case .gym:
-            EmptyView()
         case .skiing:
-            if let skiingCollector = metricCollector as? MetricsCollectorSkiing {
-                SkiingSummaryWrapper(skiingCollector: skiingCollector)
+            if let c = metricCollector as? MetricsCollectorSkiing {
+                SkiingSummaryWrapper(collector: c)
             }
         case .hiking:
-            if let hikingCollector = metricCollector as? MetricsCollectorHiking {
-                HikingSummaryWrapper(hikingCollector: hikingCollector)
+            if let c = metricCollector as? MetricsCollectorHiking {
+                HikingSummaryWrapper(collector: c)
+            }
+
+        // ── Timer-only activities ─────────────────────────────────────────
+        case .gym:
+            if let c = metricCollector as? MetricsCollectorGym {
+                SimpleWrapper(startDateTime: c.startDateTime, activityType: activityType)
             }
         case .yoga:
-            EmptyView()
+            if let c = metricCollector as? MetricsCollectorYoga {
+                SimpleWrapper(startDateTime: c.startDateTime, activityType: activityType)
+            }
         case .tennis:
-            EmptyView()
+            if let c = metricCollector as? MetricsCollectorTennis {
+                SimpleWrapper(startDateTime: c.startDateTime, activityType: activityType)
+            }
+
         default:
             EmptyView()
         }
     }
 }
 
-private struct RunSummaryWrapper: View {
-    @State var runCollector: MetricsCollectorRun
+// MARK: - Private wrappers
+// @State wrappers are required so SwiftUI observes @Observable collectors.
 
-    var body: some View {
-        ViewMetricsSummaryRun(collector: runCollector) 
-    }
+private struct RunSummaryWrapper: View {
+    @State var collector: MetricsCollectorRun
+    var body: some View { ViewMetricsSummaryRun(collector: collector) }
 }
 
 private struct CyclingSummaryWrapper: View {
-    @State var cyclingCollector: MetricsCollectorCycling
-
-    var body: some View {
-        ViewMetricsSummaryCycling(collector: cyclingCollector)
-    }
+    @State var collector: MetricsCollectorCycling
+    var body: some View { ViewMetricsSummaryCycling(collector: collector) }
 }
 
-
 private struct SkiingSummaryWrapper: View {
-    @State var skiingCollector: MetricsCollectorSkiing
-    var body: some View {
-        ViewMetricsSummarySkiing(collector: skiingCollector)
-    }
+    @State var collector: MetricsCollectorSkiing
+    var body: some View { ViewMetricsSummarySkiing(collector: collector) }
 }
 
 private struct HikingSummaryWrapper: View {
-    @State var hikingCollector: MetricsCollectorHiking
+    @State var collector: MetricsCollectorHiking
+    var body: some View { ViewMetricsSummaryHiking(collector: collector) }
+}
+
+private struct SimpleWrapper: View {
+    let startDateTime: Date
+    let activityType: ActivityType
     var body: some View {
-        ViewMetricsSummaryHiking(collector: hikingCollector)
+        ViewMetricsSummarySimple(startDateTime: startDateTime, activityType: activityType)
     }
 }

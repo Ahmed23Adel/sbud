@@ -85,9 +85,6 @@ class MetricsCollectorRun: MetricsCollector {
 
     init(isCreator: Bool) {
         self.isCreator = isCreator
-        // sink: subscribe to locations
-        // why store it in cancellable? When you subscribe to something, you need a way to cancel that subscription so it doesn't run forever and leak memory.
-        // When your screen or class is dismissed and destroyed, the bag is also destroyed, which automatically cancels all your subscriptions safely.
         locationManager.$lastLocation
             .compactMap { $0 }
             .sink { [weak self] location in
@@ -106,7 +103,7 @@ class MetricsCollectorRun: MetricsCollector {
         startDate = Date()
         lastSplitDate = Date()
         isTracking = true
-        // Every 1 second
+
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, let start = self.startDate else { return }
             self.elapsedSeconds = Date().timeIntervalSince(start)
@@ -135,17 +132,11 @@ class MetricsCollectorRun: MetricsCollector {
     private func creatorEndsSession(eventId: String, userId: String) async throws {
         let endDateTime = Date()
 
-        let track = trackedLocations.map {
-            TrackPoint(timestamp: $0.0,
-                       latitude: $0.1.coordinate.latitude,
-                       longitude: $0.1.coordinate.longitude)
-        }
-
         let metrics = MetricsCollectedRun(
             startDateTime: startDateTime,
             endDateTime: endDateTime,
             metricsCreatorType: .creator,
-            track: track,
+            track: trackedLocations.toTrackPoints(),
             totalDistance: totalDistanceMeters,
             splits: splits
         )
@@ -153,98 +144,60 @@ class MetricsCollectorRun: MetricsCollector {
         try await metrics.upload(eventId: eventId, userId: userId)
 
         let db = Firestore.firestore()
-        let eventRef = db.collection("Events").document(eventId)
-
-        try await eventRef.updateData([
+        try await db.collection("Events").document(eventId).updateData([
             "finalStartDateTime": startDate as Any,
             "finalEndDateTime": endDateTime,
             "status": UsersEventStatus.completed.rawValue,
             "avgPace": averagePaceMinPerKm,
             "minPace": minPace == .infinity ? 0.0 : minPace,
             "maxPace": maxPace == -.infinity ? 0.0 : maxPace,
-            "participantCount": FieldValue.increment(Int64(1))  // track how many contributed to avg
+            "participantCount": FieldValue.increment(Int64(1))
         ])
     }
 
-    
-    
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
         let db = Firestore.firestore()
         let eventRef = db.collection("Events").document(eventId)
 
-        // 1. Read the event doc to check if creator has ended
-        let snapshot = try await eventRef.getDocument()
-        guard let data = snapshot.data() else {
-            throw MetricsError.eventNotFound
-        }
-
-        let creatorEndedSession = data["finalEndDateTime"] != nil
-
-        if !creatorEndedSession {
-            // Creator hasn't ended yet — upload as-is, excluded from averages
+        // 1. Check if creator has ended
+        guard let finalEndDateTime = try await MetricsCollectorUtils.readFinalEndDateTime(eventId: eventId) else {
+            // Creator hasn't ended — store as-is, excluded from averages
             logger.info("Participant ended before creator — storing data, skipping avg update")
-
-            let track = trackedLocations.map {
-                TrackPoint(timestamp: $0.0,
-                           latitude: $0.1.coordinate.latitude,
-                           longitude: $0.1.coordinate.longitude)
-            }
-
             let metrics = MetricsCollectedRun(
                 startDateTime: startDateTime,
                 endDateTime: Date(),
                 metricsCreatorType: .normalParticipant,
-                track: track,
+                track: trackedLocations.toTrackPoints(),
                 totalDistance: totalDistanceMeters,
                 splits: splits,
                 endedBeforeCreator: true
             )
-
             try await metrics.upload(eventId: eventId, userId: userId)
             return
         }
 
-        // 2. Creator has ended — trim data to finalEndDateTime
-        let finalEndDateTime = (data["finalEndDateTime"] as! Timestamp).dateValue()
-
-        let trimmedTrack = trackedLocations.filter { $0.0 <= finalEndDateTime }
+        // 2. Trim data to finalEndDateTime
+        let trimmedTrack = MetricsCollectorUtils.trimTrack(trackedLocations, to: finalEndDateTime)
         let trimmedSplits = splits.filter { $0.dateTimeCreated <= finalEndDateTime }
+        let trimmedDistance = MetricsCollectorUtils.computeDistance(from: trimmedTrack.map { $0.1 })
+        let trimmedElapsed = MetricsCollectorUtils.trimmedElapsed(from: trimmedTrack, fallback: elapsedSeconds)
+        let trimmedAvgPace = trimmedDistance > 0 ? (trimmedElapsed / 60) / (trimmedDistance / 1000) : 0
 
-        // Recalculate total distance from trimmed track
-        let trimmedDistance = computeDistance(from: trimmedTrack.map { $0.1 })
-
-        // Recalculate average pace from trimmed data
-        let trimmedElapsed: Double
-        if let first = trimmedTrack.first?.0, let last = trimmedTrack.last?.0 {
-            trimmedElapsed = last.timeIntervalSince(first)
-        } else {
-            trimmedElapsed = elapsedSeconds
-        }
-        let trimmedAvgPace = trimmedDistance > 0
-            ? (trimmedElapsed / 60) / (trimmedDistance / 1000)
-            : 0
-
-        let trackPoints = trimmedTrack.map {
-            TrackPoint(timestamp: $0.0,
-                       latitude: $0.1.coordinate.latitude,
-                       longitude: $0.1.coordinate.longitude)
-        }
-
+        // 3. Upload trimmed metrics
         let metrics = MetricsCollectedRun(
             startDateTime: startDateTime,
             endDateTime: finalEndDateTime,
             metricsCreatorType: .normalParticipant,
-            track: trackPoints,
+            track: trimmedTrack.toTrackPoints(),
             totalDistance: trimmedDistance,
             splits: trimmedSplits,
             endedBeforeCreator: false
         )
-
         try await metrics.upload(eventId: eventId, userId: userId)
 
-        // 3. Transaction: read current avg/min/max, include this participant, write back
+        // 4. Transaction: update event averages
         guard trimmedAvgPace > 0 else {
             logger.warning("Participant avg pace is 0, skipping event metrics update")
             return
@@ -268,16 +221,14 @@ class MetricsCollectorRun: MetricsCollector {
                   let currentMax = currentData["maxPace"] as? Double,
                   let currentCount = currentData["participantCount"] as? Int
             else {
-                let error = NSError(
+                errorPointer?.pointee = NSError(
                     domain: "MetricsCollectorRun",
                     code: 1,
                     userInfo: [NSLocalizedDescriptionKey: "Missing metrics fields on event doc"]
                 )
-                errorPointer?.pointee = error
                 return nil
             }
 
-            // Simple average: (existingAvg * existingCount + newAvg) / (existingCount + 1)
             let newCount = currentCount + 1
             let newAvg = (currentAvg * Double(currentCount) + trimmedAvgPace) / Double(newCount)
             let newMin = min(currentMin, participantMinPace)
@@ -296,17 +247,6 @@ class MetricsCollectorRun: MetricsCollector {
         logger.info("Participant metrics uploaded and event averages updated")
     }
 
-    // MARK: - Helpers
-
-    private func computeDistance(from locations: [CLLocation]) -> Double {
-        guard locations.count > 1 else { return 0 }
-        var total = 0.0
-        for i in 1..<locations.count {
-            total += locations[i].distance(from: locations[i - 1])
-        }
-        return total
-    }
-
     // MARK: - Location config
 
     private func configureForRun() {
@@ -321,22 +261,17 @@ class MetricsCollectorRun: MetricsCollector {
 
     private func restoreDefaultConfig() {
         locationManager.applyConfiguration {
-            // This tells iOS how the user is moving so the device can optimize its internal hardware
-            // Optimized for pedestrian activities like running, walking, or cycling
             $0.activityType = .other
-            // This defines the minimum distance (in meters) a user must move horizontally before the app is notified of a new location.
-            //This turns off the filter completely. You will receive updates for every single movement detected by the hardware
             $0.distanceFilter = kCLDistanceFilterNone
-            $0.allowsBackgroundLocationUpdates = true
-            // This determines whether iOS can temporarily turn off location tracking to save the user's battery.
-            $0.pausesLocationUpdatesAutomatically = false
+            $0.allowsBackgroundLocationUpdates = false
+            $0.pausesLocationUpdatesAutomatically = true
         }
     }
 
     // MARK: - Location handling
 
     private func handleNewLocation(_ location: CLLocation) {
-        guard isTracking, isValid(location) else { return }
+        guard isTracking, MetricsCollectorUtils.isValidLocation(location, lastLocation: lastLocation) else { return }
 
         trackedLocations.append((Date(), location))
 
@@ -349,20 +284,6 @@ class MetricsCollectorRun: MetricsCollector {
         }
 
         lastLocation = location
-    }
-
-    private func isValid(_ location: CLLocation) -> Bool {
-        guard location.horizontalAccuracy >= 0,
-              location.horizontalAccuracy < 20,
-              location.speed >= 0
-        else { return false }
-
-        if let last = lastLocation {
-            let timeDelta = location.timestamp.timeIntervalSince(last.timestamp)
-            guard timeDelta >= 1 else { return false }
-        }
-
-        return true
     }
 
     private func updateCurrentPace(from location: CLLocation) {
@@ -400,10 +321,4 @@ class MetricsCollectorRun: MetricsCollector {
         distanceSinceLastSplit = 0
         lastSplitDate = nil
     }
-}
-
-// MARK: - Errors
-
-enum MetricsError: Error {
-    case eventNotFound
 }
