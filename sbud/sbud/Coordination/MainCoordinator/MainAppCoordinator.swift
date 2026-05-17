@@ -54,7 +54,7 @@ struct MainAppCoordinator: View {
                 .ignoresSafeArea()
 
         case .loadingPage:
-            LoadingView()
+            MidnightLoadingView()
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
                     removal: .move(edge: .leading).combined(with: .opacity)))

@@ -28,7 +28,7 @@ struct ViewOthersEventDetails: View {
                         .ignoresSafeArea()
                     Spacer()
                 } else {
-                    LoadingView()
+                    MidnightLoadingView(text: "Loading event details")
                         .ignoresSafeArea()
                     Spacer()
                 }

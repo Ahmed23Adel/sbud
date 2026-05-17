@@ -16,7 +16,7 @@ struct EventDetailBackground: View {
                 FadingEventImage(coverImgURL: coverImg)
                     .ignoresSafeArea()
             } else {
-                LoadingView()
+                MidnightLoadingView(text: "Loading event details")
                     .ignoresSafeArea()
             }
             Spacer()

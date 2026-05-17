@@ -34,7 +34,7 @@ struct ViewMoreInfoEvent: View {
             }
 
             if viewModel.isLoading {
-                LoadingView()
+                MidnightLoadingView(text: "Loading event")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
             }

@@ -64,7 +64,7 @@ struct ViewMyEventDetails: View {
                 }
             }
             if viewModel.isLoading {
-                LoadingView().ignoresSafeArea()
+                MidnightLoadingView(text: "Loading event details").ignoresSafeArea()
             }
         }
         .sheet(item: $viewModel.activeSheet) { (sheet: MyEventDetailsSheet) in

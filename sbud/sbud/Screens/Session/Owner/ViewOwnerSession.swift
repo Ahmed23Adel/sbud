@@ -28,7 +28,7 @@ struct ViewOwnerSession: View {
     var body: some View {
         Group {
             if viewModel.isLoading {
-                MidnightLoadingView()
+                MidnightLoadingView(text: "STARTING SESSION")
                     .ignoresSafeArea()
             } else {
                 mainContent
