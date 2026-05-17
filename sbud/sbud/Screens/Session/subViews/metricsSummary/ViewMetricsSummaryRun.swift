@@ -3,19 +3,6 @@
 //  sbud
 //
 //  Created by ahmed on 16/05/2026.
-//
-//
-//  ViewMetricsSummaryRun.swift
-//  sbud
-//
-//  Created by ahmed on 16/05/2026.
-//
-//
-//  ViewMetricsSummaryRun.swift
-//  sbud
-//
-//  Created by ahmed on 16/05/2026.
-//
 
 import SwiftUI
 import MapKit
