@@ -187,7 +187,7 @@ struct ViewMyEventDetails: View {
         }
         .sheet(isPresented: $showingConfirmationSheet) {
             if let details = viewModel.myEventDertails {
-                ConfirmEventSheet(dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
+                ConfirmEventSheet(eventTitle: details.title, dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
                     showingConfirmationSheet = false
                     Task {
                         await viewModel.confirmEventFinalChoice(

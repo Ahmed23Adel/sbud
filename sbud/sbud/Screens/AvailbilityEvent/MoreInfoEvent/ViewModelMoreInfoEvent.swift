@@ -114,35 +114,40 @@ class ViewModelMoreInfoEvent {
         }
     }
     
+    
     private func fetchParticipants() async {
         await MainActor.run { isLoadingParticipants = true }
+        
         do {
             let db = Firestore.firestore()
+            logger.info("Search participants in joinedEvents by event: \(self.eventId)")
             
-            // 1. Leggi la sotto-collezione 'participants' dell'evento dove lo status è "confirmed"
-            let snapshot = try await db.collection("Events")
-                .document(eventId)
-                .collection("participants")
-                .whereField("status", isEqualTo: "confirmed")
+            
+            let snapshot = try await db.collection("joinedEvents")
+                .whereField("eventId", isEqualTo: self.eventId)
+                .whereField("status", in: ["Confirmed", "confirmed"])
                 .getDocuments()
+            
+            logger.info("Found \(snapshot.documents.count) partecipants in joinedEvents")
             
             var profiles: [UserProfile] = []
             
-            // 2. Itera sui risultati e recupera i profili degli utenti
+            
             for doc in snapshot.documents {
-                // Lo screen mostra che l'ID del documento è proprio lo userId
-                let userId = doc.documentID
+                let data = doc.data()
                 
-                let userDoc = try await db.collection("users").document(userId).getDocument()
                 
-                // Mappatura manuale sicura (evita crash se UserProfile Codable fallisce per campi mancanti in DB)
-                if let data = userDoc.data() {
+                if let userId = data["userId"] as? String {
+                    
                     var profile = UserProfile(id: userId)
-                    profile.name = data["name"] as? String ?? "Utente"
-                    profile.surName = data["surName"] as? String ?? ""
-                    profile.profileImageUrl = data["profileImageUrl"] as? String
+                    
+                    
+                    profile.name = data["userFirstName"] as? String ?? "Utente"
+                    profile.surName = data["userLastName"] as? String ?? ""
+                    profile.profileImageUrl = data["userProfileImageUrl"] as? String
                     
                     profiles.append(profile)
+                    logger.info("Partecipante aggiunto: \(profile.name) \(profile.surName)")
                 }
             }
             
@@ -152,8 +157,8 @@ class ViewModelMoreInfoEvent {
             }
             
         } catch {
-            logger.error("fetchParticipants error: \(error.localizedDescription)")
-            await MainActor.run { isLoadingParticipants = false }
+            logger.error("CRITICAL ERROR: fetchParticipants (joinedEvents): \(error.localizedDescription)")
+            await MainActor.run { self.isLoadingParticipants = false }
         }
     }
     
