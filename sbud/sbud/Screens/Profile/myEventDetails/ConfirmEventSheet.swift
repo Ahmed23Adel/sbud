@@ -91,13 +91,13 @@ struct ConfirmEventSheet: View {
                         .buttonStyle(.plain)
                         // MARK: Pop-up del Calendario
                         .alert("Add to Caledar", isPresented: $showCalendarPrompt) {
-                            Button("Yes, Adds") {
+                            Button("Yes, Add") {
                                 if let selected = selectedItem {
                                     saveToCalendar(title: eventTitle, start: finalStartDate, end: finalEndDate, coord: selected.coordinate)
                                     onConfirm(selected.dateEntry, selected.location, finalStartDate, finalEndDate)
                                 }
                             }
-                            Button("No, grazie", role: .cancel) {
+                            Button("No, thank you", role: .cancel) {
                                 if let selected = selectedItem {
                                     onConfirm(selected.dateEntry, selected.location, finalStartDate, finalEndDate)
                                 }
