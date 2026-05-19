@@ -125,7 +125,7 @@ struct SignUpView: View {
 
                 }
                 if viewModel.isLoading {
-                    LoadingView()
+                    MidnightLoadingView()
                 }
             }
             .scrollDismissesKeyboard(.interactively)

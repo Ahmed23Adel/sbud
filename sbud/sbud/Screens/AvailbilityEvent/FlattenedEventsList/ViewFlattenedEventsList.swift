@@ -23,7 +23,7 @@ struct ViewFlattenedEventsList: View {
             
             Group{
                 if viewModel.isLoading{
-                    LoadingView()
+                    MidnightLoadingView(text: "Loading events")
                 } else{
                     VStack{
                         List{

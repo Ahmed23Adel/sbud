@@ -22,28 +22,45 @@ struct AvailabilityClusterModelRequest: Encodable, Sendable, CustomStringConvert
     let selectedStartTime: Date
     let selectedEndTime: Date
     let precision: Int
+    let extraFilters: [String: String]          // ← new
+
+    init(
+        topLeft: GeoPoint,
+        bottomRight: GeoPoint,
+        selectedActivityType: String,
+        selectedStartTime: Date,
+        selectedEndTime: Date,
+        precision: Int,
+        extraFilters: [String: String] = [:]    // ← default empty
+    ) {
+        self.topLeft = topLeft
+        self.bottomRight = bottomRight
+        self.selectedActivityType = selectedActivityType
+        self.selectedStartTime = selectedStartTime
+        self.selectedEndTime = selectedEndTime
+        self.precision = precision
+        self.extraFilters = extraFilters
+    }
 
     func toDict() -> [String: String] {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
-        return [
-            "topLeftLatitude": String(topLeft.latitude),
-            "topLeftLongitude": String(topLeft.longitude),
-            "bottomRightLatitude": String(bottomRight.latitude),
+        var base: [String: String] = [
+            "topLeftLatitude":      String(topLeft.latitude),
+            "topLeftLongitude":     String(topLeft.longitude),
+            "bottomRightLatitude":  String(bottomRight.latitude),
             "bottomRightLongitude": String(bottomRight.longitude),
             "selectedActivityType": selectedActivityType,
-            "selectedStartTime": formatter.string(from: selectedStartTime),
-            "selectedEndTime": formatter.string(from: selectedEndTime),
-            "precision": String(precision)
+            "selectedStartTime":    formatter.string(from: selectedStartTime),
+            "selectedEndTime":      formatter.string(from: selectedEndTime),
+            "precision":            String(precision)
         ]
+        base.merge(extraFilters) { _, new in new }
+        return base
     }
 
-    // MARK: - CustomStringConvertible
     var description: String {
-        let dict = toDict()
-        return dict
-            .map { "\($0.key): \($0.value)" }
-            .joined(separator: ", ")
+        toDict().map { "\($0.key): \($0.value)" }.joined(separator: ", ")
     }
 }

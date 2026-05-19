@@ -30,9 +30,6 @@ struct MainAppCoordinator: View {
         switch coordinator.currentRoute {
         case .homePage:
             HomeTabsView()
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)))
                 .ignoresSafeArea()
 
         case .signUp:
@@ -53,15 +50,21 @@ struct MainAppCoordinator: View {
             ProfileSetupView()
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)))
+                    removal:   .move(edge: .leading).combined(with: .opacity)))
                 .ignoresSafeArea()
 
         case .loadingPage:
-            LoadingView()
+            MidnightLoadingView()
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
                     removal: .move(edge: .leading).combined(with: .opacity)))
                 .ignoresSafeArea()
+            
+        case .creatorSession(let eventDetails, let isSessionCreated):
+            ViewOwnerSession(eventDetails: eventDetails, isSessionCreated: isSessionCreated)
+                .environmentObject(coordinator)
+        case .othersSession(let eventDetails):
+            ViewOthersSession(eventDetails: eventDetails, isSessionCreated: true)
         default:
             EmptyView()
         

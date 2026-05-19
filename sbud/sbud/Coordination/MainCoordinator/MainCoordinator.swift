@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import OSLog
+
 class MainCoordinator: ObservableObject {
     @Published var currentRoute: MainRoute
     let logger = Logger(subsystem: "sbud", category: "MainCoordinator")
@@ -16,7 +17,7 @@ class MainCoordinator: ObservableObject {
     let profManager = ProfileManager.shared
 
     private var routeStack: [MainRoute] = []
-
+    
     init() {
         self.currentRoute = .loadingPage
         checkAppFlow()
@@ -71,16 +72,19 @@ class MainCoordinator: ObservableObject {
     private func checkProfileStatus() async -> MainRoute {
         guard authManager.checkAuthStatus() else { return .signUp }
         if profManager.isProfileSetupComplete { return .homePage }
-
         do {
             try await profManager.syncProfileAfterLogin()
-            return profManager.isProfileSetupComplete ? .homePage : .profileSetup
+            if profManager.isProfileSetupComplete {
+                return .homePage
+            } else {
+                await FCMExtractor().saveFCMToken()
+                return .profileSetup
+            }
         } catch {
+            await FCMExtractor().saveFCMToken()
             return .profileSetup
         }
     }
-    
-    
-    
+
     
 }

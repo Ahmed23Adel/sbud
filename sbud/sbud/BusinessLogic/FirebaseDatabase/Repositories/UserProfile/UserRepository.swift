@@ -51,11 +51,6 @@ class UserRepository: IFirebaesRepository{
         } catch {   return error.localizedDescription   }
     }
     
-//    func fetchProfile(_ id: String) async throws -> UserProfile? {
-//        let snapshot = try await db.collection("users").document(id).getDocument()
-//        guard snapshot.exists else { return nil }
-//        return try snapshot.data(as: UserProfile.self)
-//    }
     func fetchProfile(_ id: String) async throws -> UserProfile? {
         logger.info("id: \(id)")
         let snapshot = try await db.collection("users").document(id).getDocument()
@@ -63,7 +58,7 @@ class UserRepository: IFirebaesRepository{
 
         do {
             let profile = try snapshot.data(as: UserProfile.self)
-            print("fetchProfile success:", profile)
+            logger.info("User profile fetched: \(profile)")
             return profile
         } catch {
             print("fetchProfile decode error:", error)

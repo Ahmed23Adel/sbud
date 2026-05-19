@@ -10,23 +10,7 @@ import Lottie
 
 struct LoadingView: View {
     var body: some View {
-        ZStack {
-            Color.backgroundColor
-                .ignoresSafeArea()
-                .opacity(0.9)
-
-            VStack {
-                LottieView(animation: .named("JoggingLoading"))
-                    .playing()
-                    .looping()
-                    .frame(width: 300, height: 300)
-                
-                Text("Loading...")
-                    .font(.title)
-                    .foregroundColor(.mainColor)
-            }
-
-        }
+        MidnightLoadingView()
     }
 }
 

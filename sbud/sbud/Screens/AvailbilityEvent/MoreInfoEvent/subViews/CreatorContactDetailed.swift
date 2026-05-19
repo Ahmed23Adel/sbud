@@ -11,6 +11,7 @@ import Kingfisher
 struct CreatorContactDetailed: View {
     var creatorInfo: CreatorInfo
     var onTapProfile: () -> Void
+    var onTapContact: () -> Void
 
     var body: some View {
         HStack {
@@ -54,7 +55,7 @@ struct CreatorContactDetailed: View {
             Spacer()
 
             Button("Contact") {
-
+                onTapContact()
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 18)
@@ -62,6 +63,7 @@ struct CreatorContactDetailed: View {
             .foregroundColor(.black)
             .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
         }
+        .padding()
         .background(Color.backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
         .padding(.horizontal)
