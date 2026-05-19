@@ -14,7 +14,7 @@ struct ViewExtraArgsYoga: View {
         VStack(spacing: 16) {
             TextOptionSelector(
                 header: "Yoga Style",
-                selected: $args.proposedStyle,
+                selected: $args.proposedStyle
             )
             GenericPerformanceTarget(
                 targetHeader: "Duration",
@@ -29,6 +29,7 @@ struct ViewExtraArgsYoga: View {
         }
     }
 }
+
 #Preview {
     ViewExtraArgsYoga(args: ExtraArgsHolderYoga())
 }

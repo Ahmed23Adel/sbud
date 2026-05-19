@@ -17,6 +17,12 @@ struct ViewExtraArgsFilterGym: View {
                 header: "Day Type",
                 selected: $filter.gymDayType
             )
+            GenericRangeTarget(
+                header: "Duration",
+                unitHeader: "MIN",
+                minValue: $filter.minDurationInMin,
+                maxValue: $filter.maxDurationInMin
+            )
         }
     }
 }
