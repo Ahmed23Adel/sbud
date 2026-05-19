@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
-	<string>This app needs access to save confirmed events in your calendar</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -11,7 +9,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.863852529120-f082rdgc1ucvss39g2ael0n05nrjvaaq</string>
+                <string>com.googleusercontent.apps.863852529120-hr37cpjvgq3rb56mbi41cd39va19tek2</string>
 			</array>
 		</dict>
 	</array>

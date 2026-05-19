@@ -31,6 +31,27 @@ nonisolated struct DateLocationEntry: Decodable, Sendable, Identifiable {
     var startDateTime: Date
     var endDateTime: Date
     var locations: [LocationPoint]
+
+    enum CodingKeys: String, CodingKey {
+        case id, startDateTime, endDateTime, locations
+    }
+
+    init(id: String, startDateTime: Date, endDateTime: Date, locations: [LocationPoint]) {
+        self.id = id
+        self.startDateTime = startDateTime
+        self.endDateTime = endDateTime
+        self.locations = locations
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        let startRaw = try container.decode(Double.self, forKey: .startDateTime)
+        let endRaw   = try container.decode(Double.self, forKey: .endDateTime)
+        startDateTime = Date(timeIntervalSince1970: startRaw)
+        endDateTime   = Date(timeIntervalSince1970: endRaw)
+        locations = try container.decode([LocationPoint].self, forKey: .locations)
+    }
 }
 
 // MARK: - Top-level response
@@ -100,8 +121,11 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
         isPublic = try container.decode(Bool.self, forKey: .isPublic)
         maxAllowedToJoin = try container.decodeIfPresent(Int.self, forKey: .maxAllowedToJoin)
         notes = try container.decodeIfPresent(String.self, forKey: .notes)
-        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        let createdAtRaw = try container.decode(Double.self, forKey: .createdAt)
+        createdAt = Date(timeIntervalSince1970: createdAtRaw)
+        
         dateLocations = try container.decode([DateLocationEntry].self, forKey: .dateLocations)
+        print("dateLocations \(dateLocations)")
 
         let rawJoiningCondition = try container.decode(String.self, forKey: .joiningCondition)
         switch rawJoiningCondition {
