@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-
 struct PerformanceTargetDetailedRunning: View {
     let t: ExtraArgsHolderRunning
     var body: some View {
@@ -22,6 +21,10 @@ struct PerformanceTargetDetailedRunning: View {
                     targetValue: String(t.proposedPace))
             }
             HStack(spacing: 10) {
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Duration",
+                    unitHeader: "Min",
+                    targetValue: String(t.proposedDurationInMin))
                 SinglePerformanceTargetDetailed(
                     targetHeader: "Type",
                     unitHeader: "",

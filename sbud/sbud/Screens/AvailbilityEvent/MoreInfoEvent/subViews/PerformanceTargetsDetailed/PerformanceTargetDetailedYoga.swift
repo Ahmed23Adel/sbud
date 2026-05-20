@@ -6,11 +6,10 @@
 //
 
 import SwiftUI
-
 struct PerformanceTargetDetailedYoga: View {
     let t: ExtraArgsHolderYoga
     var body: some View {
-        VStack{
+        VStack(spacing: 10) {
             HStack(spacing: 10) {
                 SinglePerformanceTargetDetailed(
                     targetHeader: "Duration",
@@ -31,7 +30,6 @@ struct PerformanceTargetDetailedYoga: View {
         .padding(.horizontal, 10)
     }
 }
-
 #Preview("Yoga"){
     PerformanceTargetDetailedYoga(t: ExtraArgsHolderYoga())
 }

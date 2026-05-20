@@ -6,23 +6,41 @@
 //
 
 import SwiftUI
-
 struct PerformanceTargetDetailedHiking: View {
     let t: ExtraArgsHolderHiking
     var body: some View {
-        HStack(spacing: 10) {
-            SinglePerformanceTargetDetailed(
-                targetHeader: "Distance",
-                unitHeader: "Km",
-                targetValue: String(t.proposedDistanceInKm))
-            SinglePerformanceTargetDetailed(
-                targetHeader: "Elevation",
-                unitHeader: "m",
-                targetValue: String(t.proposedElevationGainInM))
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Distance",
+                    unitHeader: "Km",
+                    targetValue: String(t.proposedDistanceInKm))
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Elev. Gain",
+                    unitHeader: "m",
+                    targetValue: String(t.proposedElevationGainInM))
+            }
+            HStack(spacing: 10) {
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Elev. Loss",
+                    unitHeader: "m",
+                    targetValue: String(t.proposedElevationLossInM))
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Max Alt.",
+                    unitHeader: "m",
+                    targetValue: String(t.proposedMaxAltitudeInM))
+            }
+            HStack(spacing: 10) {
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Duration",
+                    unitHeader: "Min",
+                    targetValue: String(t.proposedDurationInMin))
+            }
         }
         .padding(.horizontal, 10)
     }
 }
+
 #Preview("Hiking"){
     PerformanceTargetDetailedHiking(t: ExtraArgsHolderHiking())
 }

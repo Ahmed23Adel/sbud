@@ -6,27 +6,30 @@
 //
 
 import SwiftUI
-
 struct PerformanceTargetDetailedCycling: View {
     let t: ExtraArgsHolderCycling
     var body: some View {
-        VStack{
-//            HStack(spacing: 10) {
-//                SinglePerformanceTargetDetailed(
-//                    targetHeader: "Type",
-//                    unitHeader: "",
-//                    targetValue: t.proposedCyclingType.rawValue)
-//                SinglePerformanceTargetDetailed(
-//                    targetHeader: "Power",
-//                    unitHeader: "W",
-//                    targetValue: String(t.proposedPowerInWatt))
-//            }
-//            HStack(spacing: 10){
-//                SinglePerformanceTargetDetailed(
-//                    targetHeader: "Cadence",
-//                    unitHeader: "RPM",
-//                    targetValue: String(t.proposedCadenceInRPM))
-//            }
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Distance",
+                    unitHeader: "Km",
+                    targetValue: String(t.proposedDistanceInKm))
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Speed",
+                    unitHeader: "Km/h",
+                    targetValue: String(t.proposedSpeedInKmH))
+            }
+            HStack(spacing: 10) {
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Duration",
+                    unitHeader: "Min",
+                    targetValue: String(t.proposedDurationInMin))
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Type",
+                    unitHeader: "",
+                    targetValue: t.proposedCyclingType.rawValue)
+            }
         }
         .padding(.horizontal, 10)
     }

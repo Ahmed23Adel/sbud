@@ -10,7 +10,7 @@ import SwiftUI
 struct PerformanceTargetDetailedSwimming: View {
     let t: ExtraArgsHolderSwimming
     var body: some View {
-        VStack{
+        VStack(spacing: 10) {
             HStack(spacing: 10) {
                 SinglePerformanceTargetDetailed(
                     targetHeader: "Distance",
@@ -20,9 +20,12 @@ struct PerformanceTargetDetailedSwimming: View {
                     targetHeader: "Pace",
                     unitHeader: "Min/100m",
                     targetValue: String(t.proposedPacePer100M))
-                
             }
-            HStack(spacing: 10){
+            HStack(spacing: 10) {
+                SinglePerformanceTargetDetailed(
+                    targetHeader: "Duration",
+                    unitHeader: "Min",
+                    targetValue: String(t.proposedDurationInMin))
                 SinglePerformanceTargetDetailed(
                     targetHeader: "Stroke",
                     unitHeader: "",
@@ -32,6 +35,7 @@ struct PerformanceTargetDetailedSwimming: View {
         .padding(.horizontal, 10)
     }
 }
+
 
 #Preview("Swimming") { PerformanceTargetDetailedSwimming(t: ExtraArgsHolderSwimming()) }
 
