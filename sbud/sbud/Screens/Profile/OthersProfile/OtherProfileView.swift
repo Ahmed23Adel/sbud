@@ -43,7 +43,8 @@ struct OtherProfileView: View {
                             }
                             ProfileArchiveSection()
                             ProfileMyEventsButton(userId: vm.userId) {
-                                coordinator.goToAppropiateEvents()
+                                print("goToOthersEvents")
+                                coordinator.goToOthersEvents()
                             }
                         }
                         .padding(.bottom, 80)

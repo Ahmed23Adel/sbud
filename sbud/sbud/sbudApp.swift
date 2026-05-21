@@ -42,7 +42,9 @@ struct SbudApp: App {
     
     var body: some Scene {
         WindowGroup {
-            MainAppCoordinator()
+            MainAppCoordinator(coordinator: MainCoordinator(
+                authService: AuthenticationManager.shared,
+                profileService: ProfileManager.shared))
             .onOpenURL { url in
                 GIDSignIn.sharedInstance.handle(url)
             }

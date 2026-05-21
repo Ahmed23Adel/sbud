@@ -171,7 +171,7 @@ struct ViewMyEventDetails: View {
                 onTapProfile: { userId in
                     viewModel.showQueue = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                        coordinator.goToProfileFromQueue(userId: userId)
+//                        coordinator.goToProfileFromQueue(userId: userId)
                     }
                 }
             )

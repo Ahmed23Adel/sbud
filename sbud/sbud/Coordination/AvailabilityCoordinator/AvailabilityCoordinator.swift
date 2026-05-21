@@ -9,28 +9,66 @@ import Foundation
 import Combine
 import SwiftUI
 
+//  Manages navigation within the Availability tab.
+//  Filter state lives in a ViewModel, not in this coordinator.
+//
 
-class AvailabilityCoordinator: ObservableObject {
-    @Published var activeSheet: AvailabilitySheetType?
+import Foundation
+import SwiftUI
+import OSLog
+
+@MainActor
+final class AvailabilityCoordinator: ObservableObject {
+
+    // MARK: - Published State
+
     @Published var navigationPath = NavigationPath()
-    
-    func showSheet(_ sheet: AvailabilitySheetType) {
-        activeSheet = sheet
+    @Published var activeSheet: AvailabilitySheet?
+
+    // MARK: - Dependencies
+
+    /// Weak — MainCoordinator conforms to this if auth actions are ever needed from here.
+    weak var authDelegate: AuthCoordinatorDelegate?
+
+    private let logger = Logger(subsystem: "sbud", category: "AvailabilityCoordinator")
+
+    // MARK: - Push Navigation
+
+    func showMoreInfo(eventId: String) {
+        navigationPath.append(AvailabilityDestination.moreInfoEvent(eventId: eventId))
+    }
+
+    func showAddNewEvent() {
+        navigationPath.append(AvailabilityDestination.addNewEvent)
+    }
+
+    func showProfile(userId: String) {
+        print("showProfile")
+        navigationPath.append(AvailabilityDestination.profile(userId: userId))
+    }
+
+    func showChat(user: UserProfile, eventId: String, eventTitle: String) {
+        navigationPath.append(AvailabilityDestination.chat(user: user, eventId: eventId, eventTitle: eventTitle))
+    }
+
+    // MARK: - Pop Navigation
+
+    func pop() {
+        guard !navigationPath.isEmpty else { return }
+        navigationPath.removeLast()
+    }
+
+    func popToRoot() {
+        navigationPath = NavigationPath()
+    }
+
+    // MARK: - Sheets
+
+    func showFilterSheet(availFilters: Binding<AvailabilityFiltersResults>) {
+        activeSheet = .filter(availabilityFiltersResults: availFilters)
     }
 
     func dismissSheet() {
         activeSheet = nil
-    }
-    
-    func push(_ destination: AvailabilityNavigationDestination){
-        navigationPath.append(destination)
-    }
-    
-    func pop() {
-        navigationPath.removeLast()
-    }
-    
-    func popToRoot(){
-        navigationPath = NavigationPath()
     }
 }

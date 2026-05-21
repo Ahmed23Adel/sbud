@@ -7,10 +7,9 @@
 
 import SwiftUI
 import Kingfisher
-
 struct FriendListView: View {
     @StateObject private var vm: FriendListVM
-    @EnvironmentObject var coordinator: MainCoordinator
+    @EnvironmentObject var coordinator: ProfileCoordinator
 
     init(userId: String) {
         _vm = StateObject(wrappedValue: FriendListVM(userId: userId))
@@ -21,23 +20,15 @@ struct FriendListView: View {
             Color(red: 0.05, green: 0.05, blue: 0.05).ignoresSafeArea()
 
             VStack(spacing: 0) {
-                HStack {
-                    Button { coordinator.goBack() } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    Spacer()
-                    Text("FRIENDS")
-                        .font(.system(size: 14, weight: .black, design: .monospaced))
-                        .foregroundColor(.white)
-                        .kerning(1.5)
-                    Spacer()
-                    Color.clear.frame(width: 24, height: 24)
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
-                .background(Color(red: 0.05, green: 0.05, blue: 0.05))
+
+                // Title at top
+                Text("FRIENDS")
+                    .font(.system(size: 14, weight: .black, design: .monospaced))
+                    .foregroundColor(.white)
+                    .kerning(1.5)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color(red: 0.05, green: 0.05, blue: 0.05))
 
                 Divider().background(Color(white: 0.12))
 
@@ -57,8 +48,9 @@ struct FriendListView: View {
                             ForEach(vm.users) { user in
                                 UserRowCell(user: user)
                                     .onTapGesture {
-                                        coordinator.goToProfile(userId: user.id)
+                                        coordinator.goToOthersProfile(userId: user.id)
                                     }
+
                                 Divider().background(Color(white: 0.1))
                             }
                         }

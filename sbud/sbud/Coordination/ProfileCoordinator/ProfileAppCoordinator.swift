@@ -5,99 +5,156 @@
 //  Created by ahmed on 01/05/2026.
 //
 
+//  Renders the profile navigation stack.
+//
+//  When used as a tab root: wrap in NavigationStack here.
+//  When pushed inside another NavigationStack: use ProfileAppCoordinator
+//  directly as a navigationDestination — NavigationStack is NOT nested.
+//
+
 import SwiftUI
 
-struct ProfileAppCoordinator: View {
-    @StateObject private var coordinator: ProfileCoordinator
-    let isEmbeddedInOldStack: Bool
+// MARK: - Tab Root Entry Point
 
-    init(userId: String, isEmbedded: Bool) {
-        _coordinator = StateObject(wrappedValue: ProfileCoordinator(userId: userId))
-        self.isEmbeddedInOldStack = isEmbedded
+/// Use this when ProfileAppCoordinator is the root of a tab.
+/// It owns its NavigationStack.
+struct ProfileTabRoot: View {
+    @StateObject private var coordinator: ProfileCoordinator
+    weak var authDelegate: AuthCoordinatorDelegate?
+
+    init(userId: String, currentUserId: String, authDelegate: AuthCoordinatorDelegate?) {
+        _coordinator = StateObject(
+            wrappedValue: ProfileCoordinator(userId: userId, currentUserId: currentUserId)
+        )
+        self.authDelegate = authDelegate
     }
 
     var body: some View {
-        if isEmbeddedInOldStack {
-            rootView
+        NavigationStack(path: $coordinator.navigationPath) {
+            ProfileAppCoordinator()
                 .navigationDestination(for: ProfileRoutePushed.self) { route in
-                    destinationView(for: route)
-                        .environmentObject(coordinator)
+                    ProfileDestinationView(route: route)
                 }
+        }
+        .environmentObject(coordinator)
+        .sheet(item: $coordinator.activeSheet) { sheet in
+            ProfileSheetView(sheet: sheet)
                 .environmentObject(coordinator)
-                .sheet(item: $coordinator.sheetType) { sheet in
-                    sheetView(for: sheet)
-                        .environmentObject(coordinator)
-                }
-        } else {
-            NavigationStack(path: $coordinator.navigationPath) {
-                rootView
-                    .navigationDestination(for: ProfileRoutePushed.self) { route in
-                        destinationView(for: route)
-                            .environmentObject(coordinator)
-                    }
-            }
-            .environmentObject(coordinator)
-            .sheet(item: $coordinator.sheetType) { sheet in
-                sheetView(for: sheet)
-                    .environmentObject(coordinator)
-            }
         }
-    }
-
-    @ViewBuilder
-    private var rootView: some View {
-        switch coordinator.currentRoute {
-        case .myProfile:
-            OwnProfileView(userId: coordinator.currUserId)
-        case .othersProfile:
-            OtherProfileView(userId: coordinator.currUserId)
-        }
-    }
-
-    @ViewBuilder
-    private func destinationView(for route: ProfileRoutePushed) -> some View {
-        switch route {
-        case .settings:
-            SettingsView()
-        case .friendRequest:
-            FriendRequestsView()
-        case .hostsRequests:
-            ViewHostsRequests()
-        case .myEvents:
-            ViewCombinedEvents(userId: coordinator.currUserId)
-        case .othersEvents:
-            ViewOthersEvents(userId: coordinator.currUserId)
-        case .friendsList:
-            FriendListView(userId: coordinator.currUserId)
-        case .viewMyEventDetails(let eventId):
-            ViewMyEventDetails(eventId: eventId)
-        case .editMyEvent:
-            EmptyView()
-        case .viewOthersProfile(let userId):
-            ProfileAppCoordinator(userId: userId, isEmbedded: true)
-        case .eventConversations(let eventId, let eventTitle):
-            EventConversationsView(eventId: eventId, eventTitle: eventTitle)
-        case .scannedProfile(let userId):
-            ProfileAppCoordinator(userId: userId, isEmbedded: true)
-        case .viewOthersEventDetails(eventId: let eventId):
-            ViewOthersEventDetails(eventId: eventId)
-        }
-    }
-
-    @ViewBuilder
-    private func sheetView(for sheet: ProfileSheetType) -> some View {
-        switch sheet {
-        case .hosts(let eventId):
-            ViewHosts(eventId: eventId, userId: coordinator.currUserId)
-        case .qrCode:
-            QRCodeSheetView(userId: coordinator.currUserId) { scannedId in
-                coordinator.sheetType = nil
-                coordinator.goToScannedProfile(scannedId)
-            }
+        .onAppear {
+            coordinator.delegate = authDelegate
         }
     }
 }
 
-#Preview {
-    ProfileAppCoordinator(userId: "", isEmbedded: false)
+// MARK: - Embedded Entry Point (pushed inside a parent NavigationStack)
+
+/// Use this when pushing a profile inside an existing NavigationStack.
+/// No new NavigationStack is created here.
+struct ProfileEmbedded: View {
+    @StateObject private var coordinator: ProfileCoordinator
+    weak var authDelegate: AuthCoordinatorDelegate?
+
+    init(userId: String, currentUserId: String, authDelegate: AuthCoordinatorDelegate?) {
+        _coordinator = StateObject(
+            wrappedValue: ProfileCoordinator(userId: userId, currentUserId: currentUserId)
+        )
+        self.authDelegate = authDelegate
+    }
+
+    var body: some View {
+        ProfileAppCoordinator()
+            .navigationDestination(for: ProfileRoutePushed.self) { route in
+                ProfileDestinationView(route: route)
+            }
+            .environmentObject(coordinator)
+            .sheet(item: $coordinator.activeSheet) { sheet in
+                ProfileSheetView(sheet: sheet)
+                    .environmentObject(coordinator)
+            }
+            .onAppear {
+                coordinator.delegate = authDelegate
+            }
+    }
+}
+
+// MARK: - Root Content View
+
+/// Renders either OwnProfileView or OtherProfileView based on coordinator state.
+private struct ProfileAppCoordinator: View {
+    @EnvironmentObject private var coordinator: ProfileCoordinator
+
+    var body: some View {
+        switch coordinator.rootRoute {
+        case .myProfile:
+            OwnProfileView(userId: coordinator.userId)
+        case .othersProfile:
+            OtherProfileView(userId: coordinator.userId)
+        }
+    }
+}
+
+// MARK: - Destination View (pushed routes)
+
+private struct ProfileDestinationView: View {
+    let route: ProfileRoutePushed
+    @EnvironmentObject private var coordinator: ProfileCoordinator
+
+    var body: some View {
+        switch route {
+        case .settings:
+            SettingsView()
+
+        case .friendRequests:
+            FriendRequestsView()
+
+        case .hostRequests:
+            ViewHostsRequests()
+
+        case .myEvents:
+            ViewCombinedEvents(userId: coordinator.userId)
+
+        case .othersEvents:
+            ViewOthersEvents(userId: coordinator.userId)
+
+        case .friendsList:
+            FriendListView(userId: coordinator.userId)
+
+        case .myEventDetails(let eventId):
+            ViewMyEventDetails(eventId: eventId)
+
+        case .othersEventDetails(let eventId):
+            ViewOthersEventDetails(eventId: eventId)
+
+        case .othersProfile(let userId), .scannedProfile(let userId):
+            // Pushed inside the existing NavigationStack — no new stack.
+            ProfileEmbedded(
+                userId: userId,
+                currentUserId: coordinator.userId,
+                authDelegate: coordinator.delegate
+            )
+
+        case .eventConversations(let eventId, let eventTitle):
+            EventConversationsView(eventId: eventId, eventTitle: eventTitle)
+        }
+    }
+}
+
+// MARK: - Sheet View
+
+private struct ProfileSheetView: View {
+    let sheet: ProfileSheetType
+    @EnvironmentObject private var coordinator: ProfileCoordinator
+
+    var body: some View {
+        switch sheet {
+        case .hosts(let eventId):
+            ViewHosts(eventId: eventId, userId: coordinator.userId)
+
+        case .qrCode:
+            QRCodeSheetView(userId: coordinator.userId) { scannedId in
+                coordinator.goToScannedProfile(userId: scannedId)
+            }
+        }
+    }
 }

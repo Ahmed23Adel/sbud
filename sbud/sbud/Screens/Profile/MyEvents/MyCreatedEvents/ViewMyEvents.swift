@@ -89,10 +89,10 @@ struct ViewMyEvents: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
-
-#Preview {
-    NavigationStack {
-        ViewMyEvents(userId: "ExbXn3HBUHSrgjwCfYAgKi260k32")
-            .environmentObject(MainCoordinator())
-    }
-}
+//
+//#Preview {
+//    NavigationStack {
+//        ViewMyEvents(userId: "ExbXn3HBUHSrgjwCfYAgKi260k32")
+//            .environmentObject(MainCoordinator())
+//    }
+//}

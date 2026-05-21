@@ -171,7 +171,7 @@ class ViewModelOthersSession {
                 try await metricsCollector?.endSession(event: eventDetails)
                 deleteLocalSession()
                 await MainActor.run { isLoading = false }
-                mainCoordinator?.navigateTo(.homePage)
+                mainCoordinator?.goToHome()
             } catch {
                 logger.fault("Error ending participant session: \(error)")
                 await MainActor.run {

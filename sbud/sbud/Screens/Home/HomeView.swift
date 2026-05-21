@@ -15,13 +15,13 @@ struct HomeView: View {
             Button {
                 Task {
                     try await authManager.signOut()
-                    coordinator.logout()
+//                    coordinator.logout()
                 }
             } label: {
                 Text("sign out")
             }
             Button {
-                coordinator.goToProfile(userId: "Ab68s84r9IZMGtbKt16rnCUt5KS2")
+//                coordinator.goToProfile(userId: "Ab68s84r9IZMGtbKt16rnCUt5KS2")
             } label: {
                 Text("Test Profile")
             }

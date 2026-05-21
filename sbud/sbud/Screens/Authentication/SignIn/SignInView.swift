@@ -103,6 +103,7 @@ struct SignInView: View {
                         Text("Sign up instead?")
                             .foregroundColor(Color.mainColor)
                     }
+                    .padding(.bottom)
                     .adaptiveSecondaryButtonStyle()
                     .popUp(delay: 0.3)
                 }
@@ -142,9 +143,9 @@ struct SignInView: View {
 
 }
 
-struct SignInView_Previews: PreviewProvider {
-    static var previews: some View {
-        SignInView()
-            .environmentObject(MainCoordinator())
-    }
-}
+//struct SignInView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        SignInView()
+//            .environmentObject(MainCoordinator())
+//    }
+//}

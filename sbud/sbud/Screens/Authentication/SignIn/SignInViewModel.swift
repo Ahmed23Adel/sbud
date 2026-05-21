@@ -29,8 +29,8 @@ class SignInViewModel: ObservableObject {
     func signUpWithGoogle() async {
         authManager.setAuthTypeGoogle()
         do {
-            try await authManager.signIn()
-            coordinator?.refreshAppFlow()
+//            try await authManager.signIn()
+//            coordinator?.check
         } catch {
             await MainActor.run {
                 showAlert = true
@@ -54,7 +54,7 @@ class SignInViewModel: ObservableObject {
             try await authManager.signIn(email: email, password: password)
             isSigningIn = false
             stopLoading()
-            coordinator?.refreshAppFlow()
+            coordinator?.coordinatorDidCompleteSignIn()
         } catch {
             stopLoading()
             isSigningIn = false
