@@ -31,10 +31,10 @@ struct ViewOthersEvents: View {
                     .tag(EventsTab.created)
                     
 
-                HostedEventsView(userId: userId)
+                HostedEventsView(userId: userId, onEventTap: onEventTap)
                     .tag(EventsTab.hostedEvents)
 
-                ParticipatedEventsView(userId: userId)
+                ParticipatedEventsView(userId: userId, onEventTap: onEventTap)
                     .tag(EventsTab.participatedEvents)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -63,22 +63,6 @@ enum EventsTab: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Sub Views
-
-
-struct HostedEventsView: View {
-    let userId: String
-    var body: some View {
-        Text("Hosted Events for \(userId)")
-    }
-}
-
-struct ParticipatedEventsView: View {
-    let userId: String
-    var body: some View {
-        Text("Participated Events for \(userId)")
-    }
-}
 
 // MARK: - Preview
 //

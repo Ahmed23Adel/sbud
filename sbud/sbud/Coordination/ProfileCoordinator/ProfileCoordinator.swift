@@ -59,14 +59,20 @@ final class ProfileCoordinator: ObservableObject {
     }
     
     func goToOthersEvents() {
-        push(.othersEvents)
+        push(.othersEvents(userId: userId))  // carries the correct userId
     }
 
     func goToMyEvents() {
-        guard rootRoute == .myProfile else { return }
-        push(.myEvents)
+        push(.myEvents(userId: userId))
     }
 
+    func goToFriendsList() {
+        push(.friendsList(userId: userId))
+    }
+
+    func goToAppropriateEvents() {
+        push(isViewingOwnProfile ? .myEvents(userId: userId) : .othersEvents(userId: userId))
+    }
     func goToSettings() {
         guard rootRoute == .myProfile else { return }
         push(.settings)
@@ -80,14 +86,6 @@ final class ProfileCoordinator: ObservableObject {
     func goToHostRequests() {
         guard rootRoute == .myProfile else { return }
         push(.hostRequests)
-    }
-
-    func goToAppropriateEvents() {
-        push(isViewingOwnProfile ? .myEvents : .othersEvents)
-    }
-
-    func goToFriendsList() {
-        push(.friendsList)
     }
 
     func goToMyEventDetails(eventId: String) {

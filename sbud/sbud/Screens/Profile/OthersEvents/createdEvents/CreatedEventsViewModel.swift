@@ -26,6 +26,7 @@ class CreatedEventsViewModel{
     
     init(userId: String){
         self.userId = userId
+        fetchCreatedEvents()
     }
     
 

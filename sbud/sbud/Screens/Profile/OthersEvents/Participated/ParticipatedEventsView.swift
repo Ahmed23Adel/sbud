@@ -1,22 +1,22 @@
 //
-//  CreatedEventsView.swift
+//  ParticipatedEventsView.swift
 //  sbud
 //
-//  Created by ahmed on 21/05/2026.
+//  Created by ahmed on 22/05/2026.
 //
 
 import SwiftUI
 
-struct CreatedEventsView: View {
-    @State var viewModel: CreatedEventsViewModel
+struct ParticipatedEventsView: View {
+    @State var viewModel: ParticipatedEventsViewModel
     @EnvironmentObject var coordinator: ProfileCoordinator
     let onEventTap: (String) -> Void
-    
+
     init(userId: String, onEventTap: @escaping (String) -> Void) {
-        _viewModel = State(initialValue: CreatedEventsViewModel(userId: userId))
+        _viewModel = State(initialValue: ParticipatedEventsViewModel(userId: userId))
         self.onEventTap = onEventTap
     }
-    
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
@@ -24,9 +24,9 @@ struct CreatedEventsView: View {
                     EventsSectionHeader(status: status)
                     VStack(spacing: 8) {
                         ForEach(events) { event in
-                            MyEventRow(event: event)
+                            MyEventRow(event: event.toUserEvent())
                                 .padding(.horizontal, 16)
-                                .onTapGesture{
+                                .onTapGesture {
                                     onEventTap(event.eventId)
                                 }
                         }
@@ -44,8 +44,3 @@ struct CreatedEventsView: View {
         }
     }
 }
-
-
-//#Preview {
-//    CreatedEventsView()
-//}

@@ -10,4 +10,5 @@ import Foundation
 
 struct UsersEventRepositoryConstants: IRepositoryConstants{
     var creatorId = "creatorId"
+    var hostsIds = "hostsIds"
 }

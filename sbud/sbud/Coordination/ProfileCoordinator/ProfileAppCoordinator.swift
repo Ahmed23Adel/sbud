@@ -166,16 +166,15 @@ struct ProfileDestinationView: View {
         case .hostRequests:
             ViewHostsRequests()
 
-        case .myEvents:
+        case .myEvents(let userId):           
             ViewCombinedEvents(userId: userId)
 
-        case .othersEvents:
+        case .othersEvents(let userId):
             ViewOthersEvents(userId: userId) { eventId in
                 pushToParent(.othersEventDetails(eventId: eventId))
-                
             }
 
-        case .friendsList:
+        case .friendsList(let userId):
             FriendListView(userId: userId)
 
         case .myEventDetails(let eventId):
@@ -189,7 +188,7 @@ struct ProfileDestinationView: View {
                 userId: targetId,
                 currentUserId: currentUserId,
                 authDelegate: authDelegate,
-                onPush: pushToParent  // same root stack all the way down
+                onPush: pushToParent
             )
 
         case .eventConversations(let eventId, let eventTitle):

@@ -19,20 +19,21 @@ enum ProfileRoute: Equatable, Hashable {
 
 // MARK: - Pushed Routes (NavigationStack destinations)
 
+// ProfileRoute.swift
+
 enum ProfileRoutePushed: Equatable, Hashable {
     case settings
     case friendRequests
     case hostRequests
-    case myEvents
-    case othersEvents
-    case friendsList
+    case myEvents(userId: String)
+    case othersEvents(userId: String)
+    case friendsList(userId: String)        
     case myEventDetails(eventId: String)
     case othersEventDetails(eventId: String)
     case othersProfile(userId: String)
     case scannedProfile(userId: String)
     case eventConversations(eventId: String, eventTitle: String)
 }
-
 // MARK: - Sheet Types
 
 enum ProfileSheetType: Identifiable, Equatable, Hashable {
