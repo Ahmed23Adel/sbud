@@ -33,7 +33,15 @@ struct ProfileTabRoot: View {
         NavigationStack(path: $coordinator.navigationPath) {
             ProfileAppCoordinator()
                 .navigationDestination(for: ProfileRoutePushed.self) { route in
-                    ProfileDestinationView(route: route)
+                    ProfileDestinationView(
+                        route: route,
+                        userId: coordinator.userId,
+                        currentUserId: coordinator.userId,
+                        authDelegate: authDelegate,
+                        pushToParent: { nextRoute in
+                            coordinator.navigationPath.append(nextRoute)
+                        }
+                    )
                 }
         }
         .environmentObject(coordinator)
@@ -51,22 +59,42 @@ struct ProfileTabRoot: View {
 
 /// Use this when pushing a profile inside an existing NavigationStack.
 /// No new NavigationStack is created here.
+//
+
+
+import SwiftUI
+
 struct ProfileEmbedded: View {
-    @StateObject private var coordinator: ProfileCoordinator
+    let userId: String
+    let currentUserId: String
     weak var authDelegate: AuthCoordinatorDelegate?
 
-    init(userId: String, currentUserId: String, authDelegate: AuthCoordinatorDelegate?) {
-        _coordinator = StateObject(
-            wrappedValue: ProfileCoordinator(userId: userId, currentUserId: currentUserId)
-        )
+    // Called when this profile wants to push a new route.
+    // The PARENT coordinator executes the actual append to its NavigationPath.
+    let onPush: (ProfileRoutePushed) -> Void
+
+    @StateObject private var coordinator: ProfileCoordinator
+
+    init(
+        userId: String,
+        currentUserId: String,
+        authDelegate: AuthCoordinatorDelegate?,
+        onPush: @escaping (ProfileRoutePushed) -> Void
+    ) {
+        self.userId = userId
+        self.currentUserId = currentUserId
         self.authDelegate = authDelegate
+        self.onPush = onPush
+        _coordinator = StateObject(
+            wrappedValue: ProfileCoordinator(
+                userId: userId,
+                currentUserId: currentUserId
+            )
+        )
     }
 
     var body: some View {
-        ProfileAppCoordinator()
-            .navigationDestination(for: ProfileRoutePushed.self) { route in
-                ProfileDestinationView(route: route)
-            }
+        profileRootView
             .environmentObject(coordinator)
             .sheet(item: $coordinator.activeSheet) { sheet in
                 ProfileSheetView(sheet: sheet)
@@ -74,7 +102,20 @@ struct ProfileEmbedded: View {
             }
             .onAppear {
                 coordinator.delegate = authDelegate
+                // Wire all push navigation from this coordinator
+                // into the parent stack's NavigationPath.
+                coordinator.onPush = onPush
             }
+    }
+
+    @ViewBuilder
+    private var profileRootView: some View {
+        switch coordinator.rootRoute {
+        case .myProfile:
+            OwnProfileView(userId: coordinator.userId)
+        case .othersProfile:
+            OtherProfileView(userId: coordinator.userId)
+        }
     }
 }
 
@@ -95,10 +136,24 @@ private struct ProfileAppCoordinator: View {
 }
 
 // MARK: - Destination View (pushed routes)
+//
+//  ProfileDestinationView.swift
+//  sbud
+//
+//  Shared destination renderer for ProfileRoutePushed.
+//  Used by any NavigationStack that can push into profile territory.
+//
 
-private struct ProfileDestinationView: View {
+import SwiftUI
+
+// ProfileDestinationView.swift
+
+struct ProfileDestinationView: View {
     let route: ProfileRoutePushed
-    @EnvironmentObject private var coordinator: ProfileCoordinator
+    let userId: String          // explicit — no environment lookup
+    let currentUserId: String
+    weak var authDelegate: AuthCoordinatorDelegate?
+    let pushToParent: (ProfileRoutePushed) -> Void  // always the root stack's append
 
     var body: some View {
         switch route {
@@ -112,13 +167,13 @@ private struct ProfileDestinationView: View {
             ViewHostsRequests()
 
         case .myEvents:
-            ViewCombinedEvents(userId: coordinator.userId)
+            ViewCombinedEvents(userId: userId)
 
         case .othersEvents:
-            ViewOthersEvents(userId: coordinator.userId)
+            ViewOthersEvents(userId: userId)
 
         case .friendsList:
-            FriendListView(userId: coordinator.userId)
+            FriendListView(userId: userId)
 
         case .myEventDetails(let eventId):
             ViewMyEventDetails(eventId: eventId)
@@ -126,12 +181,12 @@ private struct ProfileDestinationView: View {
         case .othersEventDetails(let eventId):
             ViewOthersEventDetails(eventId: eventId)
 
-        case .othersProfile(let userId), .scannedProfile(let userId):
-            // Pushed inside the existing NavigationStack — no new stack.
+        case .othersProfile(let targetId), .scannedProfile(let targetId):
             ProfileEmbedded(
-                userId: userId,
-                currentUserId: coordinator.userId,
-                authDelegate: coordinator.delegate
+                userId: targetId,
+                currentUserId: currentUserId,
+                authDelegate: authDelegate,
+                onPush: pushToParent  // same root stack all the way down
             )
 
         case .eventConversations(let eventId, let eventTitle):
@@ -153,7 +208,7 @@ private struct ProfileSheetView: View {
 
         case .qrCode:
             QRCodeSheetView(userId: coordinator.userId) { scannedId in
-                coordinator.goToScannedProfile(userId: scannedId)
+                coordinator.goToScannedProfile(userId: coordinator.userId)
             }
         }
     }

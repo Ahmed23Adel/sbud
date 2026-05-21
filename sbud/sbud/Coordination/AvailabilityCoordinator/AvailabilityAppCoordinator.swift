@@ -35,6 +35,20 @@ struct AvailabilityAppCoordinator: View {
                 .navigationDestination(for: AvailabilityDestination.self) { destination in
                     destinationView(for: destination)
                 }
+                .navigationDestination(for: ProfileRoutePushed.self) { route in
+                    ProfileDestinationView(
+                        route: route,
+                        // userId here is the embedded profile's userId — but at this level
+                        // we don't know it yet (it's stored inside ProfileEmbedded's coordinator).
+                        // Pass currentUserId as a fallback; the embedded coordinator resolves userId.
+                        userId: ProfileManager.shared.getLocalProfile()?.id ?? "",
+                        currentUserId: ProfileManager.shared.getLocalProfile()?.id ?? "",
+                        authDelegate: authDelegate,
+                        pushToParent: { nextRoute in
+                            coordinator.navigationPath.append(nextRoute)
+                        }
+                    )
+                }
         }
         .ignoresSafeArea()
         .environmentObject(coordinator)
@@ -61,14 +75,16 @@ struct AvailabilityAppCoordinator: View {
 
         case .addNewEvent:
             CoordinatorAddNewEvent()
-
         case .profile(let userId):
-            // Reuses the existing NavigationStack — no nesting.
-            // currentUserId resolved from ProfileManager here at the boundary.
             ProfileEmbedded(
                 userId: userId,
                 currentUserId: ProfileManager.shared.getLocalProfile()?.id ?? "",
-                authDelegate: authDelegate
+                authDelegate: authDelegate,
+                onPush: { route in
+                    // This appends ProfileRoutePushed into AvailabilityCoordinator's
+                    // NavigationPath — the one the NavigationStack is actually bound to.
+                    coordinator.navigationPath.append(route)
+                }
             )
 
         case .chat(let user, let eventId, let eventTitle):

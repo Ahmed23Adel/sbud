@@ -5,10 +5,6 @@
 //  Created by ahmed on 27/12/2025.
 //
 
-import Foundation
-import Combine
-import SwiftUI
-
 //  Manages navigation within the Availability tab.
 //  Filter state lives in a ViewModel, not in this coordinator.
 //
@@ -16,6 +12,7 @@ import SwiftUI
 import Foundation
 import SwiftUI
 import OSLog
+import Combine
 
 @MainActor
 final class AvailabilityCoordinator: ObservableObject {
@@ -43,7 +40,6 @@ final class AvailabilityCoordinator: ObservableObject {
     }
 
     func showProfile(userId: String) {
-        print("showProfile")
         navigationPath.append(AvailabilityDestination.profile(userId: userId))
     }
 

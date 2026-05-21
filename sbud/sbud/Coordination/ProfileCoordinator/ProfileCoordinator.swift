@@ -22,7 +22,8 @@ final class ProfileCoordinator: ObservableObject {
     @Published var navigationPath: [ProfileRoutePushed] = []
     @Published var activeSheet: ProfileSheetType?
     @Published private(set) var userId: String
-
+    var onPush: ((ProfileRoutePushed) -> Void)?
+    
     // MARK: - Dependencies
 
     /// Weak reference — MainCoordinator conforms to this.
@@ -47,68 +48,68 @@ final class ProfileCoordinator: ObservableObject {
 
     // MARK: - Push Navigation
 
-    func goToSettings() {
-        guard rootRoute == .myProfile else {
-            logger.warning("goToSettings called from non-myProfile context — ignored")
-            return
+    private func push(_ route: ProfileRoutePushed) {
+        if let onPush {
+            // Embedded — delegate the push to the parent stack.
+            onPush(route)
+        } else {
+            // Tab root — owns its own NavigationStack.
+            navigationPath.append(route)
         }
-        navigationPath.append(.settings)
     }
-
-    func goToFriendRequests() {
-        guard rootRoute == .myProfile else { return }
-        navigationPath.append(.friendRequests)
-    }
-
-    func goToHostRequests() {
-        guard rootRoute == .myProfile else { return }
-        navigationPath.append(.hostRequests)
+    
+    func goToOthersEvents() {
+        push(.othersEvents)
     }
 
     func goToMyEvents() {
         guard rootRoute == .myProfile else { return }
-        navigationPath.append(.myEvents)
+        push(.myEvents)
     }
 
-    func goToOthersEvents() {
-        print(rootRoute, rootRoute == .othersProfile)
-        guard rootRoute == .othersProfile else { return }
-        navigationPath.append(.othersEvents)
-        print("navigation path ", navigationPath)
+    func goToSettings() {
+        guard rootRoute == .myProfile else { return }
+        push(.settings)
     }
 
-    /// Navigates to the correct events list based on whose profile is shown.
+    func goToFriendRequests() {
+        guard rootRoute == .myProfile else { return }
+        push(.friendRequests)
+    }
+
+    func goToHostRequests() {
+        guard rootRoute == .myProfile else { return }
+        push(.hostRequests)
+    }
+
     func goToAppropriateEvents() {
-        navigationPath.append(isViewingOwnProfile ? .myEvents : .othersEvents)
+        push(isViewingOwnProfile ? .myEvents : .othersEvents)
     }
 
     func goToFriendsList() {
-        navigationPath.append(.friendsList)
+        push(.friendsList)
     }
 
     func goToMyEventDetails(eventId: String) {
-        navigationPath.append(.myEventDetails(eventId: eventId))
+        push(.myEventDetails(eventId: eventId))
     }
 
     func goToOthersEventDetails(eventId: String) {
-        navigationPath.append(.othersEventDetails(eventId: eventId))
+        push(.othersEventDetails(eventId: eventId))
     }
 
     func goToOthersProfile(userId: String) {
-        navigationPath.append(.othersProfile(userId: userId))
+        push(.othersProfile(userId: userId))
     }
 
     func goToEventConversations(eventId: String, eventTitle: String) {
-        navigationPath.append(.eventConversations(eventId: eventId, eventTitle: eventTitle))
+        push(.eventConversations(eventId: eventId, eventTitle: eventTitle))
     }
 
     func goToScannedProfile(userId: String) {
-        guard !userId.isEmpty else {
-            logger.warning("goToScannedProfile called with empty userId — ignored")
-            return
-        }
+        guard !userId.isEmpty else { return }
         activeSheet = nil
-        navigationPath.append(.scannedProfile(userId: userId))
+        push(.scannedProfile(userId: userId))
     }
 
     // MARK: - Sheets
