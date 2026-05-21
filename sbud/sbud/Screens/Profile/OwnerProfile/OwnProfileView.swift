@@ -44,7 +44,7 @@ struct OwnProfileView: View {
                                 ProfilePerformanceCard(profile: profile)
                             }
                             ProfileArchiveSection()
-                            ProfileMyEventsButton(userId: vm.userId) {
+                            ProfileMyEventsButton(userId: vm.userId, title: "MY EVENTS") {
                                 coordinator.goToMyEvents()
                             }
                         }

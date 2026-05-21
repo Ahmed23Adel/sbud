@@ -170,7 +170,10 @@ struct ProfileDestinationView: View {
             ViewCombinedEvents(userId: userId)
 
         case .othersEvents:
-            ViewOthersEvents(userId: userId)
+            ViewOthersEvents(userId: userId) { eventId in
+                pushToParent(.othersEventDetails(eventId: eventId))
+                
+            }
 
         case .friendsList:
             FriendListView(userId: userId)

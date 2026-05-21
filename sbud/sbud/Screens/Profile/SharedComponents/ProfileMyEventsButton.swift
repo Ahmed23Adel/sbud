@@ -9,8 +9,10 @@ import SwiftUI
 
 struct ProfileMyEventsButton: View {
     let userId: String
+    let title: String
     let onViewAll: () -> Void
- 
+    
+
     var body: some View {
         HStack {
             Text("MY EVENTS")

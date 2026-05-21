@@ -28,7 +28,7 @@ struct ViewMyEvents: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         ForEach(viewModel.sections, id: \.0) { status, events in
-                            sectionHeader(for: status)
+                            EventsSectionHeader(status: status)
                             VStack(spacing: 8) {
                                 ForEach(events) { event in
                                     MyEventRow(event: event)
@@ -55,23 +55,7 @@ struct ViewMyEvents: View {
             Text(viewModel.alertMsg)
         }
     }
-
-    // MARK: - Section Header
-    private func sectionHeader(for status: UsersEventStatus) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: status.icon)
-                .font(.system(size: 11, weight: .bold))
-                .foregroundColor(status.color)
-            Text(status.rawValue.uppercased())
-                .font(.system(size: 10, weight: .bold))
-                .tracking(1.5)
-                .foregroundColor(status.color)
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 10)
-    }
-
+    
     // MARK: - Empty State
     private var emptyState: some View {
         VStack(spacing: 16) {
@@ -89,6 +73,28 @@ struct ViewMyEvents: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
+
+struct EventsSectionHeader: View {
+    let status: UsersEventStatus
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: status.icon)
+                .font(.system(size: 11, weight: .bold))
+                .foregroundColor(status.color)
+
+            Text(status.rawValue.uppercased())
+                .font(.system(size: 10, weight: .bold))
+                .tracking(1.5)
+                .foregroundColor(status.color)
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+    }
+}
+
 //
 //#Preview {
 //    NavigationStack {
