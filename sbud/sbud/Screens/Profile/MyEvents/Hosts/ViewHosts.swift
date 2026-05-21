@@ -21,6 +21,8 @@ struct ViewHosts: View {
                 ProgressView().tint(Color.mainColor)
             } else if viewModel.friendHostItems.count == 0 {
                 Text("No friends available")
+                    .font(.title)
+                    .foregroundColor(.white)
             } else {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 28) {
