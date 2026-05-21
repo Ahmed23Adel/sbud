@@ -167,7 +167,9 @@ struct ProfileDestinationView: View {
             ViewHostsRequests()
 
         case .myEvents(let userId):           
-            ViewCombinedEvents(userId: userId)
+            ViewCombinedEvents(userId: userId){ eventId in
+                pushToParent(.myEventDetails(eventId: eventId))
+            }
 
         case .othersEvents(let userId):
             ViewOthersEvents(userId: userId) { eventId in
