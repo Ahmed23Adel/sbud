@@ -75,6 +75,20 @@ struct ViewOthersEventDetails: View {
                         
                         LocationMapCard(dateLocations: details.dateLocations)
                             .padding()
+                        
+                        if details.isDateConfirmed,
+                           let finalStart = details.finalStartDateTime,
+                           let finalEnd   = details.finalEndDateTime,
+                           let firstLoc   = details.dateLocations.first?.locations.first {
+
+                            EventWeatherWidget(
+                                finalStart: finalStart,
+                                finalEnd:   finalEnd,
+                                latitude:   firstLoc.latitude,
+                                longitude:  firstLoc.longitude
+                            )
+                            .padding(.horizontal)
+                        }
                     }
                 }
                 .padding(.horizontal)
