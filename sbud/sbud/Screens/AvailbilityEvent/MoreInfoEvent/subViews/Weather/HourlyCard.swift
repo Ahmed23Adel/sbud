@@ -26,6 +26,11 @@ struct HourlyCard: View {
                 .foregroundColor(.white)
 
             // Rain probability
+            /// So precipitation_probability means the chance that any form of water falls — if it's winter and the code shows snow, that 70% isn't rain probability, it's snow probability.
+            // WMO code already tells you what kind is falling. The two work together:
+            // weathercode = 71 (snow)  + precipProb = 80%  → 80% chance of snow
+//            weathercode = 61 (rain)  + precipProb = 80%  → 80% chance of rain
+//            weathercode = 0  (clear) + precipProb = 0%   → nothing falling
             HStack(spacing: 2) {
                 Image(systemName: "drop.fill")
                     .font(.system(size: 8))
