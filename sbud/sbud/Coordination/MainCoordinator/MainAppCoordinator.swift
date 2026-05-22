@@ -62,7 +62,6 @@ struct MainAppCoordinator: View {
 
         case .home:
             HomeTabsView()
-                .transition(slideTransition)
                 .ignoresSafeArea()
 
         case .creatorSession(let eventDetails, let isSessionCreated):
