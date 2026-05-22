@@ -107,7 +107,7 @@ struct SignInView: View {
                     .popUp(delay: 0.3)
                 }
                 if viewModel.isLoading {
-                    LoadingView()
+                    MidnightLoadingView()
                 }
             }
             .scrollDismissesKeyboard(.interactively)

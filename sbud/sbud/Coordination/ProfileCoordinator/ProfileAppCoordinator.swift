@@ -64,7 +64,7 @@ struct ProfileAppCoordinator: View {
         case .hostsRequests:
             ViewHostsRequests()
         case .myEvents:
-            ViewMyEvents(userId: coordinator.currUserId)
+            ViewCombinedEvents(userId: coordinator.currUserId)
         case .othersEvents:
             ViewOthersEvents(userId: coordinator.currUserId)
         case .friendsList:
@@ -79,6 +79,8 @@ struct ProfileAppCoordinator: View {
             EventConversationsView(eventId: eventId, eventTitle: eventTitle)
         case .scannedProfile(let userId):
             ProfileAppCoordinator(userId: userId, isEmbedded: true)
+        case .viewOthersEventDetails(eventId: let eventId):
+            ViewOthersEventDetails(eventId: eventId)
         }
     }
 

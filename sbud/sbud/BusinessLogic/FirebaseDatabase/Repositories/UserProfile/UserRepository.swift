@@ -58,7 +58,7 @@ class UserRepository: IFirebaesRepository{
 
         do {
             let profile = try snapshot.data(as: UserProfile.self)
-            print("fetchProfile success:", profile)
+            logger.info("User profile fetched: \(profile)")
             return profile
         } catch {
             print("fetchProfile decode error:", error)

@@ -6,9 +6,8 @@
 //
 import Foundation
 
-struct UserProfile: Codable, Identifiable {
+struct UserProfile: Codable, Identifiable, CustomStringConvertible {
     let id: String
-
     var name: String = ""
     var surName: String = ""
     var email: String = ""
@@ -55,8 +54,34 @@ struct UserProfile: Codable, Identifiable {
         return Calendar.current.dateComponents([.year], from: birthDate, to: Date()).year
     }
 
+    
+    var description: String {
+            """
+            UserProfile(
+                id: \(id),
+                name: \(name) \(surName),
+                email: \(email),
+                age: \(age ?? 0),
+                phone: \(phoneNumber ?? "N/A"),
+                gender: \(gender ?? "N/A"),
+                country: \(country),
+                city: \(city),
+                preferredActivity: \(preferredActivity),
+                bio: \(bio),
+                friendsCount: \(friendsCount),
+                trustScore: \(trustScore),
+                totalSessions: \(totalSessions),
+                totalDistanceKm: \(totalDistanceKm),
+                avgIntensity: \(avgIntensity),
+                isPrivate: \(isPrivate)
+            )
+            """
+        }
+
+    
     init(id: String) {
         self.id = id
+        
     }
 
 }

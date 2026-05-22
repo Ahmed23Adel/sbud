@@ -34,7 +34,7 @@ struct ViewMoreInfoEvent: View {
             }
 
             if viewModel.isLoading {
-                LoadingView()
+                MidnightLoadingView(text: "Loading event")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
             }
@@ -55,26 +55,31 @@ struct ViewMoreInfoEvent: View {
                             isDateConfirmed: details.isDateConfirmed,
                             isLocationConfirmed: details.isLocationConfirmed
                         )
+                        .padding(.horizontal)
 
                         HStack {
                             JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
                             VisibilityDetailed(isPublic: details.isPublic)
                             if let max = details.maxAllowedToJoin {
-                                capacityBadge(max: max)
+                                CapacityBadge(max: max)
                             }
                             Spacer()
                         }
                         .padding(.leading, 14)
+                        .padding(.horizontal)
 
                         HStack {
                             Text(details.title)
                                 .font(.title).foregroundColor(.white).italic()
                                 .padding(.horizontal)
+                                .padding(.horizontal)
                             Spacer()
                         }
 
                         ViewActivityTypeForDetails(activityType: details.activityType)
+                            .padding(.horizontal)
                         PerformanceTargetDetailedConditional(activityDetails: details.activityDetails)
+                            .padding(.horizontal)
 
                         GenericMultilineTextView(
                             fieldName: "Description",
@@ -82,8 +87,7 @@ struct ViewMoreInfoEvent: View {
                             iconString: "pencil",
                             text: details.notes ?? ""
                         )
-
-
+                        .padding(.horizontal)
                         if Auth.auth().currentUser?.uid != details.creator.id {
                             CreatorContactDetailed(
                                 creatorInfo: details.creator,
@@ -102,10 +106,10 @@ struct ViewMoreInfoEvent: View {
                                     coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle))
                                 }
                             )
+                            .padding(.horizontal)
                         }
-
                         LocationMapCard(dateLocations: details.dateLocations).padding()
-
+                            .padding(.horizontal)
                         if !viewModel.isCurrentUserHost {
                             JoinEventButton(
                                 joinCondition: details.joinCondition,
@@ -115,6 +119,7 @@ struct ViewMoreInfoEvent: View {
                                 onWithdraw: { Task { await viewModel.withdraw() } },
                                 onLeave: { Task { await viewModel.leave() } }
                             )
+                            .padding(.horizontal)
                             .padding(.vertical, 8)
                         }
                         
@@ -195,14 +200,5 @@ struct ViewMoreInfoEvent: View {
         }
     }
     
-    private func capacityBadge(max: Int) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: "person.2").font(.system(size: 9))
-            Text("Max \(max)").font(.system(size: 10))
-        }
-        .foregroundColor(.black)
-        .padding(.vertical, 5).padding(.horizontal, 10)
-        .background(Color.yellow.opacity(0.8))
-        .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
-    }
+    
 }
