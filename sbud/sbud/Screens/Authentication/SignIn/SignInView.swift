@@ -58,6 +58,9 @@ struct SignInView: View {
                                     .padding(.trailing, 25)
                             }
                         }
+                        
+                        
+                        
                     }
                     .padding(.horizontal)
 
@@ -79,6 +82,18 @@ struct SignInView: View {
                     .popUp()
                     .padding(.vertical)
 
+                    Button {
+                        Task {
+                                await viewModel.forgotPassword()
+                            }
+                    } label: {
+                        Text("Forgot password?")
+                            .foregroundColor(Color.mainColor)
+                    }
+                    .padding(.bottom)
+                    .adaptiveSecondaryButtonStyle()
+                    .popUp(delay: 0.3)
+                    
                     HStack {
 
                         Button {
@@ -94,6 +109,10 @@ struct SignInView: View {
                         }
                         .disabled(viewModel.isSigningIn)
                     }
+                    
+                    // MARK: Forgot password
+                    
+                    
 
                     Spacer()
 
@@ -143,9 +162,6 @@ struct SignInView: View {
 
 }
 
-//struct SignInView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        SignInView()
-//            .environmentObject(MainCoordinator())
-//    }
-//}
+#Preview{
+    SignInView()
+}

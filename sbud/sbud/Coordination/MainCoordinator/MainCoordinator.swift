@@ -103,7 +103,17 @@ final class MainCoordinator: ObservableObject {
 extension MainCoordinator: AuthCoordinatorDelegate {
 
     func coordinatorDidRequestLogout() {
+        print("coordinatorDidRequestLogouttttt")
         profileService.deleteProfileFromLocale()
+        Task {
+            do {
+                try await authService.signOut()
+            } catch {
+                logger.error("Sign out failed: \(error.localizedDescription)")
+            }
+            
+        }
+        
         currentRoute = .signUp
     }
 

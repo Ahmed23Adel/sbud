@@ -7,7 +7,7 @@
 
 import Foundation
 import Combine
-
+import FirebaseAuth
 @MainActor
 class SignInViewModel: ObservableObject {
 
@@ -91,5 +91,25 @@ class SignInViewModel: ObservableObject {
 
     private func stopLoading() {
         self.isLoading = false
+    }
+    
+    func forgotPassword() async {
+        guard !email.isEmpty else {
+            showAlert = true
+            alertMsg = "Please enter your email address first"
+            return
+        }
+        
+        startLoading()
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: email)
+            stopLoading()
+            showAlert = true
+            alertMsg = "Password reset email sent! Check your inbox."
+        } catch {
+            stopLoading()
+            showAlert = true
+            alertMsg = "Could not send reset email. Make sure the address is correct."
+        }
     }
 }
