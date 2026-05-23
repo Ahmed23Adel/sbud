@@ -256,7 +256,7 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
             "minPace": minPace == .infinity ? 0.0 : minPace,
             "maxPace": maxPace == -.infinity ? 0.0 : maxPace,
             "participantCount": FieldValue.increment(Int64(1)),
-            "numSessions": numSessions + 1
+            "numSessions": FieldValue.increment(Int64(1))
         ])
     }
 

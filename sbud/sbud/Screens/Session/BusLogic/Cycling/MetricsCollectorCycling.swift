@@ -210,7 +210,7 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
             "minSpeedKmH": minSpeedKmH == .infinity ? 0.0 : minSpeedKmH,
             "maxSpeedKmH": maxSpeedKmH == -.infinity ? 0.0 : maxSpeedKmH,
             "participantCount": FieldValue.increment(Int64(1)),
-            "numSessions": numSessions + 1
+            "numSessions": FieldValue.increment(Int64(1))
         ])
     }
 

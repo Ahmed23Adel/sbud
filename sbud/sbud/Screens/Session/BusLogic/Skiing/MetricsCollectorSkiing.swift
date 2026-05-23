@@ -212,7 +212,7 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
             "avgVerticalDrop": verticalDropMeters,
             "avgNumberOfRuns": numberOfRuns,
             "participantCount": FieldValue.increment(Int64(1)),
-            "numSessions": numSessions + 1
+            "numSessions": FieldValue.increment(Int64(1))
         ])
     }
 

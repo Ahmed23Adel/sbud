@@ -210,7 +210,7 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
             "avgElevationLoss": elevationLossMeters,
             "avgMaxAltitude": maxAltitudeMeters == -.infinity ? 0.0 : maxAltitudeMeters,
             "participantCount": FieldValue.increment(Int64(1)),
-            "numSessions": numSessions + 1
+            "numSessions": FieldValue.increment(Int64(1))
         ])
     }
 

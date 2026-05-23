@@ -143,7 +143,7 @@ class ViewModelMyEventDetails {
         batch.updateData([
             "isDateConfirmed": true,
             "isLocationConfirmed": true,
-            "status": "confirmed",
+            "status": UsersEventStatus.confirmed.rawValue,
             "dateLocations": finalizedDateLocation
         ], forDocument: eventRef)
 

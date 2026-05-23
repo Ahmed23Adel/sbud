@@ -87,7 +87,7 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
             "finalStartDateTime": startDate as Any,
             "finalEndDateTime": endDateTime,
             "status": UsersEventStatus.completed.rawValue,
-            "numSessions": numSessions + 1
+            "numSessions": FieldValue.increment(Int64(1))
         ])
     }
 
