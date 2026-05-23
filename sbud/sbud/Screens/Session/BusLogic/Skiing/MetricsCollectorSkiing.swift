@@ -50,10 +50,12 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
     private let splitEveryMeters: Double = 1000
     private let checkpointIntervalSeconds: Double = 30
     let isCreator: Bool
+    private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorSkiing")
 
-    init(isCreator: Bool) {
+    init(isCreator: Bool, numSessions: Int) {
         self.isCreator = isCreator
+        self.numSessions = numSessions
         locationManager.$lastLocation
             .compactMap { $0 }
             .sink { [weak self] location in
@@ -194,7 +196,8 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
             verticalDrop: verticalDropMeters,
             elevationGain: elevationGainMeters,
             numberOfRuns: numberOfRuns,
-            splits: splits
+            splits: splits,
+            numSession: numSessions
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
@@ -208,7 +211,8 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
             "maxSpeedKmH": maxSpeedKmH == -.infinity ? 0.0 : maxSpeedKmH,
             "avgVerticalDrop": verticalDropMeters,
             "avgNumberOfRuns": numberOfRuns,
-            "participantCount": FieldValue.increment(Int64(1))
+            "participantCount": FieldValue.increment(Int64(1)),
+            "numSessions": numSessions + 1
         ])
     }
 
@@ -230,7 +234,8 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
                 elevationGain: elevationGainMeters,
                 numberOfRuns: numberOfRuns,
                 splits: splits,
-                endedBeforeCreator: true
+                endedBeforeCreator: true,
+                numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
             return
@@ -259,7 +264,8 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
             elevationGain: trimmedElevationGain,
             numberOfRuns: trimmedRuns,
             splits: trimmedSplits,
-            endedBeforeCreator: false
+            endedBeforeCreator: false,
+            numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
 

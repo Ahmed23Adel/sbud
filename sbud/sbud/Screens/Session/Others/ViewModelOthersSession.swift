@@ -52,28 +52,28 @@ class ViewModelOthersSession {
     private func initMetricsCollector() {
         switch eventDetails.activityType {
         case .running:
-            metricsCollector = MetricsCollectorRun(isCreator: false)
+            metricsCollector = MetricsCollectorRun(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorRun).startSession(eventId: eventDetails.id)
         case .cycling:
-            metricsCollector = MetricsCollectorCycling(isCreator: false)
+            metricsCollector = MetricsCollectorCycling(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorCycling).startSession(eventId: eventDetails.id)
         case .gym:
-            metricsCollector = MetricsCollectorGym(isCreator: false)
+            metricsCollector = MetricsCollectorGym(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorGym).startSession(eventId: eventDetails.id)
         case .skiing:
-            metricsCollector = MetricsCollectorSkiing(isCreator: false)
+            metricsCollector = MetricsCollectorSkiing(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorSkiing).startSession(eventId: eventDetails.id)
         case .swimming:
-            metricsCollector = MetricsCollectorSwimming(isCreator: false)
+            metricsCollector = MetricsCollectorSwimming(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorSwimming).startSession(eventId: eventDetails.id)
         case .hiking:
-            metricsCollector = MetricsCollectorHiking(isCreator: false)
+            metricsCollector = MetricsCollectorHiking(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorHiking).startSession(eventId: eventDetails.id)
         case .yoga:
-            metricsCollector = MetricsCollectorYoga(isCreator: false)
+            metricsCollector = MetricsCollectorYoga(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorYoga).startSession(eventId: eventDetails.id)
         case .tennis:
-            metricsCollector = MetricsCollectorTennis(isCreator: false)
+            metricsCollector = MetricsCollectorTennis(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorTennis).startSession(eventId: eventDetails.id)
         }
     }

@@ -17,6 +17,7 @@ struct MetricsCollectedCycling: Codable {
     var elevationGain: Double
     var splits: [SplitForCycling]
     var endedBeforeCreator: Bool = false
+    var numSession: Int
 
     func upload(eventId: String, userId: String) async throws {
         let db = Firestore.firestore()

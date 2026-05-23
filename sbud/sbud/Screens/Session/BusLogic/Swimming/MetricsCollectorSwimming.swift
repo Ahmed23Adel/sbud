@@ -23,9 +23,11 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
     private var startDate: Date?
     private var timer: Timer?
     let isCreator: Bool
+    private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorSwimming")
 
-    init(isCreator: Bool) {
+    init(isCreator: Bool, numSessions: Int) {
+        self.numSessions = numSessions
         self.isCreator = isCreator
     }
 
@@ -74,7 +76,8 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
         let metrics = MetricsCollectedGym(
             startDateTime: startDateTime,
             endDateTime: endDateTime,
-            metricsCreatorType: .creator
+            metricsCreatorType: .creator,
+            numSession: numSessions
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
@@ -83,7 +86,8 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
         try await db.collection("Events").document(eventId).updateData([
             "finalStartDateTime": startDate as Any,
             "finalEndDateTime": endDateTime,
-            "status": UsersEventStatus.completed.rawValue
+            "status": UsersEventStatus.completed.rawValue,
+            "numSessions": numSessions + 1
         ])
     }
 
@@ -100,7 +104,8 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
                 startDateTime: startDateTime,
                 endDateTime: Date(),
                 metricsCreatorType: .normalParticipant,
-                endedBeforeCreator: true
+                endedBeforeCreator: true,
+                numSession: numSessions
             ).upload(eventId: eventId, userId: userId)
             return
         }
@@ -109,7 +114,8 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
             startDateTime: startDateTime,
             endDateTime: finalEndDateTime,
             metricsCreatorType: .normalParticipant,
-            endedBeforeCreator: false
+            endedBeforeCreator: false,
+            numSession: numSessions
         ).upload(eventId: eventId, userId: userId)
 
         logger.info("swimming participant metrics uploaded")

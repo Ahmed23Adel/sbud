@@ -55,10 +55,12 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
     private let splitEveryMeters: Double = 1000
     private let checkpointIntervalSeconds: Double = 30
     let isCreator: Bool
+    private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorCycling")
 
-    init(isCreator: Bool) {
+    init(isCreator: Bool, numSessions: Int) {
         self.isCreator = isCreator
+        self.numSessions = numSessions
         locationManager.$lastLocation
             .compactMap { $0 }
             .sink { [weak self] location in
@@ -193,7 +195,8 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
             track: trackedLocations.toTrackPoints(),
             totalDistance: totalDistanceMeters,
             elevationGain: elevationGainMeters,
-            splits: splits
+            splits: splits,
+            numSession: numSessions
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
@@ -206,7 +209,8 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
             "avgSpeedKmH": averageSpeedKmH,
             "minSpeedKmH": minSpeedKmH == .infinity ? 0.0 : minSpeedKmH,
             "maxSpeedKmH": maxSpeedKmH == -.infinity ? 0.0 : maxSpeedKmH,
-            "participantCount": FieldValue.increment(Int64(1))
+            "participantCount": FieldValue.increment(Int64(1)),
+            "numSessions": numSessions + 1
         ])
     }
 
@@ -226,7 +230,8 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
                 totalDistance: totalDistanceMeters,
                 elevationGain: elevationGainMeters,
                 splits: splits,
-                endedBeforeCreator: true
+                endedBeforeCreator: true,
+                numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
             return
@@ -249,7 +254,8 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
             totalDistance: trimmedDistance,
             elevationGain: trimmedElevation,
             splits: trimmedSplits,
-            endedBeforeCreator: false
+            endedBeforeCreator: false,
+            numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
 

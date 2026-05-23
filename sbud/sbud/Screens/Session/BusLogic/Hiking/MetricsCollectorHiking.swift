@@ -50,10 +50,12 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
     private let splitEveryMeters: Double = 1000
     private let checkpointIntervalSeconds: Double = 30
     let isCreator: Bool
+    private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorHiking")
 
-    init(isCreator: Bool) {
+    init(isCreator: Bool, numSessions: Int) {
         self.isCreator = isCreator
+        self.numSessions = numSessions
         locationManager.$lastLocation
             .compactMap { $0 }
             .sink { [weak self] location in
@@ -192,7 +194,8 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
             elevationGain: elevationGainMeters,
             elevationLoss: elevationLossMeters,
             maxAltitude: maxAltitudeMeters == -.infinity ? 0 : maxAltitudeMeters,
-            splits: splits
+            splits: splits,
+            numSession: numSessions
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
@@ -206,7 +209,8 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
             "avgElevationGain": elevationGainMeters,
             "avgElevationLoss": elevationLossMeters,
             "avgMaxAltitude": maxAltitudeMeters == -.infinity ? 0.0 : maxAltitudeMeters,
-            "participantCount": FieldValue.increment(Int64(1))
+            "participantCount": FieldValue.increment(Int64(1)),
+            "numSessions": numSessions + 1
         ])
     }
 
@@ -229,7 +233,8 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
                 elevationLoss: elevationLossMeters,
                 maxAltitude: maxAltitudeMeters == -.infinity ? 0 : maxAltitudeMeters,
                 splits: splits,
-                endedBeforeCreator: true
+                endedBeforeCreator: true,
+                numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
             return
@@ -257,7 +262,8 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
             elevationLoss: trimmedElevationLoss,
             maxAltitude: trimmedMaxAltitude,
             splits: trimmedSplits,
-            endedBeforeCreator: false
+            endedBeforeCreator: false,
+            numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
 

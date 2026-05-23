@@ -14,7 +14,7 @@ struct MetricsCollectedYoga: Codable {
     var endDateTime: Date
     var metricsCreatorType: MetricsCreatorType
     var endedBeforeCreator: Bool = false
-
+    var numSession: Int
     func upload(eventId: String, userId: String) async throws {
         let db = Firestore.firestore()
         let docRef = db

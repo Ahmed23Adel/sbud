@@ -94,9 +94,11 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
     private let splitEveryMeters: Double = 1000
     private let checkpointIntervalSeconds: Double = 30
     let isCreator: Bool
+    private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorRun")
 
-    init(isCreator: Bool) {
+    init(isCreator: Bool, numSessions: Int) {
+        self.numSessions = numSessions
         self.isCreator = isCreator
         locationManager.$lastLocation
             .compactMap { $0 }
@@ -239,7 +241,8 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
             metricsCreatorType: .creator,
             track: trackedLocations.toTrackPoints(),
             totalDistance: totalDistanceMeters,
-            splits: splits
+            splits: splits,
+            numSession: numSessions
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
@@ -252,7 +255,8 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
             "avgPace": averagePaceMinPerKm,
             "minPace": minPace == .infinity ? 0.0 : minPace,
             "maxPace": maxPace == -.infinity ? 0.0 : maxPace,
-            "participantCount": FieldValue.increment(Int64(1))
+            "participantCount": FieldValue.increment(Int64(1)),
+            "numSessions": numSessions + 1
         ])
     }
 
@@ -271,7 +275,8 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
                 track: trackedLocations.toTrackPoints(),
                 totalDistance: totalDistanceMeters,
                 splits: splits,
-                endedBeforeCreator: true
+                endedBeforeCreator: true,
+                numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
             return
@@ -290,7 +295,8 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
             track: trimmedTrack.toTrackPoints(),
             totalDistance: trimmedDistance,
             splits: trimmedSplits,
-            endedBeforeCreator: false
+            endedBeforeCreator: false,
+            numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
 

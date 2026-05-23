@@ -15,7 +15,8 @@ struct MetricsCollectedRun: Codable {
     var track: [TrackPoint]
     var totalDistance: Double
     var splits: [Split]
-    var endedBeforeCreator: Bool = false   
+    var endedBeforeCreator: Bool = false
+    var numSession: Int
 
     func upload(eventId: String, userId: String) async throws {
         let db = Firestore.firestore()

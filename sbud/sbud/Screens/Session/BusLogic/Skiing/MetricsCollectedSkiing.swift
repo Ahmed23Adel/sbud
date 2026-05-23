@@ -20,7 +20,8 @@ struct MetricsCollectedSkiing: Codable {
     var numberOfRuns: Int
     var splits: [SplitForSkiing]
     var endedBeforeCreator: Bool = false
-
+    var numSession: Int
+    
     func upload(eventId: String, userId: String) async throws {
         let db = Firestore.firestore()
         try db

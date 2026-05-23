@@ -49,6 +49,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
     var notes: String?
     var createdAt: Date
     var dateLocations: [DateLocationEntry]
+    var numSessions: Int
 
     var activityType: ActivityType { activityDetails.selectedActivity }
 
@@ -56,6 +57,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         case id, title, creator, activityDetails, eventImage
         case isDateConfirmed, isLocationConfirmed, isPublic
         case joiningCondition, maxAllowedToJoin, notes, createdAt, dateLocations
+        case numSessions
     }
 
     init(
@@ -71,7 +73,8 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         maxAllowedToJoin: Int? = nil,
         notes: String? = nil,
         createdAt: Date,
-        dateLocations: [DateLocationEntry]
+        dateLocations: [DateLocationEntry],
+        numSessions: Int
     ) {
         self.id = id
         self.title = title
@@ -86,6 +89,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         self.notes = notes
         self.createdAt = createdAt
         self.dateLocations = dateLocations
+        self.numSessions = numSessions
     }
     
     init(from decoder: any Decoder) throws {
@@ -102,7 +106,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         notes = try container.decodeIfPresent(String.self, forKey: .notes)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         dateLocations = try container.decode([DateLocationEntry].self, forKey: .dateLocations)
-
+        numSessions = try container.decodeIfPresent(Int.self, forKey: .numSessions) ?? 0
         let rawJoiningCondition = try container.decode(String.self, forKey: .joiningCondition)
         switch rawJoiningCondition {
         case "autoJoin": joinCondition = .autoJoin
@@ -161,7 +165,8 @@ extension EventFullDetails {
         maxAllowedToJoin: 150,
         notes: "Come join me",
         createdAt: Date(),
-        dateLocations: [.sample, .sample]
+        dateLocations: [.sample, .sample],
+        numSessions: 0
     )
 }
 
@@ -179,6 +184,8 @@ extension EventFullDetails {
         maxAllowedToJoin: 150,
         notes: "",
         createdAt: Date(),
-        dateLocations: [.sample, .sample]
+        dateLocations: [.sample, .sample],
+        numSessions: 0
+        
     )
 }
