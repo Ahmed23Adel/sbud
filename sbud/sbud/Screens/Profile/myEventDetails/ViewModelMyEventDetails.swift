@@ -53,6 +53,19 @@ class ViewModelMyEventDetails {
     func setMainCoordinator(mainCoordinator: MainCoordinator){
         self.mainCoordinator = mainCoordinator
     }
+    // MARK: - Refresh
+
+    /// Re-fetches event details, the join queue, and the session-created flag in one shot.
+    /// Called by pull-to-refresh in the view.
+    func refresh() async {
+        await loadDetails()
+        do {
+            isSessionCreated = try await isSessionCreated()
+        } catch {
+            logger.fault("Error refreshing session status: \(error)")
+        }
+    }
+
     private func loadDetails() async {
         await MainActor.run { isLoading = true }
         do {

@@ -35,6 +35,7 @@ struct ViewMyEventDetails: View {
                         }
                 }
             }
+            .refreshable { await viewModel.refresh() }
 
             if !viewModel.isLoading{
                 VStack {

@@ -109,8 +109,8 @@ struct ViewSessionSummaryCycling: View {
         Task { @MainActor in
             defer { isRendering = false }
 
-            // Snapshot the routes before feeding them into ImageRenderer —
-            // MKMapSnapshotter is async, UIViewRepresentable can't be rendered by ImageRenderer
+            // ImageRenderer (used next) can render SwiftUI views synchronously — but MultiRouteMapView is a UIViewRepresentable wrapping MKMapView. ImageRenderer can't capture it properly because MapKit renders asynchronously on its own schedule.
+            // So instead: use MKMapSnapshotter — Apple's dedicated API for rendering a map to a UIImage off-screen, then pass that image into the card as a plain Image.
             let routeImage = await MapSnapshotBuilder.snapshot(summaries: vm.participantSummaries)
 
             let card = SessionShareCardView(
@@ -122,6 +122,7 @@ struct ViewSessionSummaryCycling: View {
             let renderer = ImageRenderer(content: card)
             renderer.scale = 3.0
             guard let uiImage = renderer.uiImage else { return }
+            // UIActivityViewController is the standard iOS share sheet — the one with AirDrop, Messages, Save to Photos, etc. You feed it the image.
             let av = UIActivityViewController(activityItems: [uiImage], applicationActivities: nil)
             if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let root = scene.windows.first?.rootViewController {

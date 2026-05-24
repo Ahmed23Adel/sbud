@@ -81,27 +81,37 @@ struct ViewOthersEventDetails: View {
                 .padding(.top, 280)
                 .padding(.bottom, 100)
             }
+            .refreshable { await viewModel.refresh() }
             .ignoresSafeArea()
-            
-            if !viewModel.isLoading && viewModel.isShowJoinSessionButton{
+
+            if !viewModel.isLoading, let eventDetails = viewModel.myEventDertails {
                 VStack {
                     Spacer()
                     HStack {
+                        // Summary button — mirrors the same button in ViewMyEventDetails
+                        BasicFloatingButton(iconName: "chart.dots.scatter") {
+                            coordinator.goToSessionSummary(evnet: eventDetails)
+                        }
+                        .padding(.leading, 36)
+
                         Spacer()
-                        BasicFloatingButton(iconName: "flag.pattern.checkered"){
-                            // TODO: fix
-                            mainCoordinator.startOthersSession(eventDetails: viewModel.myEventDertails!, isSessionCreated: true)
+
+                        // Join session button — only shown when a session is currently active
+                        if viewModel.isShowJoinSessionButton {
+                            BasicFloatingButton(iconName: "flag.pattern.checkered"){
+                                // TODO: fix
+                                mainCoordinator.startOthersSession(eventDetails: eventDetails, isSessionCreated: true)
+                            }
+                            .padding(.trailing)
+                            .scaleEffect(isPulsing ? 1.4 : 1.0)
+                            .animation(
+                                .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
+                                value: isPulsing
+                            )
+                            .onAppear{
+                                isPulsing = true
+                            }
                         }
-                        .padding(.trailing)
-                        .scaleEffect(isPulsing ? 1.4 : 1.0)
-                        .animation(
-                            .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
-                            value: isPulsing
-                        )
-                        .onAppear{
-                            isPulsing = true
-                        }
-                        
                     }
                 }
             }
