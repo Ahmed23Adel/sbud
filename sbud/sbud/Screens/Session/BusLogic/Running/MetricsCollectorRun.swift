@@ -5,22 +5,6 @@
 //  Created by ahmed on 16/05/2026.
 //
 
-import Foundation
-import CoreLocation
-import Combine
-import OSLog
-import FirebaseFirestore
-
-struct TrackPoint: Codable {
-    let timestamp: Date
-    let latitude: Double
-    let longitude: Double
-}
-
-enum MetricsCreatorType: String, Codable{
-    case creator = "Creator"
-    case normalParticipant = "Normal Participant"
-}
 // creator is the one who ends it
 // i link locations and distance by time,
 // when calculating final metrics, i stop at the time of creator
@@ -48,22 +32,29 @@ enum MetricsCreatorType: String, Codable{
 //  MetricsCollectorRun.swift
 //  sbud
 //
-
-import Foundation
-import CoreLocation
-import Combine
-import OSLog
-import FirebaseFirestore
 //
 //  MetricsCollectorRun.swift
 //  sbud
 //
+//  Created by ahmed on 16/05/2026.
+//
 
 import Foundation
 import CoreLocation
 import Combine
 import OSLog
 import FirebaseFirestore
+
+struct TrackPoint: Codable {
+    let timestamp: Date
+    let latitude: Double
+    let longitude: Double
+}
+
+enum MetricsCreatorType: String, Codable {
+    case creator = "Creator"
+    case normalParticipant = "Normal Participant"
+}
 
 @Observable
 class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCollectorPersistable {
@@ -113,10 +104,8 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
     func startSession(eventId: String) {
         currentEventId = eventId
 
-        // Try to restore a previous crash checkpoint first
         if restoreCheckpoint(eventId: eventId) {
             logger.info("Restored crash checkpoint for eventId: \(eventId)")
-            // Don't reset — continue from restored state
         } else {
             logger.info("No checkpoint found, starting fresh")
             reset()
@@ -128,14 +117,12 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
         locationManager.startUpdating()
         isTracking = true
 
-        // Main 1-second tick
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, let start = self.startDate else { return }
             self.elapsedSeconds = Date().timeIntervalSince(start)
             self.updateAveragePace()
         }
 
-        // Checkpoint every 30 seconds
         checkpointTimer = Timer.scheduledTimer(
             withTimeInterval: checkpointIntervalSeconds,
             repeats: true
@@ -162,7 +149,6 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
             try await participantEndsSession(eventId: event.id, userId: userId)
         }
 
-        // Only clear checkpoint after successful upload
         clearCheckpoint(eventId: event.id)
     }
 
@@ -193,13 +179,11 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
         logger.info("Checkpoint saved for eventId: \(eventId), \(self.trackedLocations.count) points")
     }
 
-    /// Returns true if a checkpoint was found and restored, false if starting fresh.
     func restoreCheckpoint(eventId: String) -> Bool {
         guard let data = UserDefaults.standard.data(forKey: checkpointKey(eventId: eventId)),
               let snapshot = try? JSONDecoder().decode(RunSessionSnapshot.self, from: data)
         else { return false }
 
-        // Restore scalar state
         startDate = snapshot.startDate
         lastSplitDate = snapshot.lastSplitDate
         totalDistanceMeters = snapshot.totalDistanceMeters
@@ -209,7 +193,6 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
         maxPace = snapshot.maxPace
         splits = snapshot.splits
 
-        // Reconstruct (Date, CLLocation) from stored TrackPoints
         trackedLocations = snapshot.trackPoints.map { point in
             let location = CLLocation(
                 coordinate: CLLocationCoordinate2D(
@@ -224,9 +207,7 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
             return (point.timestamp, location)
         }
 
-        // Seed lastLocation so distance delta continues correctly
         lastLocation = trackedLocations.last?.1
-
         return true
     }
 
@@ -247,27 +228,26 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
 
         try await metrics.upload(eventId: eventId, userId: userId)
 
+        let sessionEntry: [String: Any] = [
+            "startDateTime": startDate as Any,
+            "endDateTime": endDateTime
+        ]
+
         let db = Firestore.firestore()
         try await db.collection("Events").document(eventId).updateData([
             "finalStartDateTime": startDate as Any,
             "finalEndDateTime": endDateTime,
             "status": UsersEventStatus.completed.rawValue,
-            "avgPace": averagePaceMinPerKm,
-            "minPace": minPace == .infinity ? 0.0 : minPace,
-            "maxPace": maxPace == -.infinity ? 0.0 : maxPace,
-            "participantCount": FieldValue.increment(Int64(1)),
-            "numSessions": FieldValue.increment(Int64(1))
+            "numSessions": FieldValue.increment(Int64(1)),
+            "sessionHistory": FieldValue.arrayUnion([sessionEntry])
         ])
     }
 
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
-        let db = Firestore.firestore()
-        let eventRef = db.collection("Events").document(eventId)
-
         guard let finalEndDateTime = try await MetricsCollectorUtils.readFinalEndDateTime(eventId: eventId) else {
-            logger.info("Participant ended before creator — storing data, skipping avg update")
+            logger.info("Participant ended before creator — storing data only")
             let metrics = MetricsCollectedRun(
                 startDateTime: startDateTime,
                 endDateTime: Date(),
@@ -285,8 +265,6 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
         let trimmedTrack = MetricsCollectorUtils.trimTrack(trackedLocations, to: finalEndDateTime)
         let trimmedSplits = splits.filter { $0.dateTimeCreated <= finalEndDateTime }
         let trimmedDistance = MetricsCollectorUtils.computeDistance(from: trimmedTrack.map { $0.1 })
-        let trimmedElapsed = MetricsCollectorUtils.trimmedElapsed(from: trimmedTrack, fallback: elapsedSeconds)
-        let trimmedAvgPace = trimmedDistance > 0 ? (trimmedElapsed / 60) / (trimmedDistance / 1000) : 0
 
         let metrics = MetricsCollectedRun(
             startDateTime: startDateTime,
@@ -299,54 +277,7 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
             numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
-
-        guard trimmedAvgPace > 0 else {
-            logger.warning("Participant avg pace is 0, skipping event metrics update")
-            return
-        }
-
-        let participantMinPace = trimmedSplits.map(\.paceInMinPerKm).min() ?? trimmedAvgPace
-        let participantMaxPace = trimmedSplits.map(\.paceInMinPerKm).max() ?? trimmedAvgPace
-
-        _ = try await db.runTransaction { transaction, errorPointer in
-            let eventSnap: DocumentSnapshot
-            do {
-                eventSnap = try transaction.getDocument(eventRef)
-            } catch let fetchError as NSError {
-                errorPointer?.pointee = fetchError
-                return nil
-            }
-
-            guard let currentData = eventSnap.data(),
-                  let currentAvg = currentData["avgPace"] as? Double,
-                  let currentMin = currentData["minPace"] as? Double,
-                  let currentMax = currentData["maxPace"] as? Double,
-                  let currentCount = currentData["participantCount"] as? Int
-            else {
-                errorPointer?.pointee = NSError(
-                    domain: "MetricsCollectorRun",
-                    code: 1,
-                    userInfo: [NSLocalizedDescriptionKey: "Missing metrics fields on event doc"]
-                )
-                return nil
-            }
-
-            let newCount = currentCount + 1
-            let newAvg = (currentAvg * Double(currentCount) + trimmedAvgPace) / Double(newCount)
-            let newMin = min(currentMin, participantMinPace)
-            let newMax = max(currentMax, participantMaxPace)
-
-            transaction.updateData([
-                "avgPace": newAvg,
-                "minPace": newMin,
-                "maxPace": newMax,
-                "participantCount": newCount
-            ], forDocument: eventRef)
-
-            return nil
-        }
-
-        logger.info("Participant metrics uploaded and event averages updated")
+        logger.info("Participant metrics uploaded")
     }
 
     // MARK: - Location config

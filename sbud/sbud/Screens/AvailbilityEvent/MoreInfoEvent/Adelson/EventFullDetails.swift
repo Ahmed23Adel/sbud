@@ -117,6 +117,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
+        print("id from event full details", id)
         title = try container.decode(String.self, forKey: .title)
         creator = try container.decode(CreatorInfo.self, forKey: .creator)
         activityDetails = try container.decode(ExtraArgsHolder.self, forKey: .activityDetails)
@@ -130,7 +131,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable {
         createdAt = Date(timeIntervalSince1970: createdAtRaw)
         
         dateLocations = try container.decode([DateLocationEntry].self, forKey: .dateLocations)
-        numSessions = try container.decodeIfPresent(Int.self, forKey: .numSessions) ?? 0
+        numSessions = try container.decode(Int.self, forKey: .numSessions)
 
         let rawJoiningCondition = try container.decode(String.self, forKey: .joiningCondition)
         switch rawJoiningCondition {

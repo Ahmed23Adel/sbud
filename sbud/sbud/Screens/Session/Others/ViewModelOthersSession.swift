@@ -50,6 +50,7 @@ class ViewModelOthersSession {
     }
 
     private func initMetricsCollector() {
+        logger.info("in initMetricsCollector: eventDetails.numSessions\(self.eventDetails.numSessions)")
         switch eventDetails.activityType {
         case .running:
             metricsCollector = MetricsCollectorRun(isCreator: false, numSessions: eventDetails.numSessions)

@@ -5,6 +5,7 @@
 //  Created by ahmed on 17/05/2026.
 //
 
+
 import Foundation
 import CoreLocation
 import Combine
@@ -17,7 +18,6 @@ struct SplitForHiking: Identifiable, Codable {
     let paceMinPerKm: Double
     let dateTimeCreated = Date()
 }
-
 
 @Observable
 class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, MetricsCollectorPersistable {
@@ -200,26 +200,24 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
 
         try await metrics.upload(eventId: eventId, userId: userId)
 
+        let sessionEntry: [String: Any] = [
+            "startDateTime": startDate as Any,
+            "endDateTime": endDateTime
+        ]
+
         let db = Firestore.firestore()
         try await db.collection("Events").document(eventId).updateData([
             "finalStartDateTime": startDate as Any,
             "finalEndDateTime": endDateTime,
             "status": UsersEventStatus.completed.rawValue,
-            "avgSpeedKmH": averageSpeedKmH,
-            "avgElevationGain": elevationGainMeters,
-            "avgElevationLoss": elevationLossMeters,
-            "avgMaxAltitude": maxAltitudeMeters == -.infinity ? 0.0 : maxAltitudeMeters,
-            "participantCount": FieldValue.increment(Int64(1)),
-            "numSessions": FieldValue.increment(Int64(1))
+            "numSessions": FieldValue.increment(Int64(1)),
+            "sessionHistory": FieldValue.arrayUnion([sessionEntry])
         ])
     }
-
+    
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
-        let db = Firestore.firestore()
-        let eventRef = db.collection("Events").document(eventId)
-
         guard let finalEndDateTime = try await MetricsCollectorUtils
             .readFinalEndDateTime(eventId: eventId) else {
             logger.info("Hiking participant ended before creator — storing data only")
@@ -247,10 +245,6 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
         let trimmedElevationGain = MetricsCollectorUtils.computeElevationGain(from: trimmedLocations)
         let trimmedElevationLoss = MetricsCollectorUtils.computeElevationLoss(from: trimmedLocations)
         let trimmedMaxAltitude = trimmedLocations.map(\.altitude).max() ?? 0
-        let trimmedElapsed = MetricsCollectorUtils.trimmedElapsed(from: trimmedTrack, fallback: elapsedSeconds)
-        let trimmedAvgSpeed = trimmedElapsed > 0
-            ? (trimmedDistance / 1000) / (trimmedElapsed / 3600)
-            : 0
 
         let metrics = MetricsCollectedHiking(
             startDateTime: startDateTime,
@@ -266,54 +260,7 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
             numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
-
-        guard trimmedAvgSpeed > 0 else {
-            logger.warning("Participant avg speed is 0, skipping event metrics update")
-            return
-        }
-
-        _ = try await db.runTransaction { transaction, errorPointer in
-            let eventSnap: DocumentSnapshot
-            do {
-                eventSnap = try transaction.getDocument(eventRef)
-            } catch let fetchError as NSError {
-                errorPointer?.pointee = fetchError
-                return nil
-            }
-
-            guard let currentData = eventSnap.data(),
-                  let currentAvgSpeed = currentData["avgSpeedKmH"] as? Double,
-                  let currentAvgGain = currentData["avgElevationGain"] as? Double,
-                  let currentAvgLoss = currentData["avgElevationLoss"] as? Double,
-                  let currentAvgAltitude = currentData["avgMaxAltitude"] as? Double,
-                  let currentCount = currentData["participantCount"] as? Int
-            else {
-                errorPointer?.pointee = NSError(
-                    domain: "MetricsCollectorHiking",
-                    code: 1,
-                    userInfo: [NSLocalizedDescriptionKey: "Missing metrics fields on event doc"]
-                )
-                return nil
-            }
-
-            let newCount = currentCount + 1
-            let newAvgSpeed = (currentAvgSpeed * Double(currentCount) + trimmedAvgSpeed) / Double(newCount)
-            let newAvgGain = (currentAvgGain * Double(currentCount) + trimmedElevationGain) / Double(newCount)
-            let newAvgLoss = (currentAvgLoss * Double(currentCount) + trimmedElevationLoss) / Double(newCount)
-            let newAvgAltitude = (currentAvgAltitude * Double(currentCount) + trimmedMaxAltitude) / Double(newCount)
-
-            transaction.updateData([
-                "avgSpeedKmH": newAvgSpeed,
-                "avgElevationGain": newAvgGain,
-                "avgElevationLoss": newAvgLoss,
-                "avgMaxAltitude": newAvgAltitude,
-                "participantCount": newCount
-            ], forDocument: eventRef)
-
-            return nil
-        }
-
-        logger.info("Hiking participant metrics uploaded and event averages updated")
+        logger.info("Hiking participant metrics uploaded")
     }
 
     // MARK: - Location config

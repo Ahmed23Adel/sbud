@@ -30,7 +30,7 @@ struct ViewOwnerSession: View {
     var body: some View {
         Group {
             if viewModel.isLoading {
-                MidnightLoadingView(text: "STARTING SESSION")
+                MidnightLoadingView(text: "LOADING SESSION")
                     .ignoresSafeArea()
             } else {
                 mainContent
