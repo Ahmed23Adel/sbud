@@ -1,5 +1,5 @@
 //
-//  ViewModelSessionSummaryRunning.swift
+//  ViewModelSessionSummaryHiking.swift
 //  sbud
 //
 //  Created by ahmed on 24/05/2026.
@@ -10,27 +10,27 @@ import Observation
 import SwiftUI
 
 @Observable
-class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
+class ViewModelSessionSummaryHiking: SessionSummaryViewModel {
 
-    typealias Metric = MetricsCollectedRun
+    typealias Metric = MetricsCollectedHiking
 
     // MARK: - SessionSummaryViewModel requirements
 
     var sessions: [SessionHistoryEntry] = []
     var selectedSessionIndex: Int = 0
-    var allMetrics: [MetricsCollectedRun] = []
+    var allMetrics: [MetricsCollectedHiking] = []
     var profiles: [String: UserProfile] = [:]
     var isLoading = false
     var errorMessage: String?
 
     let eventId: String
-    let metricsRepo: ActivityMetricsRepository<MetricsCollectedRun>
+    let metricsRepo: ActivityMetricsRepository<MetricsCollectedHiking>
     let userRepo = UserRepository()
 
     // MARK: - Init
 
     init(eventId: String, numSessions: Int,
-         repo: ActivityMetricsRepository<MetricsCollectedRun> = ActivityMetricsRepository()) {
+         repo: ActivityMetricsRepository<MetricsCollectedHiking> = ActivityMetricsRepository()) {
         self.eventId    = eventId
         self.metricsRepo = repo
     }
@@ -39,15 +39,15 @@ class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
 
     var participantSummaries: [ParticipantSummary] {
         sessionMetrics.enumerated().map { index, m in
-            let elapsed   = m.endDateTime.timeIntervalSince(m.startDateTime)
-            let pace      = m.totalDistance > 0 ? (elapsed / 60) / (m.totalDistance / 1000) : 0
-            let bestPace  = m.splits.map(\.paceInMinPerKm).min() ?? 0
-            let profile   = m.userId.flatMap { profiles[$0] }
-            let name      = profile.map { "\($0.name) \($0.surName)".trimmingCharacters(in: .whitespaces) }
+            let elapsed  = m.endDateTime.timeIntervalSince(m.startDateTime)
+            let pace     = m.totalDistance > 0 ? (elapsed / 60) / (m.totalDistance / 1000) : 0
+            let bestPace = m.splits.map(\.paceMinPerKm).min() ?? 0
+            let profile  = m.userId.flatMap { profiles[$0] }
+            let name     = profile.map { "\($0.name) \($0.surName)".trimmingCharacters(in: .whitespaces) }
 
             let displaySplits: [DisplaySplit] = m.splits.map { s in
-                DisplaySplit(number: s.number, chartValue: s.paceInMinPerKm,
-                             displayText: s.formatted, isSpeed: false)
+                DisplaySplit(number: s.number, chartValue: s.paceMinPerKm,
+                             displayText: SummaryFormatters.pace(s.paceMinPerKm), isSpeed: false)
             }
 
             return ParticipantSummary(
@@ -62,6 +62,9 @@ class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
                 track: m.track,
                 avgPaceMinPerKm: pace,
                 bestSplitPace: bestPace,
+                elevationGainM: m.elevationGain,
+                elevationLossM: m.elevationLoss,
+                maxAltitudeM: m.maxAltitude,
                 splits: displaySplits
             )
         }
@@ -75,7 +78,7 @@ class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
         return v.reduce(0, +) / Double(v.count)
     }
 
-    var minPaceMinPerKm: Double {
+    var bestPaceMinPerKm: Double {
         participantSummaries.map(\.avgPaceMinPerKm).filter { $0 > 0 }.min() ?? 0
     }
 
@@ -95,6 +98,18 @@ class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
     var distanceInsights: MetricInsights? {
         makeInsights(values: participantSummaries.compactMap { s in
             s.totalDistanceKm > 0 ? (s, s.totalDistanceKm) : nil
+        })
+    }
+
+    var elevationGainInsights: MetricInsights? {
+        makeInsights(values: participantSummaries.compactMap { s in
+            s.elevationGainM > 0 ? (s, s.elevationGainM) : nil
+        })
+    }
+
+    var elevationLossInsights: MetricInsights? {
+        makeInsights(values: participantSummaries.compactMap { s in
+            s.elevationLossM > 0 ? (s, s.elevationLossM) : nil
         })
     }
 

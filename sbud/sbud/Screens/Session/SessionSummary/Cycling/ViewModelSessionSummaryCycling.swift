@@ -1,5 +1,5 @@
 //
-//  ViewModelSessionSummaryRunning.swift
+//  ViewModelSessionSummaryCycling.swift
 //  sbud
 //
 //  Created by ahmed on 24/05/2026.
@@ -10,27 +10,27 @@ import Observation
 import SwiftUI
 
 @Observable
-class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
+class ViewModelSessionSummaryCycling: SessionSummaryViewModel {
 
-    typealias Metric = MetricsCollectedRun
+    typealias Metric = MetricsCollectedCycling
 
     // MARK: - SessionSummaryViewModel requirements
 
     var sessions: [SessionHistoryEntry] = []
     var selectedSessionIndex: Int = 0
-    var allMetrics: [MetricsCollectedRun] = []
+    var allMetrics: [MetricsCollectedCycling] = []
     var profiles: [String: UserProfile] = [:]
     var isLoading = false
     var errorMessage: String?
 
     let eventId: String
-    let metricsRepo: ActivityMetricsRepository<MetricsCollectedRun>
+    let metricsRepo: ActivityMetricsRepository<MetricsCollectedCycling>
     let userRepo = UserRepository()
 
     // MARK: - Init
 
     init(eventId: String, numSessions: Int,
-         repo: ActivityMetricsRepository<MetricsCollectedRun> = ActivityMetricsRepository()) {
+         repo: ActivityMetricsRepository<MetricsCollectedCycling> = ActivityMetricsRepository()) {
         self.eventId    = eventId
         self.metricsRepo = repo
     }
@@ -39,15 +39,15 @@ class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
 
     var participantSummaries: [ParticipantSummary] {
         sessionMetrics.enumerated().map { index, m in
-            let elapsed   = m.endDateTime.timeIntervalSince(m.startDateTime)
-            let pace      = m.totalDistance > 0 ? (elapsed / 60) / (m.totalDistance / 1000) : 0
-            let bestPace  = m.splits.map(\.paceInMinPerKm).min() ?? 0
-            let profile   = m.userId.flatMap { profiles[$0] }
-            let name      = profile.map { "\($0.name) \($0.surName)".trimmingCharacters(in: .whitespaces) }
+            let elapsed  = m.endDateTime.timeIntervalSince(m.startDateTime)
+            let speed    = elapsed > 0 ? (m.totalDistance / 1000) / (elapsed / 3600) : 0
+            let bestSpeed = m.splits.map(\.speedKmH).max() ?? 0
+            let profile  = m.userId.flatMap { profiles[$0] }
+            let name     = profile.map { "\($0.name) \($0.surName)".trimmingCharacters(in: .whitespaces) }
 
             let displaySplits: [DisplaySplit] = m.splits.map { s in
-                DisplaySplit(number: s.number, chartValue: s.paceInMinPerKm,
-                             displayText: s.formatted, isSpeed: false)
+                DisplaySplit(number: s.number, chartValue: s.speedKmH,
+                             displayText: SummaryFormatters.speed(s.speedKmH), isSpeed: true)
             }
 
             return ParticipantSummary(
@@ -60,8 +60,9 @@ class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
                 profileImageUrl: profile?.profileImageUrl,
                 totalDistanceKm: m.totalDistance / 1000,
                 track: m.track,
-                avgPaceMinPerKm: pace,
-                bestSplitPace: bestPace,
+                avgSpeedKmH: speed,
+                bestSplitSpeedKmH: bestSpeed,
+                elevationGainM: m.elevationGain,
                 splits: displaySplits
             )
         }
@@ -69,14 +70,14 @@ class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
 
     // MARK: - Aggregate metrics
 
-    var avgPaceMinPerKm: Double {
-        let v = participantSummaries.compactMap { $0.avgPaceMinPerKm > 0 ? $0.avgPaceMinPerKm : nil }
+    var avgSpeedKmH: Double {
+        let v = participantSummaries.compactMap { $0.avgSpeedKmH > 0 ? $0.avgSpeedKmH : nil }
         guard !v.isEmpty else { return 0 }
         return v.reduce(0, +) / Double(v.count)
     }
 
-    var minPaceMinPerKm: Double {
-        participantSummaries.map(\.avgPaceMinPerKm).filter { $0 > 0 }.min() ?? 0
+    var bestSpeedKmH: Double {
+        participantSummaries.map(\.avgSpeedKmH).filter { $0 > 0 }.max() ?? 0
     }
 
     var avgDistanceKm: Double {
@@ -86,15 +87,21 @@ class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
 
     // MARK: - Insights
 
-    var paceInsights: MetricInsights? {
+    var speedInsights: MetricInsights? {
         makeInsights(values: participantSummaries.compactMap { s in
-            s.avgPaceMinPerKm > 0 ? (s, s.avgPaceMinPerKm) : nil
+            s.avgSpeedKmH > 0 ? (s, s.avgSpeedKmH) : nil
         })
     }
 
     var distanceInsights: MetricInsights? {
         makeInsights(values: participantSummaries.compactMap { s in
             s.totalDistanceKm > 0 ? (s, s.totalDistanceKm) : nil
+        })
+    }
+
+    var elevationInsights: MetricInsights? {
+        makeInsights(values: participantSummaries.compactMap { s in
+            s.elevationGainM > 0 ? (s, s.elevationGainM) : nil
         })
     }
 

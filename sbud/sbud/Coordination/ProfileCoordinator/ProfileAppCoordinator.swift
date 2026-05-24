@@ -198,7 +198,10 @@ struct ProfileDestinationView: View {
         case .eventConversations(let eventId, let eventTitle):
             EventConversationsView(eventId: eventId, eventTitle: eventTitle)
         case .sessionSummary(event: let event):
-            ViewSessionSummaryConditional(event: event)
+            ViewSessionSummaryConditional(event: event) { userId in
+                guard userId != currentUserId else { return }
+                pushToParent(.othersProfile(userId: userId))
+            }
         }
     }
 }
