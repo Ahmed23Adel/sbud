@@ -99,7 +99,8 @@ struct ViewSessionSummaryTimeBased<M: SessionMetricsBase>: View {
         guard let session = vm.selectedSession else { return }
         isRendering = true
         let card = SessionShareCardView(eventTitle: event.title, session: session,
-            summaries: vm.participantSummaries, paceInsights: nil, distanceInsights: nil)
+            summaries: vm.participantSummaries, routeImage: nil,
+            paceInsights: nil, distanceInsights: nil)
         let renderer = ImageRenderer(content: card)
         renderer.scale = 3.0
         defer { isRendering = false }
@@ -232,68 +233,4 @@ private func makeTimeVM<M: SessionMetricsBase>(sessions: [SessionHistoryEntry]) 
     return vm
 }
 
-#Preview("Gym — With Data") {
-    let vm = makeTimeVM<MetricsCollectedGym>(sessions: [PreviewData.session])
-    vm.allMetrics = [
-        MetricsCollectedGym(userId: "preview-user1",
-            startDateTime: PreviewData.session.startDateTime,
-            endDateTime: PreviewData.session.endDateTime,
-            metricsCreatorType: .creator, numSession: 0),
-        MetricsCollectedGym(userId: "preview-user2",
-            startDateTime: PreviewData.session.startDateTime,
-            endDateTime: PreviewData.session.endDateTime.addingTimeInterval(-400),
-            metricsCreatorType: .normalParticipant, numSession: 0),
-        MetricsCollectedGym(userId: "preview-user3",
-            startDateTime: PreviewData.session.startDateTime,
-            endDateTime: PreviewData.session.endDateTime.addingTimeInterval(650),
-            metricsCreatorType: .normalParticipant, numSession: 0),
-    ]
-    return NavigationStack {
-        ViewSessionSummaryTimeBased<MetricsCollectedGym>(
-            event: PreviewData.event(activity: .gym, title: "Saturday Gym Session"),
-            activityLabel: "Participants",
-            activityIcon: "dumbbell.fill",
-            previewVM: vm
-        )
-    }
-    .preferredColorScheme(.dark)
-}
-
-#Preview("Tennis — With Data") {
-    let vm = makeTimeVM<MetricsCollectedTennis>(sessions: [PreviewData.session])
-    vm.allMetrics = [
-        MetricsCollectedTennis(userId: "preview-user1",
-            startDateTime: PreviewData.session.startDateTime,
-            endDateTime: PreviewData.session.endDateTime,
-            metricsCreatorType: .creator, numSession: 0),
-        MetricsCollectedTennis(userId: "preview-user2",
-            startDateTime: PreviewData.session.startDateTime,
-            endDateTime: PreviewData.session.endDateTime.addingTimeInterval(-300),
-            metricsCreatorType: .normalParticipant, numSession: 0),
-    ]
-    return NavigationStack {
-        ViewSessionSummaryTimeBased<MetricsCollectedTennis>(
-            event: PreviewData.event(activity: .tennis, title: "Sunday Tennis"),
-            activityLabel: "Players",
-            activityIcon: "tennisball.fill",
-            previewVM: vm
-        )
-    }
-    .preferredColorScheme(.dark)
-}
-
-#Preview("Yoga — Empty") {
-    let vm = ViewModelSessionSummaryTimeBased<MetricsCollectedYoga>(eventId: "preview", numSessions: 0)
-    vm.sessions = []
-    vm.isLoading = false
-    return NavigationStack {
-        ViewSessionSummaryTimeBased<MetricsCollectedYoga>(
-            event: PreviewData.event(activity: .yoga, title: "Morning Yoga"),
-            activityLabel: "Participants",
-            activityIcon: "figure.mind.and.body",
-            previewVM: vm
-        )
-    }
-    .preferredColorScheme(.dark)
-}
 #endif

@@ -31,7 +31,7 @@ struct PaceTrendChartView: View {
             }
         }
     }
-
+    // Calculates Y axis range with 12% padding above and below the real min/max, so lines don't touch the edges. max(0, ...) prevents negative Y axis.
     private var yMin: Double {
         max(0, (dataPoints.map(\.value).min() ?? 0) * 0.88)
     }
@@ -50,11 +50,12 @@ struct PaceTrendChartView: View {
                         LineMark(
                             x: .value("Split", split.number),
                             y: .value(isSpeed ? "Speed" : "Pace", split.chartValue),
-                            series: .value("Participant", name)
+                            series: .value("Participant", name)// // groups into separate lines
                         )
                         .foregroundStyle(s.color)
                         .lineStyle(StrokeStyle(lineWidth: 2))
-                        .interpolationMethod(.catmullRom)
+                        .interpolationMethod(.catmullRom) // .catmullRom is a smoothing algorithm — makes the line curve naturally between points instead of sharp angles.
+
 
                         PointMark(
                             x: .value("Split", split.number),
@@ -67,6 +68,7 @@ struct PaceTrendChartView: View {
             }
             .chartYScale(domain: yMin...yMax)
             .chartYAxis {
+                //  asks for ~4 tick marks (Charts may adjust). For each tick you get:
                 AxisMarks(values: .automatic(desiredCount: 4)) { value in
                     AxisGridLine()
                         .foregroundStyle(Color.white.opacity(0.06))
@@ -92,6 +94,7 @@ struct PaceTrendChartView: View {
                     }
                 }
             }
+            // A fully custom legend — you build it yourself with SwiftUI views inside the closure. The default legend would just show colored lines, this gives you colored circles + names.
             .chartLegend(position: .bottom, alignment: .leading, spacing: 8) {
                 HStack(spacing: 12) {
                     ForEach(summaries) { s in
@@ -161,25 +164,25 @@ struct PaceTrendChartView: View {
         .background(Color(.systemBackground))
         .preferredColorScheme(.dark)
 }
-
-#Preview("Speed Trend — Cycling") {
-    let splits1: [DisplaySplit] = [
-        DisplaySplit(number: 1, chartValue: 28.5, displayText: "28.5", isSpeed: true),
-        DisplaySplit(number: 2, chartValue: 32.1, displayText: "32.1", isSpeed: true),
-        DisplaySplit(number: 3, chartValue: 30.8, displayText: "30.8", isSpeed: true),
-        DisplaySplit(number: 4, chartValue: 34.2, displayText: "34.2", isSpeed: true),
-    ]
-    let summaries: [ParticipantSummary] = [
-        ParticipantSummary(id: "1", displayIndex: 1, elapsedSeconds: 5_400,
-            metricsCreatorType: .creator, endedBeforeCreator: false,
-            userName: "Ahmed H", profileImageUrl: nil,
-            totalDistanceKm: 32.5, avgSpeedKmH: 30.1, bestSplitSpeedKmH: 34.2,
-            splits: splits1),
-    ]
-    return PaceTrendChartView(summaries: summaries,
-        shortName: { _ in "Ahmed" },
-        isSpeed: true, title: "Speed Trend")
-        .padding()
-        .background(Color(.systemBackground))
-        .preferredColorScheme(.dark)
-}
+//
+//#Preview("Speed Trend — Cycling") {
+//    let splits1: [DisplaySplit] = [
+//        DisplaySplit(number: 1, chartValue: 28.5, displayText: "28.5", isSpeed: true),
+//        DisplaySplit(number: 2, chartValue: 32.1, displayText: "32.1", isSpeed: true),
+//        DisplaySplit(number: 3, chartValue: 30.8, displayText: "30.8", isSpeed: true),
+//        DisplaySplit(number: 4, chartValue: 34.2, displayText: "34.2", isSpeed: true),
+//    ]
+//    let summaries: [ParticipantSummary] = [
+//        ParticipantSummary(id: "1", displayIndex: 1, elapsedSeconds: 5_400,
+//            metricsCreatorType: .creator, endedBeforeCreator: false,
+//            userName: "Ahmed H", profileImageUrl: nil,
+//            totalDistanceKm: 32.5, avgSpeedKmH: 30.1, bestSplitSpeedKmH: 34.2,
+//            splits: splits1),
+//    ]
+//    return PaceTrendChartView(summaries: summaries,
+//        shortName: { _ in "Ahmed" },
+//        isSpeed: true, title: "Speed Trend")
+//        .padding()
+//        .background(Color(.systemBackground))
+//        .preferredColorScheme(.dark)
+//}

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 // MARK: - Share card (rendered to image via ImageRenderer)
 
@@ -13,12 +14,15 @@ struct SessionShareCardView: View {
     let eventTitle: String
     let session: SessionHistoryEntry
     let summaries: [ParticipantSummary]
+    /// Pre-rendered route map produced by MapSnapshotBuilder. Nil for time-based activities.
+    let routeImage: UIImage?
     let paceInsights: MetricInsights?
     let distanceInsights: MetricInsights?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
+            routeMapSection          // shown only when routeImage != nil
             Divider().background(Color.white.opacity(0.1))
             participantRows
             Divider().background(Color.white.opacity(0.1))
@@ -28,6 +32,22 @@ struct SessionShareCardView: View {
         .background(Color(red: 0.06, green: 0.07, blue: 0.09))
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .frame(width: 340)
+    }
+
+    // MARK: - Route map strip
+
+    // @ViewBuilder: It activates a result builder that transforms your if/else branches into a single type behind the scenes.
+    // @ViewBuilder silently adds an EmptyView for the missing else branch. So the actual type becomes something like ConditionalContent<Image, EmptyView> — which satisfies some View.
+
+    @ViewBuilder
+    private var routeMapSection: some View {
+        if let img = routeImage {
+            Image(uiImage: img)
+                .resizable()
+                .scaledToFill()
+                .frame(height: 150)
+                .clipped()
+        }
     }
 
     // MARK: - Header
@@ -247,6 +267,7 @@ struct SessionShareCardView: View {
             eventTitle: "Saturday Morning Run",
             session: PreviewData.session,
             summaries: PreviewData.paceParticipants,
+            routeImage: nil,
             paceInsights: PreviewData.paceInsights(),
             distanceInsights: PreviewData.distanceInsights()
         )
@@ -262,6 +283,7 @@ struct SessionShareCardView: View {
             eventTitle: "Sunday Bike Ride",
             session: PreviewData.session,
             summaries: PreviewData.speedParticipants,
+            routeImage: nil,
             paceInsights: nil,
             distanceInsights: nil
         )
@@ -277,6 +299,7 @@ struct SessionShareCardView: View {
             eventTitle: "Saturday Gym Session",
             session: PreviewData.session,
             summaries: PreviewData.timeParticipants,
+            routeImage: nil,
             paceInsights: nil,
             distanceInsights: nil
         )

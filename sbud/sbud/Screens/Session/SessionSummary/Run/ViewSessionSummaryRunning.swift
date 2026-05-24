@@ -106,30 +106,38 @@ struct ViewSessionSummaryRunning: View {
         guard let session = vm.selectedSession else { return }
         isRendering = true
 
-        let card = SessionShareCardView(
-            eventTitle: event.title,
-            session: session,
-            summaries: vm.participantSummaries,
-            paceInsights: vm.paceInsights,
-            distanceInsights: vm.distanceInsights
-        )
+        Task { @MainActor in
+            defer { isRendering = false }
 
-        let renderer = ImageRenderer(content: card)
-        renderer.scale = 3.0
+            // Snapshot the routes before feeding them into ImageRenderer —
+            // MKMapSnapshotter is async, UIViewRepresentable can't be rendered by ImageRenderer
+            let routeImage = await MapSnapshotBuilder.snapshot(summaries: vm.participantSummaries)
 
-        defer { isRendering = false }
-        guard let uiImage = renderer.uiImage else { return }
+            let card = SessionShareCardView(
+                eventTitle: event.title,
+                session: session,
+                summaries: vm.participantSummaries,
+                routeImage: routeImage,
+                paceInsights: vm.paceInsights,
+                distanceInsights: vm.distanceInsights
+            )
 
-        let av = UIActivityViewController(
-            activityItems: [uiImage],
-            applicationActivities: nil
-        )
-        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let root = scene.windows.first?.rootViewController {
-            var presented = root
-            while let p = presented.presentedViewController { presented = p }
-            presented.present(av, animated: true)
-        }
+            let renderer = ImageRenderer(content: card)
+            renderer.scale = 3.0
+
+            guard let uiImage = renderer.uiImage else { return }
+
+            let av = UIActivityViewController(
+                activityItems: [uiImage],
+                applicationActivities: nil
+            )
+            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let root = scene.windows.first?.rootViewController {
+                var presented = root
+                while let p = presented.presentedViewController { presented = p }
+                presented.present(av, animated: true)
+            }
+        } // end Task
     }
 
     // MARK: - Session date header
