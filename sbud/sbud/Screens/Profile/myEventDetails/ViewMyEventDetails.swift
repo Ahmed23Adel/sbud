@@ -12,6 +12,7 @@ struct ViewMyEventDetails: View {
     @EnvironmentObject private var coordinator: ProfileCoordinator
     @EnvironmentObject private var mainCoordinator: MainCoordinator
     @State var isPulsing = false
+    @Environment(\.dismiss) var dismiss
     init(eventId: String) {
         _viewModel = State(wrappedValue: ViewModelMyEventDetails(eventId: eventId))
     }
@@ -24,15 +25,19 @@ struct ViewMyEventDetails: View {
 
             ScrollView {
                 if let details = viewModel.myEventDertails {
-                    eventContent(details)
-                        .padding(.top, 200)
-                        .padding(.horizontal, 24)
-                        .frame(maxWidth: .infinity)
-                        .toolbar {
-                            ToolbarItem {
-                                Button("Edit") { }
-                            }
+                    VStack(spacing: 0) {
+                        eventContent(details)
+                            .padding(.top, 200)
+                            .padding(.horizontal, 24)
+                            .frame(maxWidth: .infinity)
+
+                        
+                    }
+                    .toolbar {
+                        ToolbarItem {
+                            Button("Edit") { }
                         }
+                    }
                 }
             }
 
@@ -82,6 +87,23 @@ struct ViewMyEventDetails: View {
         }
         .fullScreenCover(isPresented: $viewModel.showQueue) {
             queueCover
+        }
+        .alert("Delete Event", isPresented: $viewModel.showDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                Task {
+                    await viewModel.deleteEvent()
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This action cannot be undone. Are you sure you want to delete this event?")
+        }
+        .onChange(of: viewModel.eventDeleted) { _, newValue in
+            if newValue {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    dismiss()
+                }
+            }
         }
     }
 
@@ -133,6 +155,8 @@ struct ViewMyEventDetails: View {
                 }
             )
 
+            deleteButtonSection
+            
             Spacer().frame(height: 40)
         }
     }
@@ -175,6 +199,22 @@ struct ViewMyEventDetails: View {
                     }
                 }
             )
+        }
+    }
+
+    @ViewBuilder
+    private var deleteButtonSection: some View {
+        VStack {
+            Spacer().frame(height: 40)
+            Button {
+                viewModel.showDeleteConfirmation = true
+            } label: {
+                Text("Delete Event")
+            }
+            .buttonStyle(DestructiveButton())
+            .disabled(viewModel.isDeletingEvent)
+            .opacity(viewModel.isDeletingEvent ? 0.6 : 1.0)
+            .padding(.bottom, 16)
         }
     }
 }

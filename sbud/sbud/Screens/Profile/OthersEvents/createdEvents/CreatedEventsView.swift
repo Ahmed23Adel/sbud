@@ -42,6 +42,9 @@ struct CreatedEventsView: View {
                 Text(viewModel.alertMsg)
             }
         }
+        .onAppear {
+            viewModel.reloadEvents()
+        }
     }
 }
 
