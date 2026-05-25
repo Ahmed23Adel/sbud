@@ -21,7 +21,7 @@ struct EmailVerificationBanner: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            Text("You have to verify your email, control you inbox or SPAM.")
+            Text("You have to verify your email, check you inbox or SPAM.")
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.white)
