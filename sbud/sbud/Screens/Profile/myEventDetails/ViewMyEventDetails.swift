@@ -12,6 +12,7 @@ struct ViewMyEventDetails: View {
     @EnvironmentObject private var coordinator: ProfileCoordinator
     @EnvironmentObject private var mainCoordinator: MainCoordinator
     @State var isPulsing = false
+
     init(eventId: String) {
         _viewModel = State(wrappedValue: ViewModelMyEventDetails(eventId: eventId))
     }
@@ -36,33 +37,34 @@ struct ViewMyEventDetails: View {
                 }
             }
 
-            if !viewModel.isLoading{
-                VStack {
-                    Spacer()
-                    HStack {
+            if !viewModel.isLoading {
+                if viewModel.role == .creator {
+                    VStack {
                         Spacer()
-                        if viewModel.isSessionCreated {
-                            BasicFloatingButton(iconName: "flag.pattern.checkered"){
-                                viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
+                        HStack {
+                            Spacer()
+                            if viewModel.isSessionCreated {
+                                BasicFloatingButton(iconName: "flag.pattern.checkered") {
+                                    viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
+                                }
+                                .padding(.trailing)
+                                .scaleEffect(isPulsing ? 1.4 : 1.0)
+                                .animation(
+                                    .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
+                                    value: isPulsing
+                                )
+                                .onAppear { isPulsing = true }
+                            } else {
+                                BasicFloatingButton(iconName: "flag.pattern.checkered") {
+                                    viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
+                                }
+                                .padding(.trailing)
                             }
-                            .padding(.trailing)
-                            .scaleEffect(isPulsing ? 1.4 : 1.0)
-                            .animation(
-                                .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
-                                value: isPulsing
-                            )
-                            .onAppear{
-                                isPulsing = true
-                            }
-                        } else {
-                            BasicFloatingButton(iconName: "flag.pattern.checkered"){
-                                viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
-                            }
-                            .padding(.trailing)
                         }
                     }
                 }
             }
+
             if viewModel.isLoading {
                 MidnightLoadingView(text: "Loading event details").ignoresSafeArea()
             }
@@ -75,9 +77,8 @@ struct ViewMyEventDetails: View {
                 StartSessionConfirmation(eventDetails: viewModel.myEventDertails ?? .empty)
                     .environmentObject(coordinator)
             }
-                
         }
-        .onAppear{
+        .onAppear {
             viewModel.setMainCoordinator(mainCoordinator: mainCoordinator)
         }
         .fullScreenCover(isPresented: $viewModel.showQueue) {
@@ -111,9 +112,9 @@ struct ViewMyEventDetails: View {
                 eventTitle: details.title,
                 isDateConfirmed: details.isDateConfirmed,
                 isLocationConfirmed: details.isLocationConfirmed,
+                role: viewModel.role,
                 queueResponse: viewModel.queueResponse,
                 onConfirmTap: {
-                    print("onConfirmTap")
                     viewModel.activeSheet = .confirmation
                 },
                 onMessagesTap: {
