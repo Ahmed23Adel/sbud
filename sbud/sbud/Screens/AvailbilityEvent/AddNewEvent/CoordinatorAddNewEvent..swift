@@ -115,7 +115,7 @@ struct CoordinatorAddNewEvent: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .overlay {
             if viewModel.isLoading {
-                LoadingView()
+                MidnightLoadingView(text: "Creating the event")
                     .transition(.opacity)
                     .animation(.easeInOut(duration: 0.2), value: viewModel.isLoading)
             }

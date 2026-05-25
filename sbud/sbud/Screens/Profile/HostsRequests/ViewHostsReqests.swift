@@ -18,7 +18,7 @@ struct ViewHostsRequests: View {
                 Divider().background(Color(white: 0.12))
 
                 if vm.isLoading {
-                    LoadingView()
+                    MidnightLoadingView(text: "Loading hosts")
                         .ignoresSafeArea()
                 } else if vm.invitations.isEmpty {
                     Spacer()

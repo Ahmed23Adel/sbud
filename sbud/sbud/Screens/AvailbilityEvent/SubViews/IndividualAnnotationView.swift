@@ -35,7 +35,7 @@ struct IndividualAnnotationView: View {
         }
         .onTapGesture {
             if allowNavigation{
-                coordinator.push(.moreInfoEvent(event.eventId))
+                coordinator.showMoreInfo(eventId: event.eventId)
             }
         }
         

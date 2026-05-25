@@ -125,7 +125,7 @@ struct SignUpView: View {
 
                 }
                 if viewModel.isLoading {
-                    LoadingView()
+                    MidnightLoadingView()
                 }
             }
             .scrollDismissesKeyboard(.interactively)
@@ -158,10 +158,10 @@ struct SignUpView: View {
     }
 
 }
-
-struct SignUpView_Previews: PreviewProvider {
-    static var previews: some View {
-        SignUpView()
-            .environmentObject(MainCoordinator())
-    }
-}
+//
+//struct SignUpView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        SignUpView()
+//            .environmentObject(MainCoordinator())
+//    }
+//}

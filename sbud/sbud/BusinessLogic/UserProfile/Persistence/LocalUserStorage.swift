@@ -39,6 +39,7 @@ final class LocalUserStorage {
     }
     
     func clear() {
+        print("clear")
         UserDefaults.standard.removeObject(forKey: profileKey)
     }
 }

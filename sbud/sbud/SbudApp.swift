@@ -10,9 +10,11 @@ import FirebaseCore
 import GoogleSignIn
 import AdelsonAuthManager
 import AdelsonApiCaller
-import FirebaseMessaging
 import FirebaseAuth
-
+import FirebaseMessaging
+import OSLog
+import FirebaseFirestore
+import SwiftData
 
 // Note: Used to enable push notification in future
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -49,6 +51,8 @@ struct SbudApp: App {
     let locationManager = LocationManager.shared
     let service = GeohashService.shared
     
+    let logger = Logger(subsystem: "sbud", category: "SbudApp")
+    
     init(){
         AdelsonFirebaseAuthConfig.shared = AdelsonFirebaseAuthConfig(
             appName: "sBud",
@@ -58,23 +62,20 @@ struct SbudApp: App {
             }
         )
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            Task {
-                if let token = try? await Auth.auth().currentUser?.getIDToken() {
-                    print("🔑 TOKEN:", token)
-                }
-            }
-        }
     }
     
     var body: some Scene {
         WindowGroup {
-            MainAppCoordinator()
+            MainAppCoordinator(coordinator: MainCoordinator(
+                authService: AuthenticationManager.shared,
+                profileService: ProfileManager.shared))
             .onOpenURL { url in
                 GIDSignIn.sharedInstance.handle(url)
             }
+            
 
         }
+        .modelContainer(for: LocalOnGoingSession.self)
 
     }
 }

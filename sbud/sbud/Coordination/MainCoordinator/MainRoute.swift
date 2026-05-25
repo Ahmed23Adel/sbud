@@ -6,13 +6,19 @@
 //
 
 import Foundation
+//
+//  Root-level routes. Each case represents a full-screen state
+//  managed by MainCoordinator. No dead cases, no unused associated values.
+//
+
+import Foundation
 
 enum MainRoute: Equatable, Hashable {
-    case loadingPage
-    case profileSetup
+    case loading
     case signUp
     case signIn
-    case homePage
-    case profilePage(userId: String)
-    case editMyEvent(userId: String)
+    case profileSetup
+    case home
+    case creatorSession(eventDetails: EventFullDetails, isSessionCreated: Bool)
+    case othersSession(eventDetails: EventFullDetails, isSessionCreated: Bool)
 }

@@ -5,12 +5,15 @@
 //  Created by ahmed on 01/05/2026.
 //
 import SwiftUI
+import Kingfisher
 
 struct OwnProfileView: View {
     @StateObject private var vm: OwnProfileVM
     @EnvironmentObject var coordinator: ProfileCoordinator
 
     @State private var currentPage = 0
+    @State private var showPhotoPreview = false
+    @State private var showEditProfile = false
 
     init(userId: String) {
         _vm = StateObject(wrappedValue: OwnProfileVM(userId: userId))
@@ -35,15 +38,13 @@ struct OwnProfileView: View {
                             editButton
                             ProfileStatsRow(
                                 friendsCount: vm.profile?.friendsCount ?? 0,
-                                onFriendsTap: {
-                                    coordinator.goToFriendsList()
-                                }
+                                onFriendsTap: { coordinator.goToFriendsList() }
                             )
                             if let profile = vm.profile {
                                 ProfilePerformanceCard(profile: profile)
                             }
                             ProfileArchiveSection()
-                            ProfileMyEventsButton(userId: vm.userId) {
+                            ProfileMyEventsButton(userId: vm.userId, title: "MY EVENTS") {
                                 coordinator.goToMyEvents()
                             }
                         }
@@ -51,28 +52,32 @@ struct OwnProfileView: View {
                     }
                 }
             }
-            
+
+            // QR code floating button (from main)
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
-                    Button {
-                        coordinator.goToQRCode()
-                    } label: {
-                        Image(systemName: "qrcode")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.black)
-                            .frame(width: 54, height: 54)
-                            .background(Color("palelime"))
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 4)
+                    BasicFloatingButton(iconName: "qrcode") {
+                        coordinator.showQRCode()
                     }
-                    .padding(.trailing, 24)
-                    .padding(.bottom, 25) // above tab bar
                 }
             }
+
+            // Photo preview overlay (from HEAD)
+            if showPhotoPreview {
+                photoPreviewOverlay
+                    .transition(.opacity)
+                    .zIndex(10)
+            }
         }
+        .animation(.easeInOut(duration: 0.25), value: showPhotoPreview)
         .task { await vm.load() }
+        .fullScreenCover(isPresented: $showEditProfile) {
+            EditProfileView(profile: vm.profile) { updatedProfile in
+                vm.profile = updatedProfile
+            }
+        }
     }
 }
 
@@ -85,11 +90,13 @@ private extension OwnProfileView {
             Color.clear.frame(width: 44, height: 44)
             Spacer()
             HStack(spacing: 16) {
+                // Friend requests button with notification badge (from main)
                 NumberedButtonNotifications(
                     onTapGestureFunc: coordinator.goToFriendRequests,
                     buttonIcon: "person.badge.clock",
                     pendingRequestCount: $vm.pendingFriendsRequestCount)
-                
+
+                // Host requests button (from main)
                 NumberedButtonNotifications(
                     onTapGestureFunc: coordinator.goToHostRequests,
                     buttonIcon: "person.2.wave.2",
@@ -120,7 +127,7 @@ private extension OwnProfileView {
 
     var mainHeaderContent: some View {
         VStack(spacing: 12) {
-            ProfileAvatarView(imageUrl: vm.profile?.profileImageUrl)
+            avatarCircle
             Text("\(vm.profile?.name ?? "") \(vm.profile?.surName ?? "")".uppercased())
                 .font(.system(size: 28, weight: .black))
                 .foregroundColor(.white)
@@ -135,7 +142,38 @@ private extension OwnProfileView {
         }
     }
 
-    // Own profile always sees all fields — ProfileUtils.canShow* not needed here
+    var avatarCircle: some View {
+        Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                showPhotoPreview = true
+            }
+        } label: {
+            ZStack {
+                Circle()
+                    .stroke(Color("turquoise").opacity(0.5), lineWidth: 2)
+                    .frame(width: 120, height: 120)
+                    .shadow(color: Color("turquoise").opacity(0.3), radius: 10)
+
+                Group {
+                    if let urlStr = vm.profile?.profileImageUrl, let url = URL(string: urlStr) {
+                        KFImage(url)
+                            .resizable()
+                            .scaledToFill()
+                    } else {
+                        Image(systemName: "person.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .padding(28)
+                            .foregroundColor(.gray)
+                    }
+                }
+                .frame(width: 110, height: 110)
+                .clipShape(Circle())
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
     var detailHeaderContent: some View {
         ProfileDetailHeader(
             profile: vm.profile ?? .empty,
@@ -145,7 +183,7 @@ private extension OwnProfileView {
     }
 
     var editButton: some View {
-        Button(action: { print("edit profile")}) {
+        Button(action: { showEditProfile = true }) {
             Text("EDIT PROFILE")
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
                 .foregroundColor(.black)
@@ -156,9 +194,77 @@ private extension OwnProfileView {
         }
         .padding(.horizontal, 24)
     }
+
+    var photoPreviewOverlay: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+                .overlay(Color.black.opacity(0.6))
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showPhotoPreview = false
+                    }
+                }
+
+            VStack(spacing: 0) {
+                Spacer()
+
+                ZStack {
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color("turquoise"), Color("turquoise").opacity(0.25)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 4
+                        )
+                        .frame(width: 286, height: 286)
+                        .shadow(color: Color("turquoise").opacity(0.55), radius: 28)
+
+                    Group {
+                        if let urlStr = vm.profile?.profileImageUrl, let url = URL(string: urlStr) {
+                            KFImage(url)
+                                .resizable()
+                                .scaledToFill()
+                        } else {
+                            Image(systemName: "person.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .padding(60)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .frame(width: 272, height: 272)
+                    .clipShape(Circle())
+                }
+                .scaleEffect(showPhotoPreview ? 1 : 0.35)
+                .animation(.spring(response: 0.45, dampingFraction: 0.72), value: showPhotoPreview)
+
+                Spacer()
+
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showPhotoPreview = false
+                    }
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.13))
+                            .frame(width: 54, height: 54)
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
+                .padding(.bottom, 52)
+            }
+        }
+    }
 }
 
-#Preview {
-    OwnProfileView(userId: "preview-own-user")
-        .environmentObject(MainCoordinator())
-}
+//#Preview {
+//    OwnProfileView(userId: "preview-own-user")
+//        .environmentObject(ProfileCoordinator(userId: "preview"))
+//}

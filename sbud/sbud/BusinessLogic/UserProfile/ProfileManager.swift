@@ -63,7 +63,10 @@ class ProfileManager: IProfileServiceManager {
     }
 
     func saveProfileToLocale(profile: UserProfile) {    localStorage.save(profile)  }
-    func deleteProfileFromLocale() { localStorage.clear() }
+    func deleteProfileFromLocale() {
+        print("deleteProfileFromLocale")
+        localStorage.clear()
+    }
     func deleteProfileFromDatabase(uid: String) async throws {
     }
     

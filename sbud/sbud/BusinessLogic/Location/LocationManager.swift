@@ -15,7 +15,8 @@ class LocationManager: NSObject, ObservableObject {
 
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var authorizationStatus: CLAuthorizationStatus?
-
+    @Published var lastLocation: CLLocation?
+    
     private override init() {
         super.init()
         locationManager.delegate = self
@@ -33,6 +34,10 @@ class LocationManager: NSObject, ObservableObject {
     func stopUpdating() {
         locationManager.stopUpdatingLocation()
     }
+    
+    func applyConfiguration(_ configure: (CLLocationManager) -> Void) {
+        configure(locationManager)
+    }
 
 }
 extension LocationManager: CLLocationManagerDelegate {
@@ -47,5 +52,6 @@ extension LocationManager: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location  = locations.last else { return }
         userLocation = location.coordinate
+        lastLocation = location
     }
 }

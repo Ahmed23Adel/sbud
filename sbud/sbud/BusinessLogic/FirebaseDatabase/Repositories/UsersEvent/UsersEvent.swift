@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+
 enum UsersEventStatus: String, Codable {
     case proposed = "Proposed"
     case confirmed = "Confirmed"

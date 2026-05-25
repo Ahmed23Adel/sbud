@@ -23,7 +23,7 @@ struct ViewFlattenedEventsList: View {
             
             Group{
                 if viewModel.isLoading{
-                    LoadingView()
+                    MidnightLoadingView(text: "Loading events")
                 } else{
                     VStack{
                         List{
@@ -163,7 +163,7 @@ struct EventRow: View {
         }
         .background(Color.backgroundColor)
         .onTapGesture {
-            coordinator.push(.moreInfoEvent(event.eventId))
+            coordinator.showMoreInfo(eventId: event.eventId)
         }
     }
 }
