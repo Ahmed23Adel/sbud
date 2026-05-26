@@ -3,84 +3,93 @@
 //  sbud
 //
 //  Created by ahmed on 10/12/2025.
+
 //
+//  The root view of the app. Only job: render the correct screen
+//  for the current MainRoute. Zero business logic here.
+//
+
 import SwiftUI
 
 struct MainAppCoordinator: View {
-    @StateObject private var coordinator = MainCoordinator()
+
+    // Injected from SbudApp — not created here.
+    @StateObject var coordinator: MainCoordinator
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             routeView
-                .animation(.spring(response: 0.4, dampingFraction: 0.85), value: coordinator.currentRoute)
+                .animation(
+                    .spring(response: 0.4, dampingFraction: 0.85),
+                    value: coordinator.currentRoute
+                )
 
-            VStack {
-                Spacer()
-                PopUpStackView()
-                    .padding()
-            }
+            PopUpStackView()
+                .padding()
         }
         .environmentObject(coordinator)
+        .task {
+            // Resolve the route once on first appearance.
+            coordinator.resolveInitialRoute()
+        }
     }
 
+    // MARK: - Route Rendering
 
-    // MARK: - Root route (replaces current screen)
     @ViewBuilder
     private var routeView: some View {
         switch coordinator.currentRoute {
-        case .homePage:
-            HomeTabsView()
+
+        case .loading:
+            MidnightLoadingView()
+                .transition(slideTransition)
                 .ignoresSafeArea()
 
         case .signUp:
             SignUpView()
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)))
+                .transition(slideTransition)
                 .ignoresSafeArea()
 
         case .signIn:
             SignInView()
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)))
+                .transition(slideTransition)
                 .ignoresSafeArea()
 
         case .profileSetup:
             ProfileSetupView()
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal:   .move(edge: .leading).combined(with: .opacity)))
+                .transition(slideTransition)
                 .ignoresSafeArea()
 
-        case .loadingPage:
-            MidnightLoadingView()
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)))
+        case .home:
+            HomeTabsView()
                 .ignoresSafeArea()
-            
+
         case .creatorSession(let eventDetails, let isSessionCreated):
-            ViewOwnerSession(eventDetails: eventDetails, isSessionCreated: isSessionCreated)
-                .environmentObject(coordinator)
-        case .othersSession(let eventDetails):
-            ViewOthersSession(eventDetails: eventDetails, isSessionCreated: true)
-        default:
-            EmptyView()
-        
+            ViewOwnerSession(
+                eventDetails: eventDetails,
+                isSessionCreated: isSessionCreated,
+                delegate: coordinator
+            )
+            .transition(slideTransition)
+            .ignoresSafeArea()
+
+        case .othersSession(let eventDetails, let isSessionCreated):
+            ViewOthersSession(
+                eventDetails: eventDetails,
+                isSessionCreated: isSessionCreated,
+                delegate: coordinator
+            )
+            .transition(slideTransition)
+            .ignoresSafeArea()
         }
     }
 
-    // MARK: - Pushed routes (native back button)
-    @ViewBuilder
-    private func pushedView(for route: MainRoute) -> some View {
-        switch route {
-        default:
-            EmptyView()
-        }
-    }
-}
+    // MARK: - Shared Transition
 
-#Preview {
-    MainAppCoordinator()
+    private var slideTransition: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .move(edge: .leading).combined(with: .opacity)
+        )
+    }
 }

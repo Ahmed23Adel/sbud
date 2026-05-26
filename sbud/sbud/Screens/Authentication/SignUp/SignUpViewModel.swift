@@ -42,7 +42,7 @@ class SignUpViewModel: ObservableObject {
         authManager.setAuthTypeGoogle()
         do {
             try await authManager.signUp()
-            coordinator?.refreshAppFlow()
+            coordinator?.coordinatorDidCompleteSignIn()
         } catch {
             await MainActor.run {
                 showAlert = true
@@ -70,7 +70,7 @@ class SignUpViewModel: ObservableObject {
             AuthenticationManagerEmailAndPassword.shared.sendVerificationEmail()
             isSigningUp = false
             stopLoading()
-            coordinator?.refreshAppFlow()
+            coordinator?.coordinatorDidCompleteSignIn()
         } catch {
             await MainActor.run {
                 isSigningUp = false

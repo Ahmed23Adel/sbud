@@ -7,60 +7,98 @@
 
 import SwiftUI
 import UIKit
+//
+//  The Availability tab's root container.
+//  - Coordinator is @StateObject here because this IS the tab root.
+//  - Filter state lives in AvailabilityViewModel — not in this view or the coordinator.
+//  - Profile pushes reuse ProfileEmbedded (no new NavigationStack).
+//
+
+import SwiftUI
+import UIKit
 
 struct AvailabilityAppCoordinator: View {
-    @StateObject private var coordinator = AvailabilityCoordinator()
-    @State private var availaibilityFiltesrResults = AvailabilityFiltersResults()
 
-    private let impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
+    @StateObject private var coordinator = AvailabilityCoordinator()
+
+    // authDelegate is passed in from HomeTabsView so logout can bubble up.
+    weak var authDelegate: AuthCoordinatorDelegate?
+
+    private let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+
     var body: some View {
-        NavigationStack(path: $coordinator.navigationPath){
-            AvailbilityView(viewModel: AvailbilityViewModel(
-                locationManager: LocationManager.shared,
-                availabilityFiltersResults: availaibilityFiltesrResults
-            ))
-            .ignoresSafeArea()
-            .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: AvailabilityNavigationDestination.self){ destination in
-                destinationView(for: destination)
-                    .environmentObject(coordinator)  
-            }
-            .environmentObject(coordinator)
-            .sheet(item: $coordinator.activeSheet) { sheetType in
-                sheetContent(for: sheetType)
-            }
-            .onChange(of: coordinator.activeSheet) { _, newValue in
-                if newValue != nil {
-                    impactFeedbackGenerator.impactOccurred(intensity: 0.8)
+        NavigationStack(path: $coordinator.navigationPath) {
+            // Root view — passes coordinator down via environment.
+            AvailbilityView()
+                .ignoresSafeArea()
+                .toolbar(.hidden, for: .navigationBar)
+                .navigationDestination(for: AvailabilityDestination.self) { destination in
+                    destinationView(for: destination)
                 }
-            }
+                .navigationDestination(for: ProfileRoutePushed.self) { route in
+                    ProfileDestinationView(
+                        route: route,
+                        // userId here is the embedded profile's userId — but at this level
+                        // we don't know it yet (it's stored inside ProfileEmbedded's coordinator).
+                        // Pass currentUserId as a fallback; the embedded coordinator resolves userId.
+                        userId: ProfileManager.shared.getLocalProfile()?.id ?? "",
+                        currentUserId: ProfileManager.shared.getLocalProfile()?.id ?? "",
+                        authDelegate: authDelegate,
+                        pushToParent: { nextRoute in
+                            coordinator.navigationPath.append(nextRoute)
+                        }
+                    )
+                }
         }
         .ignoresSafeArea()
-    }
-
-    @ViewBuilder
-    private func sheetContent(for sheetType: AvailabilitySheetType) -> some View {
-        switch sheetType {
-        case .filter:
-            FiltersView(availabilityFiltersResults: $availaibilityFiltesrResults)
+        .environmentObject(coordinator)
+        .sheet(item: $coordinator.activeSheet) { sheet in
+            sheetView(for: sheet)
+        }
+        .onChange(of: coordinator.activeSheet) { _, newValue in
+            if newValue != nil {
+                impactFeedback.impactOccurred(intensity: 0.8)
+            }
+        }
+        .onAppear {
+            coordinator.authDelegate = authDelegate
         }
     }
 
+    // MARK: - Destinations
+
     @ViewBuilder
-    private func destinationView(for destination: AvailabilityNavigationDestination) -> some View {
+    private func destinationView(for destination: AvailabilityDestination) -> some View {
         switch destination {
         case .moreInfoEvent(let eventId):
             ViewMoreInfoEvent(eventId: eventId)
+
         case .addNewEvent:
             CoordinatorAddNewEvent()
-        case .profileView(let userId):
-            ProfileAppCoordinator(userId: userId, isEmbedded: true)
-        case .chat(let user, let eventId, let eventTitle): // ADD eventTitle
-                ChatView(user: user, eventId: eventId, eventTitle: eventTitle)
+        case .profile(let userId):
+            ProfileEmbedded(
+                userId: userId,
+                currentUserId: ProfileManager.shared.getLocalProfile()?.id ?? "",
+                authDelegate: authDelegate,
+                onPush: { route in
+                    // This appends ProfileRoutePushed into AvailabilityCoordinator's
+                    // NavigationPath — the one the NavigationStack is actually bound to.
+                    coordinator.navigationPath.append(route)
+                }
+            )
+
+        case .chat(let user, let eventId, let eventTitle):
+            ChatView(user: user, eventId: eventId, eventTitle: eventTitle)
         }
     }
-}
 
-#Preview {
-    AvailabilityAppCoordinator()
+    // MARK: - Sheets
+
+    @ViewBuilder
+    private func sheetView(for sheet: AvailabilitySheet) -> some View {
+        switch sheet {
+        case .filter(let availabilityFiltersResults):
+            FiltersView(availabilityFiltersResults: availabilityFiltersResults)
+        }
+    }
 }

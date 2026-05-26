@@ -42,8 +42,9 @@ struct OtherProfileView: View {
                                 ProfilePerformanceCard(profile: profile)
                             }
                             ProfileArchiveSection()
-                            ProfileMyEventsButton(userId: vm.userId) {
-                                coordinator.goToAppropiateEvents()
+                            ProfileMyEventsButton(userId: vm.userId, title: "EVENTS") {
+                                print("goToOthersEvents")
+                                coordinator.goToOthersEvents()
                             }
                         }
                         .padding(.bottom, 80)

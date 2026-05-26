@@ -10,7 +10,9 @@ import MapKit
 internal import FirebaseFirestoreInternal
 
 struct AvailbilityView: View {
-    @StateObject var viewModel: AvailbilityViewModel
+    @StateObject var viewModel = AvailbilityViewModel(
+        locationManager: LocationManager.shared,
+        availabilityFiltersResults: AvailabilityFiltersResults())
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
 
     var body: some View {
@@ -59,11 +61,11 @@ struct AvailbilityView: View {
                 Spacer()
                 HStack {
                     GlassFloatingButton(systemName: "plus") {
-                        coordinator.push(.addNewEvent)
+                        coordinator.showAddNewEvent()
                     }
                     Spacer()
                     GlassFloatingButton(systemName: "line.3.horizontal.decrease") {
-                        coordinator.showSheet(.filter)
+                        coordinator.showFilterSheet(availFilters: $viewModel.availabilityFiltersResults)
                     }
                 }
                 .padding(.bottom, 100)

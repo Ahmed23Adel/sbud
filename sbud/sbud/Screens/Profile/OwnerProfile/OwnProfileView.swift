@@ -44,7 +44,7 @@ struct OwnProfileView: View {
                                 ProfilePerformanceCard(profile: profile)
                             }
                             ProfileArchiveSection()
-                            ProfileMyEventsButton(userId: vm.userId) {
+                            ProfileMyEventsButton(userId: vm.userId, title: "MY EVENTS") {
                                 coordinator.goToMyEvents()
                             }
                         }
@@ -59,7 +59,7 @@ struct OwnProfileView: View {
                 HStack {
                     Spacer()
                     BasicFloatingButton(iconName: "qrcode") {
-                        coordinator.goToQRCode()
+                        coordinator.showQRCode()
                     }
                 }
             }
@@ -264,7 +264,7 @@ private extension OwnProfileView {
     }
 }
 
-#Preview {
-    OwnProfileView(userId: "preview-own-user")
-        .environmentObject(ProfileCoordinator(userId: "preview"))
-}
+//#Preview {
+//    OwnProfileView(userId: "preview-own-user")
+//        .environmentObject(ProfileCoordinator(userId: "preview"))
+//}
