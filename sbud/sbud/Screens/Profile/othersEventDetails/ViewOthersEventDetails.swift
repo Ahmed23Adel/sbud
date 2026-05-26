@@ -89,7 +89,8 @@ struct ViewOthersEventDetails: View {
                     HStack {
                         Spacer()
                         BasicFloatingButton(iconName: "flag.pattern.checkered"){
-                            mainCoordinator.navigateTo(.othersSession(eventDetails: viewModel.myEventDertails!))
+                            // TODO: fix
+                            mainCoordinator.startOthersSession(eventDetails: viewModel.myEventDertails!, isSessionCreated: true)
                         }
                         .padding(.trailing)
                         .scaleEffect(isPulsing ? 1.4 : 1.0)

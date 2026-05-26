@@ -10,7 +10,7 @@ import Kingfisher
 
 struct FriendRequestsView: View {
     @StateObject private var vm = FriendRequestsVM()
-    @EnvironmentObject var coordinator: MainCoordinator
+    @EnvironmentObject var coordinator: ProfileCoordinator
 
     var body: some View {
         ZStack {
@@ -38,6 +38,7 @@ struct FriendRequestsView: View {
                         LazyVStack(spacing: 0) {
                             ForEach(vm.requests) { user in
                                 RequestCell(user: user, vm: vm)
+                                    .environmentObject(coordinator)
                                 Divider().background(Color(white: 0.1))
                             }
                         }
@@ -72,7 +73,7 @@ struct FriendRequestsView: View {
 private struct RequestCell: View {
     let user: UserProfile
     @ObservedObject var vm: FriendRequestsVM
-    @EnvironmentObject var coordinator: MainCoordinator
+    @EnvironmentObject var coordinator: ProfileCoordinator
 
     var displayName: String {
         let last = user.surName.first.map { "\($0)." } ?? ""
@@ -100,7 +101,9 @@ private struct RequestCell: View {
             .frame(width: 50, height: 50)
             .clipShape(Circle())
             .overlay(Circle().stroke(Color(white: 0.2), lineWidth: 1))
-            .onTapGesture { coordinator.goToProfile(userId: user.id) }
+            .onTapGesture {
+                coordinator.goToOthersProfile(userId: user.id)
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(displayName)

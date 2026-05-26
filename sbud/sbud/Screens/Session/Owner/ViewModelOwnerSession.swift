@@ -142,7 +142,7 @@ class ViewModelOwnerSession{
                 }
                 logger.info("navigating to home ")
                 print("main coord", mainCoordinator)
-                mainCoordinator?.navigateTo(.homePage)
+                mainCoordinator?.goToHome()
                
             } catch {
                 logger.fault("Error with ending session: \(error)")

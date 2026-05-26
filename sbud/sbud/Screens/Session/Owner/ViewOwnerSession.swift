@@ -17,12 +17,14 @@ struct ViewOwnerSession: View {
     @State private var viewModel: ViewModelOwnerSession
     @EnvironmentObject private var mainCoordinator: MainCoordinator
     @Environment(\.modelContext) private var context
+    var delegate: SessionCoordinatorDelegate
 
-    init(eventDetails: EventFullDetails, isSessionCreated: Bool) {
+    init(eventDetails: EventFullDetails, isSessionCreated: Bool, delegate: SessionCoordinatorDelegate) {
         _viewModel = State(initialValue: ViewModelOwnerSession(
             eventDetails: eventDetails,
             isSessionCreated: isSessionCreated
         ))
+        self.delegate = delegate
     }
 
     var body: some View {
@@ -32,6 +34,7 @@ struct ViewOwnerSession: View {
                     .ignoresSafeArea()
             } else {
                 mainContent
+                    .padding(.top, 36)
             }
         }
         .onAppear {
@@ -75,7 +78,7 @@ struct ViewOwnerSession: View {
         .ignoresSafeArea(edges: .bottom)
         .alert(viewModel.alertMsg, isPresented: $viewModel.isShowAlert) {
             Button("OK", role: .cancel) {
-                mainCoordinator.navigateTo(.homePage)
+                mainCoordinator.goToHome()
             }
         }
         .confirmationDialog(

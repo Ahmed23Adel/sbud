@@ -10,7 +10,7 @@ import Combine
 import Foundation
 import Combine
 
-class AvailabilityFiltersResults: ObservableObject {
+class AvailabilityFiltersResults: ObservableObject, Equatable {
     @Published var selectedActivityIndex = 0
     @Published var startDateTime = Date()
     @Published var endDateTime = Calendar.current.date(byAdding: .hour, value: 5, to: Date()) ?? Date()
@@ -144,5 +144,15 @@ class AvailabilityFiltersResults: ObservableObject {
         }
 
         return p
+    }
+    
+    static func == (
+        lhs: AvailabilityFiltersResults,
+        rhs: AvailabilityFiltersResults
+    ) -> Bool {
+        lhs.selectedActivityIndex == rhs.selectedActivityIndex &&
+        lhs.startDateTime == rhs.startDateTime &&
+        lhs.endDateTime == rhs.endDateTime &&
+        lhs.gender == rhs.gender
     }
 }

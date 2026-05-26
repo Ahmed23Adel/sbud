@@ -5,131 +5,136 @@
 //  Created by ahmed on 01/05/2026.
 //
 
-//
-//  ProfileCoordinator.swift
-//  sbud
-//
-//  Created by ahmed on 01/05/2026.
+//  Manages navigation within the Profile tab.
+//  Communicates upward via AuthCoordinatorDelegate — no MainCoordinator reference.
+//  No Firebase imports. No silent navigation failures.
 //
 
 import Foundation
-import Combine
 import OSLog
-import FirebaseAuth
+import Combine
+@MainActor
+final class ProfileCoordinator: ObservableObject {
 
-class ProfileCoordinator: ObservableObject {
-    @Published var currentRoute: ProfileRoute
+    // MARK: - Published State
+
+    @Published private(set) var rootRoute: ProfileRoute
     @Published var navigationPath: [ProfileRoutePushed] = []
-    @Published var currUserId = ""
-    @Published var sheetType: ProfileSheetType? = nil
-    let logger = Logger(subsystem: "sbud", category: "ProfileCoordinator")
-
-    var userIsCurUser: Bool {
-        currUserId == (ProfileManager.shared.getLocalProfile()?.id ?? "")
-    }
+    @Published var activeSheet: ProfileSheetType?
+    @Published private(set) var userId: String
+    var onPush: ((ProfileRoutePushed) -> Void)?
     
-    init(userId: String){
-        self.currUserId = userId
-        
-        if let localProfileId = ProfileManager.shared.getLocalProfile()?.id, userId == localProfileId {
-            currentRoute = .myProfile
+    // MARK: - Dependencies
+
+    /// Weak reference — MainCoordinator conforms to this.
+    weak var delegate: AuthCoordinatorDelegate?
+
+    private let currentUserId: String
+    private let logger = Logger(subsystem: "sbud", category: "ProfileCoordinator")
+
+    // MARK: - Init
+
+    init(userId: String, currentUserId: String) {
+        self.userId = userId
+        self.currentUserId = currentUserId
+        self.rootRoute = userId == currentUserId ? .myProfile : .othersProfile
+    }
+
+    // MARK: - Computed
+
+    var isViewingOwnProfile: Bool {
+        userId == currentUserId
+    }
+
+    // MARK: - Push Navigation
+
+    private func push(_ route: ProfileRoutePushed) {
+        if let onPush {
+            // Embedded — delegate the push to the parent stack.
+            onPush(route)
         } else {
-            currentRoute = .othersProfile
-        }
-    }
-
-    private func navigateTo(_ newRoute: ProfileRoute) {
-        currentRoute = newRoute
-    }
-
-    private func push(_ newRoute: ProfileRoutePushed) {
-        navigationPath.append(newRoute)
-    }
-
-    func goToAppropiateProfile(_ userId: String) {
-        currUserId = userId
-        navigationPath = []
-        if userId == Auth.auth().currentUser?.uid {
-            currentRoute = .myProfile
-        } else {
-            currentRoute = .othersProfile
-        }
-    }
-
-    func goToSettings() {
-        if currentRoute == .myProfile {
-            navigationPath.append(.settings)
-        }
-    }
-
-    func goToFriendRequests() {
-        if currentRoute == .myProfile {
-            navigationPath.append(.friendRequest)
+            // Tab root — owns its own NavigationStack.
+            navigationPath.append(route)
         }
     }
     
-    func goToHostRequests(){
-        if currentRoute == .myProfile {
-            navigationPath.append(.hostsRequests)
-        }
-    }
-    
-    func goToMyEvents(){
-        if currentRoute == .myProfile {
-            navigationPath.append(.myEvents)
-        }
+    func goToOthersEvents() {
+        push(.othersEvents(userId: userId))  // carries the correct userId
     }
 
-    func goToOthersEvent() {
-        if currentRoute == .othersProfile {
-            navigationPath.append(.othersEvents)
-        }
+    func goToMyEvents() {
+        push(.myEvents(userId: userId))
     }
 
     func goToFriendsList() {
-        if currentRoute == .myProfile {
-            navigationPath.append(.friendsList)
-        }
+        push(.friendsList(userId: userId))
     }
 
-    func goToAppropiateEvents() {
-        if currentRoute == .myProfile {
-            navigationPath.append(.myEvents)
-        } else {
-            navigationPath.append(.othersEvents)
-        }
+    func goToAppropriateEvents() {
+        push(isViewingOwnProfile ? .myEvents(userId: userId) : .othersEvents(userId: userId))
+    }
+    func goToSettings() {
+        guard rootRoute == .myProfile else { return }
+        push(.settings)
+    }
+
+    func goToFriendRequests() {
+        guard rootRoute == .myProfile else { return }
+        push(.friendRequests)
+    }
+
+    func goToHostRequests() {
+        guard rootRoute == .myProfile else { return }
+        push(.hostRequests)
     }
 
     func goToMyEventDetails(eventId: String) {
-        navigationPath.append(.viewMyEventDetails(eventId: eventId))
+        push(.myEventDetails(eventId: eventId))
     }
-    
+
     func goToOthersEventDetails(eventId: String) {
-        navigationPath.append(.viewOthersEventDetails(eventId: eventId))
+        push(.othersEventDetails(eventId: eventId))
     }
-    
-    func goToProfileFromQueue(userId: String) {
-        navigationPath.append(.viewOthersProfile(userId: userId))
+
+    func goToOthersProfile(userId: String) {
+        push(.othersProfile(userId: userId))
     }
 
     func goToEventConversations(eventId: String, eventTitle: String) {
-        navigationPath.append(.eventConversations(eventId: eventId, eventTitle: eventTitle))
+        push(.eventConversations(eventId: eventId, eventTitle: eventTitle))
     }
 
-    func showHostsSheet(eventId: String) {
-        if currentRoute == .myProfile {
-            sheetType = .hosts(eventId: eventId)
-        }
-    }    
-    func goToQRCode() {
-        sheetType = .qrCode
+    func goToScannedProfile(userId: String) {
+        guard !userId.isEmpty else { return }
+        activeSheet = nil
+        push(.scannedProfile(userId: userId))
     }
-    
-    func goToScannedProfile(_ userId: String) {
-        guard !userId.isEmpty else {
-            return
-        }
-        sheetType = nil
-        navigationPath.append(.scannedProfile(userId: userId))
+
+    // MARK: - Sheets
+
+    func showHostsSheet(eventId: String) {
+        activeSheet = .hosts(eventId: eventId)
+    }
+
+    func showQRCode() {
+        activeSheet = .qrCode
+    }
+
+    func dismissSheet() {
+        activeSheet = nil
+    }
+
+    // MARK: - Root Switch (e.g. after scanning a new user)
+
+    func switchToProfile(userId: String) {
+        self.userId = userId
+        navigationPath = []
+        rootRoute = userId == currentUserId ? .myProfile : .othersProfile
+    }
+
+    // MARK: - Delegate Actions (bubble up to MainCoordinator)
+
+    func requestLogout() {
+        delegate?.coordinatorDidRequestLogout()
     }
 }

@@ -46,7 +46,9 @@ struct ProfileSetupView: View {
 
                 VStack(alignment: .leading, spacing: 0) {
                     if !coordinator.isFinalStep {
-                        navigationBar { appCoordinator.logout() }
+                        navigationBar {
+                            appCoordinator.coordinatorDidRequestLogout()
+                        }
 
                         if shouldShowEmailBanner {
                             EmailVerificationBanner {

@@ -30,7 +30,7 @@ struct HomeTabsView: View {
                         Label("Events", systemImage: "person.3")
                     }
                     .tag(2)
-                ProfileAppCoordinator(userId: profile.id, isEmbedded: false)
+                ProfileTabRoot(userId: profile.id, currentUserId: profile.id, authDelegate: coordinator)
                     .tabItem {
                         Label("Profile", systemImage: "person.fill")
                     }

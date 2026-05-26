@@ -163,7 +163,7 @@ struct EventRow: View {
         }
         .background(Color.backgroundColor)
         .onTapGesture {
-            coordinator.push(.moreInfoEvent(event.eventId))
+            coordinator.showMoreInfo(eventId: event.eventId)
         }
     }
 }

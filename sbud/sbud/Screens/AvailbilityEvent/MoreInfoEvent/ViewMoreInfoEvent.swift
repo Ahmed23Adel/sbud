@@ -96,7 +96,7 @@ struct ViewMoreInfoEvent: View {
                                 onTapProfile: {
                                     logger.info("CreatorContactDetailed \(type(of: coordinator))")
                                     logger.info("details.creator.id: \(details.creator.id)")
-                                    coordinator.push(.profileView(userId: details.creator.id))
+                                    coordinator.showProfile(userId: details.creator.id)
                                 },
                                 onTapContact: {
                                     var chatUser = UserProfile(id: details.creator.id)
@@ -105,7 +105,7 @@ struct ViewMoreInfoEvent: View {
                                     chatUser.profileImageUrl = details.creator.profileImageUrl
 
                                     let eTitle = details.title
-                                    coordinator.push(.chat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle))
+                                    coordinator.showChat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle)
                                 }
                             )
                             .padding(.horizontal)

@@ -57,7 +57,7 @@ struct SettingsView: View {
 
                         // MARK: - LOGOUT
                         Button {
-                            coordinator.logout()
+                            coordinator.coordinatorDidRequestLogout()
                         } label: {
                             HStack(spacing: 14) {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")
