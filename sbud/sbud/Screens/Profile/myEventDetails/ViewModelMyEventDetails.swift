@@ -140,14 +140,18 @@ class ViewModelMyEventDetails {
             ]
         ]
 
+        // Aggiorniamo sia l'array dateLocations sia le variabili alla root per coprire ogni casistica del backend
         batch.updateData([
             "isDateConfirmed": true,
             "isLocationConfirmed": true,
             "status": "confirmed",
-            "dateLocations": finalizedDateLocation
+            "dateLocations": finalizedDateLocation,
+            "startDateTime": Timestamp(date: finalStartDate),
+            "endDateTime": Timestamp(date: finalEndDate)
         ], forDocument: eventRef)
 
         do {
+            // MARK: - LOGICA FLATTENED EVENTS CORRETTA
             let flattenedSnapshot = try await db.collection("flattenedEvents")
                 .whereField("eventId", isEqualTo: eventId)
                 .getDocuments()
@@ -155,20 +159,26 @@ class ViewModelMyEventDetails {
             for doc in flattenedSnapshot.documents {
                 let data = doc.data()
 
-                let docDateLocationId = data["dateLocationId"] as? String ?? ""
-                var isChosenLocation = false
+                // Controlliamo chiavi multiple nel caso i nomi nel database siano differenti
+                let docDateLocationId = (data["dateLocationId"] as? String) ?? (data["id"] as? String) ?? ""
+                
+                let docGeohash = (data["g"] as? [String: Any])?["geohash"] as? String
+                                 ?? data["geohash"] as? String
+                                 ?? ""
+                
+                let isChosenEntry = (docDateLocationId == selectedDateEntry.id)
+                let isChosenLocation = (docGeohash == selectedLocation.geohash)
 
+                // Fallback nel caso il geohash manchi ma le coordinate corrispondano
+                var coordinateMatch = false
                 if let geoPoint = data["geoPoint"] as? GeoPoint {
                     let latDiff = abs(geoPoint.latitude - selectedLocation.latitude)
                     let lonDiff = abs(geoPoint.longitude - selectedLocation.longitude)
-                    isChosenLocation = (latDiff < 0.00001 && lonDiff < 0.00001)
-                } else if let g = data["g"] as? [String: Any], let geohash = g["geohash"] as? String {
-                    isChosenLocation = (geohash == selectedLocation.geohash)
+                    coordinateMatch = (latDiff < 0.0001 && lonDiff < 0.0001)
                 }
 
-                let isChosenEntry = (docDateLocationId == selectedDateEntry.id)
-
-                if isChosenEntry && isChosenLocation {
+                // Se troviamo quello giusto, lo aggiorniamo sovrascrivendo le date con quelle precise!
+                if isChosenEntry && (isChosenLocation || coordinateMatch) {
                     batch.updateData([
                         "startDateTime": Timestamp(date: finalStartDate),
                         "endDateTime": Timestamp(date: finalEndDate),
@@ -176,6 +186,7 @@ class ViewModelMyEventDetails {
                         "isLocationConfirmed": true
                     ], forDocument: doc.reference)
                 } else {
+                    // Quelli scartati vengono definitivamente eliminati
                     batch.deleteDocument(doc.reference)
                 }
             }

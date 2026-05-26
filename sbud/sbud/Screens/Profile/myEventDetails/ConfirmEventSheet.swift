@@ -245,7 +245,7 @@ struct ConfirmEventSheet: View {
                 location.geoLocation = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
                 event.structuredLocation = location
                 
-                // 3. FIX CRUCIALE: Controllo validità Calendario
+                // 3. FIX : Controllo validità Calendario
                 if let defaultCalendar = store.defaultCalendarForNewEvents {
                     event.calendar = defaultCalendar
                 } else if let fallbackCalendar = store.calendars(for: .event).first(where: { $0.allowsContentModifications }) {
@@ -256,7 +256,6 @@ struct ConfirmEventSheet: View {
                     print("❌ ERROR: No editable calendars found on the device.")
                     return
                 }
-                
                 
                 try store.save(event, span: .thisEvent)
                 print("✅Event saved successfully")
