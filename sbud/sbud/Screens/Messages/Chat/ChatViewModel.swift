@@ -57,6 +57,26 @@ class ChatViewModel: ObservableObject {
         }
     }
     
+    func markMessagesAsRead() {
+        guard let currentUid = Auth.auth().currentUser?.uid else { return }
+        
+        let chatRoomIdForCurrent = "\(user.id)_\(eventId)"
+        
+        let currentRecentRef = Firestore.firestore()
+            .collection("messages")
+            .document(currentUid)
+            .collection("recent-messages")
+            .document(chatRoomIdForCurrent)
+        
+        //merge piu sicuro
+        currentRecentRef.setData(["isRead": true], merge: true) { error in
+            if let error = error {
+                print("❌ Errore aggiornamento lettura: \(error.localizedDescription)")
+                
+            }
+        }
+    }
+    
     func sendMessage(_ messageText: String) {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         let uid = user.id
@@ -77,14 +97,16 @@ class ChatViewModel: ObservableObject {
                                    "fromId": currentUid,
                                    "toId": uid,
                                    "eventId": eventId,
-                                   "timestamp": Timestamp(date: Date())]
+                                   "timestamp": Timestamp(date: Date()),
+                                   "isRead": true]
         
         let recipientData: [String: Any] = ["text": messageText,
                                             "id": messageID,
                                             "fromId": currentUid,
                                             "toId": uid,
                                             "eventId": eventId,
-                                            "timestamp": Timestamp(date: Date())]
+                                            "timestamp": Timestamp(date: Date()),
+                                            "isRead": false]
         
         
         currentUserRef.setData(data) { error in

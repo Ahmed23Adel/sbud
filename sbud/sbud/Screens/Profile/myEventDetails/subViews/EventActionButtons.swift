@@ -13,7 +13,6 @@ struct EventActionButtons: View {
     let isLocationConfirmed: Bool
     let queueResponse: JoinQueueResponse?   
     let onConfirmTap: () -> Void
-    let onMessagesTap: () -> Void
     let onHostsTap: () -> Void
     let onQueueTap: () -> Void
 
@@ -22,7 +21,6 @@ struct EventActionButtons: View {
             if !isDateConfirmed || !isLocationConfirmed {
                 confirmButton
             }
-            messagesButton
             hostsButton
             queueButton
         }
@@ -40,18 +38,6 @@ struct EventActionButtons: View {
         }
         .buttonStyle(PrimaryButton())
 
-    }
-
-    private var messagesButton: some View {
-        Button(action: onMessagesTap) {
-            HStack(spacing: 12) {
-                Image(systemName: "tray.fill")
-                    .font(.system(size: 20))
-                Text("View Messages")
-            }
-            
-        }
-        .buttonStyle(PrimaryButton())
     }
 
     private var hostsButton: some View {

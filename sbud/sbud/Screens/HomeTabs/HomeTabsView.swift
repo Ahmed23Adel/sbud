@@ -35,8 +35,12 @@ struct HomeTabsView: View {
                         Label("Profile", systemImage: "person.fill")
                     }
                     .tag(3)
+                    .badge(viewModel.unreadMessagesCount)
             }
             .ignoresSafeArea()
+            .onAppear {
+                viewModel.listenForUnreadMessages()
+            }
         } else {
             Color.darkBackground.ignoresSafeArea()
         }

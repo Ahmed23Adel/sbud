@@ -54,7 +54,7 @@ struct EventConversationsView: View {
             }
             
             .refreshable {
-                await viewModel.loadData()
+                viewModel.loadData()
             }
         }
         .navigationTitle("Chats: \(eventTitle)")
@@ -62,9 +62,8 @@ struct EventConversationsView: View {
         .toolbarBackground(Color.darkBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .task {
-            
-            await viewModel.loadData()
+        .onAppear {
+            viewModel.loadData()
         }
     }
 }

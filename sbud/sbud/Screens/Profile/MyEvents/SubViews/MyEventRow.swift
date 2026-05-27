@@ -54,6 +54,8 @@ struct MyEventRow: View {
                 }
 
                 Spacer()
+                
+                EventUnreadBadge(eventId: event.eventId)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 14)

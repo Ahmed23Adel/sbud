@@ -12,15 +12,21 @@ import FirebaseAuth
 import Combine
 
 class EventConversationsViewModel: ObservableObject {
+    
     @Published var recentMessages = [Message]()
     let eventId: String
+    private var listener: ListenerRegistration?
     
     init(eventId: String) {
         self.eventId = eventId
     }
     
-    @MainActor
-    func loadData() async {
+    deinit {
+        listener?.remove()
+    }
+    
+    
+    func loadData() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
         let query = Firestore.firestore().collection("messages")
@@ -28,50 +34,29 @@ class EventConversationsViewModel: ObservableObject {
             .collection("recent-messages")
             .whereField("eventId", isEqualTo: eventId)
         
-        do {
-            
-            let snapshot = try await query.getDocuments(source: .server)
-            
-            var messages: [Message] = []
-            
-            
-            for document in snapshot.documents {
-                do {
-                    let msg = try document.data(as: Message.self)
-                    messages.append(msg)
-                } catch {
-                    print("❌ ERROR \(document.documentID): \(error)")
-                }
-            }
-            
-            
-            messages.sort { $0.timestamp.dateValue() > $1.timestamp.dateValue() }
-            
-            var profilesMap = [String: UserProfile]()
-            
-            for i in 0 ..< messages.count {
-                let partnerId = messages[i].chatPartnerId
+        listener?.remove() // Rimuovi vecchi listener per evitare duplicati
                 
-                if let cachedUser = profilesMap[partnerId] {
-                    messages[i].user = cachedUser
-                } else {
-                    do {
-                        let doc = try await Firestore.firestore().collection("users").document(partnerId).getDocument()
-                        if let userProfile = try? doc.data(as: UserProfile.self) {
-                            messages[i].user = userProfile
-                            profilesMap[partnerId] = userProfile
-                        }
-                    } catch {
-                        print("Error nel fetch user \(partnerId): \(error)")
+        listener = query.addSnapshotListener { [weak self] snapshot, _ in
+            guard let self = self, let docs = snapshot?.documents else { return }
+            
+            var msgs = docs.compactMap { try? $0.data(as: Message.self) }
+            msgs.sort { $0.timestamp.dateValue() > $1.timestamp.dateValue() }
+            
+            Task {
+                var updatedMessages = msgs
+                // Scarica i profili utente
+                for i in 0 ..< updatedMessages.count {
+                    let partnerId = updatedMessages[i].chatPartnerId
+                    if let doc = try? await Firestore.firestore().collection("users").document(partnerId).getDocument(),
+                       let userProfile = try? doc.data(as: UserProfile.self) {
+                        updatedMessages[i].user = userProfile
                     }
                 }
+                
+                await MainActor.run {
+                    self.recentMessages = updatedMessages
+                }
             }
-            
-            self.recentMessages = messages
-            print("✅ Find \(self.recentMessages.count) \(eventId)")
-            
-        } catch {
-            print("❌ Error: \(error)")
         }
     }
 }

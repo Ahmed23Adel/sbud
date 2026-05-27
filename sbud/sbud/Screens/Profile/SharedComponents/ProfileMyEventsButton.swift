@@ -19,7 +19,11 @@ struct ProfileMyEventsButton: View {
                 .font(.system(size: 15, weight: .black))
                 .foregroundColor(.white)
                 .kerning(1.5)
+            
+            TotalUnreadBadge()
+            
             Spacer()
+            
             Button(action: onViewAll) {
                 Text("VIEW ALL")
                     .font(.system(size: 10, weight: .bold, design: .monospaced))
