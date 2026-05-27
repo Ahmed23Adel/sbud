@@ -34,6 +34,7 @@ struct UserProfile: Codable, Identifiable, CustomStringConvertible {
     // MARK: - Social
     var friendsCount: Int = 0
     var trustScore: Double = 0.00
+    var feedbackVoters: [String: [String]]? = [:]
 
     // MARK: - Performance
     var totalSessions: Int = 0

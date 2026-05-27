@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Kingfisher
+import FirebaseAuth
 
 struct OtherProfileView: View {
     @StateObject private var vm: OtherProfileVM
@@ -41,7 +42,15 @@ struct OtherProfileView: View {
                             if let profile = vm.profile {
                                 ProfilePerformanceCard(profile: profile)
                             }
-                            ProfileArchiveSection()
+                            
+                            AthleteFeedbackSection(
+                                isOwnProfile: false,
+                                currentUserId: Auth.auth().currentUser?.uid ?? "",
+                                feedbackVoters: vm.profile?.feedbackVoters ?? [:]
+                            ) { selectedTag in
+                                Task { await vm.voteForFeedback(tag: selectedTag) }
+                            }
+                            
                             ProfileMyEventsButton(userId: vm.userId, title: "EVENTS") {
                                 print("goToOthersEvents")
                                 coordinator.goToOthersEvents()

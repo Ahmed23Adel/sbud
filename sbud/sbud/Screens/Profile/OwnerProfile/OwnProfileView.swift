@@ -43,7 +43,15 @@ struct OwnProfileView: View {
                             if let profile = vm.profile {
                                 ProfilePerformanceCard(profile: profile)
                             }
-                            ProfileArchiveSection()
+
+                            AthleteFeedbackSection(
+                                isOwnProfile: true,
+                                currentUserId: vm.userId,
+                                feedbackVoters: vm.profile?.feedbackVoters ?? [:]
+                            ) { _ in
+                                // Questa closure rimane vuota perché un utente
+                                // non può cliccare o votare sul proprio profilo
+                            }
                             ProfileMyEventsButton(userId: vm.userId, title: "MY EVENTS") {
                                 coordinator.goToMyEvents()
                             }

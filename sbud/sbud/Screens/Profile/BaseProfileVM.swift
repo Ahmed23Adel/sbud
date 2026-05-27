@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import FirebaseAuth
 
 /// Holds state and logic that is identical for both own-profile and other-profile flows.
 /// Never instantiated directly — use OwnProfileVM or OtherProfileVM.
@@ -50,6 +51,41 @@ class BaseProfileVM: ObservableObject {
             }
         } catch {
             if profile == nil { errorMessage = error.localizedDescription }
+        }
+    }
+
+    func voteForFeedback(tag: String) async {
+        guard let currentProfile = profile,
+              let myUserId = Auth.auth().currentUser?.uid else { return }
+        
+        var currentVoters = currentProfile.feedbackVoters ?? [:]
+        var tagVoters = currentVoters[tag] ?? []
+        
+        // Se hai già votato questo tag, ci fermiamo subito!
+        if tagVoters.contains(myUserId) {
+            return
+        }
+        
+        // 1. Optimistic Update (UI Immediata)
+        tagVoters.append(myUserId)
+        currentVoters[tag] = tagVoters
+        self.profile?.feedbackVoters = currentVoters
+        
+        // 2. Chiamata al server in background
+        do {
+            try await userRepository.addFeedback(for: userId, tag: tag, voterId: myUserId)
+            
+            if userId == profileManager.getLocalProfile()?.id, let savedProfile = self.profile {
+                profileManager.saveProfileToLocale(profile: savedProfile)
+            }
+        } catch {
+            print("Errore voto: \(error)")
+            // Rollback se fallisce
+            DispatchQueue.main.async {
+                tagVoters.removeAll { $0 == myUserId }
+                currentVoters[tag] = tagVoters
+                self.profile?.feedbackVoters = currentVoters
+            }
         }
     }
 }
