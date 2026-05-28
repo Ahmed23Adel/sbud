@@ -182,8 +182,25 @@ class ViewModelMyEventDetails {
 
             try await batch.commit()
 
-            await loadDetails()
-            await MainActor.run { isLoading = false }
+            // Creiamo una copia locale dei dettagli, l'aggiorniamo con la singola scelta e forziamo la UI a ridisegnarsi subito
+            if var updatedDetails = self.myEventDertails {
+                updatedDetails.isDateConfirmed = true
+                updatedDetails.isLocationConfirmed = true
+                
+                // Sovrascriviamo l'array dateLocations con l'unica opzione scelta
+                let confirmedDateLocation = DateLocationEntry(
+                    id: selectedDateEntry.id,
+                    startDateTime: finalStartDate,
+                    endDateTime: finalEndDate,
+                    locations: [selectedLocation] // L'unica location
+                )
+                updatedDetails.dateLocations = [confirmedDateLocation]
+                
+                await MainActor.run {
+                    self.myEventDertails = updatedDetails
+                    self.isLoading = false
+                }
+            }
 
         } catch {
             logger.error("Error confirming event & deleting flattened locations: \(error.localizedDescription)")
