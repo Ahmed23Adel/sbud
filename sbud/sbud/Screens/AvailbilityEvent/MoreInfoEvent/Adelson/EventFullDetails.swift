@@ -49,6 +49,8 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
     var notes: String?
     var createdAt: Date
     var dateLocations: [DateLocationEntry]
+    var finalStartDateTime: Date?
+    var finalEndDateTime: Date?
 
     var activityType: ActivityType { activityDetails.selectedActivity }
 
@@ -56,6 +58,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         case id, title, creator, activityDetails, eventImage
         case isDateConfirmed, isLocationConfirmed, isPublic
         case joiningCondition, maxAllowedToJoin, notes, createdAt, dateLocations
+        case finalStartDateTime, finalEndDateTime
     }
 
     init(
@@ -90,24 +93,38 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
     
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
-        title = try container.decode(String.self, forKey: .title)
-        creator = try container.decode(CreatorInfo.self, forKey: .creator)
-        activityDetails = try container.decode(ExtraArgsHolder.self, forKey: .activityDetails)
-        eventImage = try container.decodeIfPresent(String.self, forKey: .eventImage)
-        isDateConfirmed = try container.decode(Bool.self, forKey: .isDateConfirmed)
+        id                  = try container.decode(String.self, forKey: .id)
+        title               = try container.decode(String.self, forKey: .title)
+        creator             = try container.decode(CreatorInfo.self, forKey: .creator)
+        activityDetails     = try container.decode(ExtraArgsHolder.self, forKey: .activityDetails)
+        eventImage          = try container.decodeIfPresent(String.self, forKey: .eventImage)
+        isDateConfirmed     = try container.decode(Bool.self, forKey: .isDateConfirmed)
         isLocationConfirmed = try container.decode(Bool.self, forKey: .isLocationConfirmed)
-        isPublic = try container.decode(Bool.self, forKey: .isPublic)
-        maxAllowedToJoin = try container.decodeIfPresent(Int.self, forKey: .maxAllowedToJoin)
-        notes = try container.decodeIfPresent(String.self, forKey: .notes)
-        createdAt = try container.decode(Date.self, forKey: .createdAt)
-        dateLocations = try container.decode([DateLocationEntry].self, forKey: .dateLocations)
+        isPublic            = try container.decode(Bool.self, forKey: .isPublic)
+        maxAllowedToJoin    = try container.decodeIfPresent(Int.self, forKey: .maxAllowedToJoin)
+        notes               = try container.decodeIfPresent(String.self, forKey: .notes)
+        dateLocations       = try container.decode([DateLocationEntry].self, forKey: .dateLocations)
+
+        let createdAtTs     = try container.decode(Double.self, forKey: .createdAt)
+        createdAt           = Date(timeIntervalSince1970: createdAtTs)
+
+        if let ts = try container.decodeIfPresent(Double.self, forKey: .finalStartDateTime) {
+            finalStartDateTime = Date(timeIntervalSince1970: ts)
+        } else {
+            finalStartDateTime = nil
+        }
+
+        if let ts = try container.decodeIfPresent(Double.self, forKey: .finalEndDateTime) {
+            finalEndDateTime = Date(timeIntervalSince1970: ts)
+        } else {
+            finalEndDateTime = nil
+        }
 
         let rawJoiningCondition = try container.decode(String.self, forKey: .joiningCondition)
         switch rawJoiningCondition {
-        case "autoJoin": joinCondition = .autoJoin
+        case "autoJoin":        joinCondition = .autoJoin
         case "requestFromHost": joinCondition = .requestFromHost
-        default: joinCondition = .requestFromHost
+        default:                joinCondition = .requestFromHost
         }
     }
     

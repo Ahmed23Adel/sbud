@@ -110,6 +110,21 @@ struct ViewMoreInfoEvent: View {
                         }
                         LocationMapCard(dateLocations: details.dateLocations).padding()
                             .padding(.horizontal)
+                        
+                        if details.isDateConfirmed,
+                           let finalStart = details.finalStartDateTime,
+                           let finalEnd   = details.finalEndDateTime,
+                           let firstLoc   = details.dateLocations.first?.locations.first {
+
+                            EventWeatherWidget(
+                                finalStart: finalStart,
+                                finalEnd:   finalEnd,
+                                latitude:   firstLoc.latitude,
+                                longitude:  firstLoc.longitude
+                            )
+                            .padding(.horizontal)
+                        }
+                        
                         if !viewModel.isCurrentUserHost {
                             JoinEventButton(
                                 joinCondition: details.joinCondition,
@@ -122,9 +137,11 @@ struct ViewMoreInfoEvent: View {
                             .padding(.horizontal)
                             .padding(.vertical, 8)
                         }
-
+                        
+                        
                         Spacer()
                     }
+                    
                 }
                 .padding(.top, 200)
                 .padding(.bottom, 120)
