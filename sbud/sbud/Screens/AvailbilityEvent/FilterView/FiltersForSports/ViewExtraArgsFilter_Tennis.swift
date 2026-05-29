@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-
 struct ViewExtraArgsFilterTennis: View {
     @ObservedObject var filter: ExtraArgsFilterHolderTennis
 
@@ -25,8 +24,8 @@ struct ViewExtraArgsFilterTennis: View {
             GenericRangeTarget(
                 header: "Duration",
                 unitHeader: "MIN",
-                minValue: $filter.minDuration,
-                maxValue: $filter.maxDuration
+                minValue: $filter.minDurationInMin,
+                maxValue: $filter.maxDurationInMin
             )
         }
     }

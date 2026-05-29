@@ -16,9 +16,15 @@ struct ViewExtraArgsGym: View {
                 header: "Day Type",
                 selected: $args.proposedDayType
             )
+            GenericPerformanceTarget(
+                targetHeader: "Duration",
+                unitHeader: "MIN",
+                targetValue: $args.proposedDurationInMin
+            )
         }
     }
 }
+
 
 #Preview {
     ViewExtraArgsGym(args: ExtraArgsHolderGym())

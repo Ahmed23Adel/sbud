@@ -17,16 +17,22 @@ struct ViewExtraArgsFilterCycling: View {
                 selected: $filter.cyclingType
             )
             GenericRangeTarget(
-                header: "Power",
-                unitHeader: "WATT",
-                minValue: $filter.minPower,
-                maxValue: $filter.maxPower
+                header: "Distance",
+                unitHeader: "KM",
+                minValue: $filter.minDistanceInKm,
+                maxValue: $filter.maxDistanceInKm
             )
             GenericRangeTarget(
-                header: "Cadence",
-                unitHeader: "RPM",
-                minValue: $filter.minCadence,
-                maxValue: $filter.maxCadence
+                header: "Speed",
+                unitHeader: "KM/H",
+                minValue: $filter.minSpeedInKmH,
+                maxValue: $filter.maxSpeedInKmH
+            )
+            GenericRangeTarget(
+                header: "Duration",
+                unitHeader: "MIN",
+                minValue: $filter.minDurationInMin,
+                maxValue: $filter.maxDurationInMin
             )
         }
     }
