@@ -21,4 +21,5 @@ enum MainRoute: Equatable, Hashable {
     case home
     case creatorSession(eventDetails: EventFullDetails, isSessionCreated: Bool)
     case othersSession(eventDetails: EventFullDetails, isSessionCreated: Bool)
+    case sessionSummary(eventDetails: EventFullDetails)
 }

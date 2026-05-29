@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import OSLog
 // MARK: - Creator
 
 nonisolated struct CreatorInfo: Decodable, Sendable {
@@ -31,11 +31,33 @@ nonisolated struct DateLocationEntry: Decodable, Sendable, Identifiable {
     var startDateTime: Date
     var endDateTime: Date
     var locations: [LocationPoint]
+
+    enum CodingKeys: String, CodingKey {
+        case id, startDateTime, endDateTime, locations
+    }
+
+    init(id: String, startDateTime: Date, endDateTime: Date, locations: [LocationPoint]) {
+        self.id = id
+        self.startDateTime = startDateTime
+        self.endDateTime = endDateTime
+        self.locations = locations
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        let startRaw = try container.decode(Double.self, forKey: .startDateTime)
+        let endRaw   = try container.decode(Double.self, forKey: .endDateTime)
+        startDateTime = Date(timeIntervalSince1970: startRaw)
+        endDateTime   = Date(timeIntervalSince1970: endRaw)
+        locations = try container.decode([LocationPoint].self, forKey: .locations)
+    }
 }
 
 // MARK: - Top-level response
 
-nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
+nonisolated struct EventFullDetails: Decodable, Sendable {
+    let logger = Logger(subsystem: "sbud", category: "EventFullDetails")
     var id: String
     var title: String
     var creator: CreatorInfo
@@ -51,6 +73,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
     var dateLocations: [DateLocationEntry]
     var finalStartDateTime: Date?
     var finalEndDateTime: Date?
+    var numSessions: Int
 
     var activityType: ActivityType { activityDetails.selectedActivity }
 
@@ -59,6 +82,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         case isDateConfirmed, isLocationConfirmed, isPublic
         case joiningCondition, maxAllowedToJoin, notes, createdAt, dateLocations
         case finalStartDateTime, finalEndDateTime
+        case numSessions
     }
 
     init(
@@ -74,7 +98,8 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         maxAllowedToJoin: Int? = nil,
         notes: String? = nil,
         createdAt: Date,
-        dateLocations: [DateLocationEntry]
+        dateLocations: [DateLocationEntry],
+        numSessions: Int
     ) {
         self.id = id
         self.title = title
@@ -89,6 +114,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         self.notes = notes
         self.createdAt = createdAt
         self.dateLocations = dateLocations
+        self.numSessions = numSessions
     }
     
     init(from decoder: any Decoder) throws {
@@ -104,6 +130,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         maxAllowedToJoin    = try container.decodeIfPresent(Int.self, forKey: .maxAllowedToJoin)
         notes               = try container.decodeIfPresent(String.self, forKey: .notes)
         dateLocations       = try container.decode([DateLocationEntry].self, forKey: .dateLocations)
+        numSessions         = try container.decode(Int.self, forKey: .numSessions)
 
         let createdAtTs     = try container.decode(Double.self, forKey: .createdAt)
         createdAt           = Date(timeIntervalSince1970: createdAtTs)
@@ -126,14 +153,7 @@ nonisolated struct EventFullDetails: Decodable, Sendable, Equatable, Hashable {
         case "requestFromHost": joinCondition = .requestFromHost
         default:                joinCondition = .requestFromHost
         }
-    }
-    
-    static func == (lhs: EventFullDetails, rhs: EventFullDetails) -> Bool {
-        return lhs.id ==  rhs.id
-    }
-    
-    func hash(into hasher: inout Hasher){
-        hasher.combine(id)
+        logDetails()
     }
 }
 
@@ -178,8 +198,60 @@ extension EventFullDetails {
         maxAllowedToJoin: 150,
         notes: "Come join me",
         createdAt: Date(),
-        dateLocations: [.sample, .sample]
+        dateLocations: [.sample, .sample],
+        numSessions: 1
     )
+}
+
+// MARK: - CustomStringConvertible
+
+extension EventFullDetails: CustomStringConvertible {
+    var description: String {
+        """
+        ┌─ EventFullDetails ─────────────────────────
+        │ id:                \(id)
+        │ title:             \(title)
+        │ activityType:      \(activityType)
+        │ isPublic:          \(isPublic)
+        │ isDateConfirmed:   \(isDateConfirmed)
+        │ isLocationConfirmed: \(isLocationConfirmed)
+        │ joinCondition:     \(joinCondition)
+        │ maxAllowedToJoin:  \(maxAllowedToJoin.map(String.init) ?? "unlimited")
+        │ numSessions:       \(numSessions)
+        │ createdAt:         \(createdAt.formatted(.dateTime))
+        │ eventImage:        \(eventImage ?? "none")
+        │ notes:             \(notes ?? "none")
+        ├─ Creator ──────────────────────────────────
+        │ name:              \(creator.name) \(creator.surName)
+        │ id:                \(creator.id)
+        ├─ Date Locations (\(dateLocations.count)) ──────────────────
+        \(dateLocations.enumerated().map { i, dl in
+            """
+            │ [\(i)] id:        \(dl.id)
+            │     start:      \(dl.startDateTime.formatted(.dateTime))
+            │     end:        \(dl.endDateTime.formatted(.dateTime))
+            │     locations:  \(dl.locations.map { "(\($0.latitude), \($0.longitude))" }.joined(separator: ", "))
+            """
+        }.joined(separator: "\n"))
+        └────────────────────────────────────────────
+        """
+    }
+
+    func logDetails() {
+        logger.debug("\(self.description)")
+    }
+}
+
+extension EventFullDetails: Equatable {
+    static func == (lhs: EventFullDetails, rhs: EventFullDetails) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
+extension EventFullDetails: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 extension EventFullDetails {
@@ -196,6 +268,8 @@ extension EventFullDetails {
         maxAllowedToJoin: 150,
         notes: "",
         createdAt: Date(),
-        dateLocations: [.sample, .sample]
+        dateLocations: [.sample, .sample],
+        numSessions: 0
+        
     )
 }

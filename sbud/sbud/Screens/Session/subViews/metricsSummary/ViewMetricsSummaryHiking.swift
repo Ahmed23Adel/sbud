@@ -173,7 +173,7 @@ struct ViewMetricsSummaryHiking: View {
             .padding(.vertical, 12)
             .background(Color.black)
 
-            ViewMetricsSummaryHiking(collector: MetricsCollectorHiking(isCreator: true))
+            ViewMetricsSummaryHiking(collector: MetricsCollectorHiking(isCreator: true, numSessions: 1))
                 .frame(maxHeight: .infinity)
         }
     }

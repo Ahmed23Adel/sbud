@@ -35,11 +35,17 @@ struct ViewMyEventDetails: View {
                         }
                 }
             }
+            .refreshable { await viewModel.refresh() }
 
             if !viewModel.isLoading{
                 VStack {
                     Spacer()
                     HStack {
+                        BasicFloatingButton(iconName: "chart.dots.scatter"){
+                            coordinator.goToSessionSummary(evnet: viewModel.myEventDertails!)
+                        }
+                        .padding(.leading, 36)
+                        
                         Spacer()
                         if viewModel.isSessionCreated {
                             BasicFloatingButton(iconName: "flag.pattern.checkered"){

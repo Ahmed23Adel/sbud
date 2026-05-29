@@ -35,17 +35,20 @@ struct ViewMetricsSummaryConditional: View {
         // ── Timer-only activities ─────────────────────────────────────────
         case .gym:
             if let c = metricCollector as? MetricsCollectorGym {
-                SimpleWrapper(activityType: activityType, collector: c)
+                GymWrapper(collector: c)
             }
         case .yoga:
             if let c = metricCollector as? MetricsCollectorYoga {
-                SimpleWrapper(activityType: activityType, collector: c)
+                YogaWrapper(collector: c)
             }
         case .tennis:
             if let c = metricCollector as? MetricsCollectorTennis {
-                SimpleWrapper(activityType: activityType, collector: c)
+                TennisWrapper(collector: c)
             }
-
+        case .swimming:  // add this if swimming should show a timer
+            if let c = metricCollector as? MetricsCollectorSwimming {
+                SwimmingWrapper(collector: c)
+            }
         default:
             EmptyView()
         }
@@ -81,4 +84,23 @@ private struct SimpleWrapper: View {
     var body: some View {
         ViewMetricsSummarySimple(collector: collector, activityType: activityType)
     }
+}
+private struct GymWrapper: View {
+    @State var collector: MetricsCollectorGym
+    var body: some View { ViewMetricsSummarySimple(collector: collector, activityType: .gym) }
+}
+
+private struct YogaWrapper: View {
+    @State var collector: MetricsCollectorYoga
+    var body: some View { ViewMetricsSummarySimple(collector: collector, activityType: .yoga) }
+}
+
+private struct TennisWrapper: View {
+    @State var collector: MetricsCollectorTennis
+    var body: some View { ViewMetricsSummarySimple(collector: collector, activityType: .tennis) }
+}
+
+private struct SwimmingWrapper: View {
+    @State var collector: MetricsCollectorSwimming
+    var body: some View { ViewMetricsSummarySimple(collector: collector, activityType: .swimming) }
 }

@@ -5,11 +5,9 @@
 //  Created by Riccardo Maria Cadario on 05/05/26.
 //
 
-
 import SwiftUI
 import MapKit
 
-// MARK: - Helper Struct per appiattire tutte le location e renderle selezionabili sulla mappa
 struct MapSelectableItem: Identifiable, Equatable {
     let id = UUID()
     let dateEntry: DateLocationEntry
@@ -27,9 +25,10 @@ struct ConfirmEventSheet: View {
     var onConfirm: (DateLocationEntry, LocationPoint, Date, Date) -> Void
     
     @State private var selectedItem: MapSelectableItem?
-    @State private var finalStartDate: Date = Date()
-    @State private var finalEndDate: Date = Date()
-    
+    @State private var finalStartDate: Date? = nil
+    @State private var finalEndDate: Date? = nil
+    @State private var cameraPosition: MapCameraPosition = .automatic
+
     private var mapItems: [MapSelectableItem] {
         var items: [MapSelectableItem] = []
         var counter = 1
@@ -46,48 +45,51 @@ struct ConfirmEventSheet: View {
         }
         return items
     }
-    
-    @State private var cameraPosition: MapCameraPosition = .automatic
-    
+
+    var isFormValid: Bool {
+        guard let start = finalStartDate, let end = finalEndDate else { return false }
+        return selectedItem != nil && end > start
+    }
+
     var body: some View {
         NavigationView {
             ZStack {
                 Color.darkBackground.ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
-                    
+
                     // MARK: - Custom Top Bar
                     HStack {
                         Text("Confirm Final Details")
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(Color.mainColor)
-                        
+
                         Spacer()
-                        
+
                         Button {
-                            if let selected = selectedItem {
-                                onConfirm(selected.dateEntry, selected.location, finalStartDate, finalEndDate)
-                            }
+                            guard
+                                let selected = selectedItem,
+                                let start = finalStartDate,
+                                let end = finalEndDate,
+                                end > start
+                            else { return }
+                            onConfirm(selected.dateEntry, selected.location, start, end)
                         } label: {
                             Text("Confirm")
                                 .fontWeight(.bold)
                                 .foregroundColor(.black)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(
-                                    selectedItem == nil
-                                        ? Color.mainColor.opacity(0.4)
-                                        : Color.mainColor
-                                )
+                                .background(isFormValid ? Color.mainColor : Color.mainColor.opacity(0.4))
                                 .clipShape(Capsule())
                         }
-                        .disabled(selectedItem == nil)
+                        .disabled(!isFormValid)
                         .buttonStyle(.plain)
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
-                    
+
                     // MARK: - Map
                     Map(position: $cameraPosition) {
                         ForEach(mapItems) { item in
@@ -95,8 +97,9 @@ struct ConfirmEventSheet: View {
                                 Button {
                                     withAnimation(.spring()) {
                                         selectedItem = item
-                                        finalStartDate = item.dateEntry.startDateTime
-                                        finalEndDate = item.dateEntry.endDateTime
+                                        // Reset dates when a new pin is selected
+                                        finalStartDate = nil
+                                        finalEndDate = nil
                                     }
                                 } label: {
                                     MapPinView(index: item.displayIndex)
@@ -106,7 +109,8 @@ struct ConfirmEventSheet: View {
                                                 .stroke(Color.white, lineWidth: selectedItem == item ? 3 : 0)
                                                 .scaleEffect(selectedItem == item ? 1.4 : 1.0)
                                         )
-                                        .shadow(color: selectedItem == item ? .white.opacity(0.8) : .black.opacity(0.3), radius: selectedItem == item ? 8 : 4)
+                                        .shadow(color: selectedItem == item ? .white.opacity(0.8) : .black.opacity(0.3),
+                                                radius: selectedItem == item ? 8 : 4)
                                 }
                             }
                         }
@@ -114,40 +118,106 @@ struct ConfirmEventSheet: View {
                     .frame(height: 300)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .padding()
-                    
+
                     // MARK: - Selection Detail
                     ScrollView {
-                        if let selected = selectedItem {
+                        if selectedItem != nil {
                             VStack(alignment: .leading, spacing: 20) {
-                                
-                                Text("📍 Location \(selected.displayIndex) Selected")
+
+                                Text("📍 Location \(selectedItem!.displayIndex) Selected")
                                     .font(.title3.weight(.bold))
                                     .foregroundColor(.white)
                                     .padding(.horizontal)
-                                
-                                VStack(alignment: .leading, spacing: 15) {
+
+                                VStack(alignment: .leading, spacing: 0) {
                                     Text("Refine Exact Event Time")
                                         .font(.headline)
                                         .foregroundColor(Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0))
                                         .padding(.horizontal)
-                                    
-                                    DatePicker("Start", selection: $finalStartDate)
+                                        .padding(.bottom, 12)
+                                        .padding(.top, 12)
+
+                                    // MARK: - Start Date (same logic as SheetForDatesSelection)
+                                    if let start = finalStartDate {
+                                        DatePicker(
+                                            "Start date time",
+                                            selection: Binding(
+                                                get: { start },
+                                                set: { newStart in
+                                                    finalStartDate = newStart
+                                                    if let end = finalEndDate, end <= newStart {
+                                                        finalEndDate = newStart.addingTimeInterval(3600)
+                                                    }
+                                                }
+                                            ),
+                                            displayedComponents: [.date, .hourAndMinute]
+                                        )
+                                        .font(.headline)
+                                        .foregroundStyle(Color.mainColor)
+                                        .datePickerStyle(.compact)
+                                        .tint(.mainColor)
                                         .colorScheme(.dark)
                                         .padding()
-                                        .background(Color.white.opacity(0.1))
-                                        .cornerRadius(12)
-                                        .padding(.horizontal)
-                                    
-                                    DatePicker("End", selection: $finalEndDate)
-                                        .colorScheme(.dark)
-                                        .padding()
-                                        .background(Color.white.opacity(0.1))
-                                        .cornerRadius(12)
-                                        .padding(.horizontal)
+                                        .transition(.opacity)
+                                    } else {
+                                        Button {
+                                            withAnimation {
+                                                finalStartDate = Date()
+                                            }
+                                        } label: {
+                                            Label("Set start date", systemImage: "calendar.badge.plus")
+                                                .font(.headline)
+                                                .foregroundStyle(Color.mainColor)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                                .padding()
+                                        }
+                                        .transition(.opacity)
+                                    }
+
+                                    Divider().padding(.horizontal)
+
+                                    // MARK: - End Date (same logic as SheetForDatesSelection)
+                                    if let start = finalStartDate {
+                                        if let end = finalEndDate {
+                                            DatePicker(
+                                                "End date time",
+                                                selection: Binding(
+                                                    get: { end },
+                                                    set: { newEnd in
+                                                        finalEndDate = newEnd > start ? newEnd : start.addingTimeInterval(3600)
+                                                    }
+                                                ),
+                                                displayedComponents: [.date, .hourAndMinute]
+                                            )
+                                            .font(.headline)
+                                            .foregroundStyle(Color.mainColor)
+                                            .tint(.mainColor)
+                                            .colorScheme(.dark)
+                                            .padding()
+                                            .transition(.opacity)
+                                        } else {
+                                            Button {
+                                                withAnimation {
+                                                    finalEndDate = start.addingTimeInterval(3600)
+                                                }
+                                            } label: {
+                                                Label("Set end date", systemImage: "calendar.badge.plus")
+                                                    .font(.headline)
+                                                    .foregroundStyle(Color.mainColor)
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                    .padding()
+                                            }
+                                            .transition(.opacity)
+                                        }
+                                    }
                                 }
+                                .background(Color.white.opacity(0.1))
+                                .cornerRadius(12)
+                                .padding(.horizontal)
                             }
                             .padding(.top, 10)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
+
                         } else {
                             VStack(spacing: 12) {
                                 Image(systemName: "hand.tap.fill")
@@ -167,9 +237,12 @@ struct ConfirmEventSheet: View {
             .onAppear {
                 setupInitialCameraPosition()
             }
+            .animation(.easeInOut, value: finalStartDate == nil)
+            .animation(.easeInOut, value: finalEndDate == nil)
+            .animation(.easeInOut, value: selectedItem == nil)
         }
     }
-    
+
     private func setupInitialCameraPosition() {
         let coords = mapItems.map { $0.coordinate }
         guard !coords.isEmpty else { return }
