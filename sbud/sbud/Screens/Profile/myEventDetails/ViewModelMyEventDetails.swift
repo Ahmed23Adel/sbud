@@ -29,12 +29,15 @@ class ViewModelMyEventDetails {
     var showQueue: Bool = false
 
     private let joinRequester = JoinEventRequester()
+    private let deleteRequester = DeleteEventRequester()
 
     private var mainCoordinator: MainCoordinator?
     var activeSheet: MyEventDetailsSheet?
-    
-    
+
     var isSessionCreated = false
+    var showDeleteConfirmation = false
+    var isDeletingEvent = false
+    var eventDeleted = false
     
     init(eventId: String) {
         logger.info("eventId: \(eventId)")
@@ -228,6 +231,24 @@ class ViewModelMyEventDetails {
         let sessions = try await repo.fetch(query: queryRef)
         logger.info("sessions count: \(sessions.count), \(sessions.count != 0)")
         return sessions.count != 0
-            
+
+    }
+
+    // MARK: - Delete Event
+
+    func deleteEvent() async {
+        await MainActor.run { isDeletingEvent = true }
+        do {
+            try await deleteRequester.deleteEvent(eventId: eventId)
+            await MainActor.run {
+                isDeletingEvent = false
+                eventDeleted = true
+            }
+            PopUpGenerator.shared.show(msg: "Event deleted successfully", type: .notification)
+        } catch {
+            logger.error("Error deleting event: \(error.localizedDescription)")
+            await MainActor.run { isDeletingEvent = false }
+            PopUpGenerator.shared.show(msg: "Error deleting event", type: .error)
+        }
     }
 }
