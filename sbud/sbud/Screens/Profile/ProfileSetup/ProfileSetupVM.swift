@@ -61,6 +61,12 @@ final class ProfileSetupVM: ObservableObject {
     // These are the validation closures passed to the coordinator.
 
     func validateStepOne() -> Bool {
+        
+        if requiresEmailVerification {
+            errorMessage = "Verify your email address by clicking the link we sent you to continue."
+            return false
+        }
+        
         guard photo.uploadedURL != nil else {
             errorMessage = "Profile image is required."
             return false
@@ -121,6 +127,11 @@ final class ProfileSetupVM: ObservableObject {
     // MARK: - Persist
 
     func save() async -> Bool {
+        if requiresEmailVerification {
+                    errorMessage = "Please verify your email address before saving your profile."
+                    return false
+                }
+        
         guard validateStepOne(),
               validateStepTwo(),
               validateStepThree(),
@@ -165,6 +176,20 @@ final class ProfileSetupVM: ObservableObject {
         guard let item = selectedPhotoItem else { return }
         photo.selectedItem = item          // hand off to the service
         await photo.handleSelection()
+    }
+}
+
+extension ProfileSetupVM {
+    
+    // Controlla se l'utente ha fatto l'accesso con email e se l'email NON è ancora verificata
+    private var requiresEmailVerification: Bool {
+        
+        let isEmailAuth = AuthenticationManager.shared.signInMethod == AuthType.email.rawValue
+        
+        // Firebase aggiorna quando chiami reload()
+        let isVerified = Auth.auth().currentUser?.isEmailVerified ?? false
+        
+        return isEmailAuth && !isVerified
     }
 }
 
