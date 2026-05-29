@@ -516,8 +516,9 @@
 				DEVELOPMENT_TEAM = 2H5L6H625L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location to show available services even when the app is in the background.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show available services nearby.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Used to scan QR codes to connect with friends.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in the background to seamlessly track your activity and pace even when your screen is locked.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to track your activity and show your route on the map.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -553,8 +554,9 @@
 				DEVELOPMENT_TEAM = 2H5L6H625L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location to show available services even when the app is in the background.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show available services nearby.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Used to scan QR codes to connect with friends.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in the background to seamlessly track your activity and pace even when your screen is locked.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to track your activity and show your route on the map.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

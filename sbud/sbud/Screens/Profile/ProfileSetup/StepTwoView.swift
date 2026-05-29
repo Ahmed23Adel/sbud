@@ -85,17 +85,84 @@ struct StepTwoView: View {
     private var phoneSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             fieldLabel("PHONE NUMBER")
-            PhoneNumberView(text: $vm.phoneNumber)
-                .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                .foregroundColor(.white)
+            
+            if vm.isPhoneVerified {
+                // Numero Verificato (UI bloccata/verde)
+                HStack {
+                    Text(vm.phoneNumber)
+                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.white)
+                    Spacer()
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(Color("palelime"))
+                }
                 .padding(.horizontal, 14)
-                .background(cardBG)
                 .frame(height: 54)
+                .background(Color(white: 0.12))
                 .cornerRadius(4)
-                .onChange(of: vm.phoneNumber) { _ in vm.clearError() }
+                
+            } else {
+                // Numero NON verificato: Input + Pulsante Invia
+                HStack {
+                    PhoneNumberView(text: $vm.phoneNumber)
+                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.white)
+                    
+                    Button {
+                        Task { await vm.sendSMS() }
+                    } label: {
+                        if vm.isSendingSMS {
+                            ProgressView().tint(Color("palelime"))
+                        } else {
+                            Text(vm.verificationID == nil ? "SEND SMS" : "RESEND")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color("palelime"))
+                        }
+                    }
+                    .disabled(vm.phoneNumber.isEmpty || vm.isSendingSMS)
+                }
+                .padding(.horizontal, 14)
+                .frame(height: 54)
+                .background(Color(white: 0.12))
+                .cornerRadius(4)
+                
+                // Campo OTP che appare solo dopo aver inviato l'SMS
+                if vm.verificationID != nil {
+                    HStack {
+                        TextField("ENTER 6-DIGIT CODE", text: $vm.otpCode)
+                            .keyboardType(.numberPad)
+                            .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                            .foregroundColor(.white)
+                        
+                        Button {
+                            Task { await vm.verifyOTP() }
+                        } label: {
+                            if vm.isVerifyingOTP {
+                                ProgressView().tint(Color("palelime"))
+                            } else {
+                                Text("VERIFY")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.black)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(Color("palelime"))
+                                    .cornerRadius(4)
+                            }
+                        }
+                        .disabled(vm.otpCode.count < 6 || vm.isVerifyingOTP)
+                    }
+                    .padding(.horizontal, 14)
+                    .frame(height: 54)
+                    .background(Color.black) 
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(Color("palelime").opacity(0.5), lineWidth: 1)
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
         }
     }
-
     // MARK: - Gender
 
     private var genderButton: some View {

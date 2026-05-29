@@ -2,36 +2,31 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSCameraUsageDescription</key>
-    <string>Used to scan QR codes to connect with friends.</string>
-
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>com.googleusercontent.apps.863852529120-f082rdgc1ucvss39g2ael0n05nrjvaaq</string>
-            </array>
-        </dict>
-    </array>
-
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>location</string>
-    </array>
-
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-    
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>We need your location to track your activity and show your route on the map.</string>
-    
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>We need your location in the background to seamlessly track your activity and pace even when your screen is locked.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.863852529120-f082rdgc1ucvss39g2ael0n05nrjvaaq</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array/>
+		</dict>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 </dict>
 </plist>

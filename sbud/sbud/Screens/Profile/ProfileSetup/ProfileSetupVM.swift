@@ -23,6 +23,12 @@ final class ProfileSetupVM: ObservableObject {
     @Published var phoneNumber: String = ""
     @Published var errorMessage: String?
     @Published var isSaving = false
+    //phone verification
+    @Published var isPhoneVerified: Bool = false
+    @Published var verificationID: String? = nil
+    @Published var otpCode: String = ""
+    @Published var isSendingSMS: Bool = false
+    @Published var isVerifyingOTP: Bool = false
 
     // MARK: - Child services (injected for testability)
 
@@ -75,6 +81,61 @@ final class ProfileSetupVM: ObservableObject {
         }
         errorMessage = nil
         return true
+    }
+    
+    //Validazione telefono:
+    func sendSMS() async {
+        guard let e164 = PhoneService.e164(phoneNumber) else {
+            self.errorMessage = "Numero di telefono non valido."
+            return
+        }
+        
+        DispatchQueue.main.async { self.isSendingSMS = true }
+        
+        do {
+            // Assicurati che Firebase sia configurato per l'Auth telefonica (APNs/reCAPTCHA)
+            let id = try await PhoneAuthProvider.provider().verifyPhoneNumber(e164, uiDelegate: nil)
+            DispatchQueue.main.async {
+                self.verificationID = id
+                self.isSendingSMS = false
+                self.clearError()
+            }
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = error.localizedDescription
+                self.isSendingSMS = false
+            }
+        }
+    }
+
+    // 2. Verifica il codice OTP
+    func verifyOTP() async {
+        guard let verificationID = verificationID, !otpCode.isEmpty else { return }
+        
+        DispatchQueue.main.async { self.isVerifyingOTP = true }
+        
+        let credential = PhoneAuthProvider.provider().credential(
+            withVerificationID: verificationID,
+            verificationCode: otpCode
+        )
+        
+        do {
+            // Collega il numero di telefono all'account utente esistente
+            if let user = Auth.auth().currentUser {
+                try await user.link(with: credential)
+            }
+            
+            DispatchQueue.main.async {
+                self.isPhoneVerified = true
+                self.isVerifyingOTP = false
+                self.clearError()
+            }
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = "Codice errato o scaduto."
+                self.isVerifyingOTP = false
+            }
+        }
     }
 
     func validateStepTwo() -> Bool {

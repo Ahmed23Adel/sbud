@@ -41,6 +41,20 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         print("Failed to register for remote notifications: \(error)")
     }
     
+    func application(_ application: UIApplication,
+                     didReceiveRemoteNotification userInfo: [AnyHashable : Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        
+        // Passa la notifica a Firebase Auth
+        if Auth.auth().canHandleNotification(userInfo) {
+            completionHandler(.noData)
+            return
+        }
+        
+        
+        completionHandler(.newData)
+    }
+    
     
 }
 
@@ -70,7 +84,15 @@ struct SbudApp: App {
                 authService: AuthenticationManager.shared,
                 profileService: ProfileManager.shared))
             .onOpenURL { url in
-                GIDSignIn.sharedInstance.handle(url)
+                // 1. URL con Google Sign-In
+                if GIDSignIn.sharedInstance.handle(url) {
+                    return
+                }
+                
+                // 2) (reCAPTCHA Phone Auth)
+                if Auth.auth().canHandle(url) {
+                    return
+                }
             }
             
 
