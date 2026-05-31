@@ -8,6 +8,7 @@
 import Foundation
 import CoreLocation
 import Combine
+import HealthKit
 import OSLog
 import FirebaseFirestore
 
@@ -72,6 +73,7 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
     // MARK: - Control
 
     func startSession(eventId: String) {
+        Task { await HealthKitService.shared.requestAuthorization() }
         currentEventId = eventId
 
         if restoreCheckpoint(eventId: eventId) {
@@ -200,6 +202,13 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
+        try? await HealthKitService.shared.saveGPSWorkout(
+            activityType: .cycling,
+            start: startDateTime,
+            end: endDateTime,
+            distanceMeters: totalDistanceMeters,
+            locations: trackedLocations.map { $0.1 }
+        )
 
         let sessionEntry: [String: Any] = [
             "startDateTime": startDate as Any,
@@ -222,9 +231,10 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
         logger.info("numSession: \(self.numSessions)")
         guard let finalEndDateTime = try await MetricsCollectorUtils.readFinalEndDateTime(eventId: eventId) else {
             logger.info("Cycling participant ended before creator — storing raw data")
+            let endNow = Date()
             let metrics = MetricsCollectedCycling(
                 startDateTime: startDateTime,
-                endDateTime: Date(),
+                endDateTime: endNow,
                 metricsCreatorType: .normalParticipant,
                 track: trackedLocations.toTrackPoints(),
                 totalDistance: totalDistanceMeters,
@@ -234,6 +244,13 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
                 numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
+            try? await HealthKitService.shared.saveGPSWorkout(
+                activityType: .cycling,
+                start: startDateTime,
+                end: endNow,
+                distanceMeters: totalDistanceMeters,
+                locations: trackedLocations.map { $0.1 }
+            )
             return
         }
 
@@ -254,6 +271,13 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
             numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
+        try? await HealthKitService.shared.saveGPSWorkout(
+            activityType: .cycling,
+            start: startDateTime,
+            end: finalEndDateTime,
+            distanceMeters: trimmedDistance,
+            locations: trimmedTrack.map { $0.1 }
+        )
         logger.info("Cycling participant metrics uploaded")
     }
 
