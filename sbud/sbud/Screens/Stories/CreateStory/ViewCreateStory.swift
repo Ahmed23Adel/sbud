@@ -39,7 +39,6 @@ struct ViewCreateStory: View {
                             isLoadingEvents: vm.isLoadingEvents
                         )
                     }
-                    .padding(.horizontal, 16)
                     .padding(.top, 20)
 
                     Button {

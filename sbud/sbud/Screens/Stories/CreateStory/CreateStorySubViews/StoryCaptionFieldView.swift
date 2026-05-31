@@ -9,48 +9,32 @@ struct StoryCaptionFieldView: View {
     @Binding var caption: String
     @State private var shakeOffset: CGFloat = 0
     let maxChars = 500
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Caption", systemImage: "text.alignleft")
-                .font(.subheadline.bold())
-                .foregroundStyle(.white)
 
-            ZStack(alignment: .topLeading) {
-                if caption.isEmpty {
-                    Text("What happened?")
-                        .foregroundStyle(.white.opacity(0.3))
-                        .font(.subheadline)
-                        .padding(.top, 1)
-                        .padding(.leading, 4)
-                }
-                TextEditor(text: $caption)
-                    .scrollContentBackground(.hidden)
-                    .foregroundStyle(.white)
-                    .tint(Color.mainColor)
-                    .font(.subheadline)
-                    .frame(minHeight: 70)
-                    .onChange(of: caption) { _, new in
-                        if new.count > maxChars {
-                            caption = String(new.prefix(maxChars))
-                            triggerShake()
-                            PopUpGenerator.shared.show(msg: "Caption can't exceed \(maxChars) characters", type: .error)
-                        }
-                    }
-            }
-            .padding(14)
-            .background(Color.blackBackground, in: RoundedRectangle(cornerRadius: 14))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+    var body: some View {
+        VStack(spacing: 0) {
+            GenericMultilineTextInputView(
+                fieldName: "Caption",
+                placeholder: "What happened?",
+                iconString: "text.alignleft",
+                text: $caption
             )
             .offset(x: shakeOffset)
+            .onChange(of: caption) { _, new in
+                if new.count > maxChars {
+                    caption = String(new.prefix(maxChars))
+                    triggerShake()
+                    PopUpGenerator.shared.show(msg: "Caption can't exceed \(maxChars) characters", type: .error)
+                }
+            }
 
             HStack {
                 Spacer()
                 Text("\(caption.count)/\(maxChars)")
                     .font(.caption2)
-                    .foregroundStyle(caption.count >= (maxChars - 20) ? Color.mainColor : .white.opacity(0.3))
+                    .foregroundColor(caption.count >= (maxChars - 20) ? Color.mainColor : .white.opacity(0.3))
             }
+            .padding(.horizontal, 30)
+            .padding(.top, 4)
         }
     }
 
