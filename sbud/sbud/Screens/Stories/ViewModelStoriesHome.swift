@@ -9,10 +9,12 @@ import Foundation
 @Observable
 final class ViewModelStoriesHome {
     var friendsWithStories: [FriendWithStories] = []
+    var myStoryCards: [MyStoryImageCard] = []
     var isLoading = false
     var errorMessage: String?
 
     private let helper = StoriesHelperService.shared
+    private let myStoriesRepo = MyStoriesRepository()
 
     func updateStories(for userId: String, remaining: [Story]) {
         if remaining.isEmpty {
@@ -31,8 +33,11 @@ final class ViewModelStoriesHome {
     func load() async {
         isLoading = true
         defer { isLoading = false }
+        async let friends = helper.fetchFriendsWithStories()
+        async let myCards = myStoriesRepo.fetchMyRandomImages()
         do {
-            friendsWithStories = try await helper.fetchFriendsWithStories()
+            friendsWithStories = try await friends
+            myStoryCards = (try? await myCards) ?? []
         } catch {
             errorMessage = error.localizedDescription
         }

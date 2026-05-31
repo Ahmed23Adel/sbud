@@ -36,22 +36,29 @@ struct ViewStoriesHome: View {
 
     private var scrollContent: some View {
         ScrollView {
-            if vm.friendsWithStories.isEmpty {
-                emptyState
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 120)
-            } else {
-                LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 80), spacing: 16)],
-                    spacing: 20
-                ) {
-                    ForEach(vm.friendsWithStories) { friend in
-                        FriendStoryAvatar(friend: friend) {
-                            coordinator.goToFriendStories(userId: friend.id)
+            VStack(spacing: 24) {
+                if vm.friendsWithStories.isEmpty {
+                    emptyState
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, vm.myStoryCards.isEmpty ? 120 : 16)
+                } else {
+                    LazyVGrid(
+                        columns: [GridItem(.adaptive(minimum: 80), spacing: 16)],
+                        spacing: 20
+                    ) {
+                        ForEach(vm.friendsWithStories) { friend in
+                            FriendStoryAvatar(friend: friend) {
+                                coordinator.goToFriendStories(userId: friend.id)
+                            }
                         }
                     }
+                    .padding(.horizontal)
                 }
-                .padding()
+
+                if !vm.myStoryCards.isEmpty {
+                    MyStoriesCardStack(cards: vm.myStoryCards)
+                        .padding(.top, 4)
+                }
             }
         }
         .refreshable { await vm.load() }
