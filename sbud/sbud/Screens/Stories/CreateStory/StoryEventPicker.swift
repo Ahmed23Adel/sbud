@@ -70,9 +70,9 @@ struct StoryEventPicker: View {
 
 #Preview("With events") {
     let events: [ViewModelCreateStory.EventSummary] = [
-        .init(id: "1", title: "Morning Run Milano", imageUrl: nil, activityType: .running),
-        .init(id: "2", title: "Cycling Tour Lake Como", imageUrl: nil, activityType: .cycling),
-        .init(id: "3", title: "Gym Session", imageUrl: nil, activityType: .gym),
+        .init(id: "1", title: "Morning Run Milano", imageUrl: "nil", activityType: .running),
+        .init(id: "2", title: "Cycling Tour Lake Como", imageUrl: "nil", activityType: .cycling),
+        .init(id: "3", title: "Gym Session", imageUrl: "nil", activityType: .gym),
     ]
     StoryEventPicker(events: events, isLoading: false, selectedId: "1") { _ in }
 }

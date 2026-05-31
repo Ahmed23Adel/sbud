@@ -19,8 +19,19 @@ final class ViewModelCreateStory {
     struct EventSummary: Identifiable, Hashable {
         let id: String
         let title: String
-        let imageUrl: String?
+        let imageUrl: String
         let activityType: ActivityType
+        
+        func toUsersEvent() -> UsersEvent{
+            UsersEvent(
+                id: UUID(),
+                activityType: activityType,
+                title: title,
+                eventImage: imageUrl,
+                status: .proposed,
+                eventId: ""
+            )
+        }
     }
 
     // MARK: - Story content
@@ -134,7 +145,7 @@ final class ViewModelCreateStory {
             let data = doc.data()
             guard let title = data["title"] as? String else { return nil }
             let activity = ActivityType(rawValue: data["activityType"] as? String ?? "") ?? .running
-            return EventSummary(id: doc.documentID, title: title, imageUrl: data["eventImage"] as? String, activityType: activity)
+            return EventSummary(id: doc.documentID, title: title, imageUrl: data["eventImage"] as? String ?? "", activityType: activity)
         }
     }
 
@@ -160,7 +171,7 @@ final class ViewModelCreateStory {
             guard let eventId = data["eventId"] as? String,
                   let title = data["title"] as? String else { return nil }
             let activity = ActivityType(rawValue: data["activityType"] as? String ?? "") ?? .running
-            return EventSummary(id: eventId, title: title, imageUrl: data["eventImage"] as? String, activityType: activity)
+            return EventSummary(id: eventId, title: title, imageUrl: data["eventImage"] as? String ?? "", activityType: activity)
         }
     }
 }
