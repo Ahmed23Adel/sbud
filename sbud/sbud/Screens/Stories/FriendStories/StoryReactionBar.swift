@@ -32,9 +32,8 @@ struct StoryReactionBar: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, 24)
         .padding(.horizontal, 20)
-        .background(.ultraThinMaterial, in: Capsule())
         .fixedSize()
     }
 }

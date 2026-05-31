@@ -7,6 +7,7 @@ import SwiftUI
 
 struct ViewFriendStories: View {
     @State private var vm: ViewModelFriendStories
+    @State private var isExpanded = false
     @Environment(\.dismiss) private var dismiss
 
     var onStoriesChanged: (([Story]) -> Void)?
@@ -31,68 +32,114 @@ struct ViewFriendStories: View {
     @ViewBuilder
     private var storyContent: some View {
         if let story = vm.currentStory, let image = vm.currentImage {
-            StoryImagePage(
-                imageUrl: image.url,
-                authorName: story.authorName,
-                authorImageUrl: story.authorProfileImageUrl,
-                currentIndex: vm.currentImageIndex,
-                totalImages: story.images.count
-            )
-            .contentShape(Rectangle())
-            .gesture(tapGesture)
-            .overlay(alignment: .topLeading) { dismissButton }
-            .overlay(alignment: .bottom) {
-                bottomControls(story: story)
-            }
-        }
-    }
+            GeometryReader { geo in
+                let imageHeight = isExpanded
+                    ? geo.size.height * 0.55
+                    : geo.size.height
 
-    private func bottomControls(story: Story) -> some View {
-        VStack(alignment: .center, spacing: 10) {
-            if let caption = story.text, !caption.isEmpty {
-                captionView(caption)
-            }
-            StoryReactionBar(myReaction: story.myReaction) { emoji in
-                Task { await vm.react(emoji: emoji) }
-            }
-            .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .padding(.bottom, 80)
-    }
+                VStack(spacing: 0) {
+                    StoryImagePage(
+                        imageUrl: image.url,
+                        authorName: story.authorName,
+                        authorImageUrl: story.authorProfileImageUrl,
+                        currentIndex: vm.currentImageIndex,
+                        totalImages: story.images.count
+                    )
+                    .frame(height: imageHeight)
+                    .contentShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: isExpanded ? 20 : UIConstants.cornerRadius))
+                    .overlay(alignment: .topTrailing) { dismissButton }
+                    .overlay(alignment: .bottom) {
+                        if !isExpanded {
+                            reactionBar(story: story)
+                        }
+                    }
+                    .gesture(navigationAndSwipeGesture(story: story))
+                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isExpanded)
 
-    private func captionView(_ text: String) -> some View {
-        Text(text)
-            .font(.subheadline)
-            .foregroundStyle(.white)
-            .multilineTextAlignment(.leading)
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.ultraThinMaterial)
-    }
-
-    private var tapGesture: some Gesture {
-        DragGesture(minimumDistance: 0).onEnded { value in
-            let screenWidth = UIScreen.main.bounds.width
-            if value.location.x > screenWidth / 2 {
-                if vm.isAtEnd {
-                    Task { await vm.advanceMarkingViewed() }
-                    dismiss()
-                } else {
-                    Task { await vm.advanceMarkingViewed() }
+                    if isExpanded {
+                        expandedContent(story: story)
+                    }
                 }
-            } else {
-                vm.goBackImage()
             }
         }
+    }
+
+    private func expandedContent(story: Story) -> some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 16) {
+                if let caption = story.text, !caption.isEmpty {
+                    Text(caption)
+                        .font(.body)
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                }
+                reactionBar(story: story)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 40)
+            }
+        }
+        .background(Color.black)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+
+    private func reactionBar(story: Story) -> some View {
+        StoryReactionBar(myReaction: story.myReaction) { emoji in
+            Task { await vm.react(emoji: emoji) }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.bottom, isExpanded ? 0 : 80)
+    }
+
+    private func navigationAndSwipeGesture(story: Story) -> some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onEnded { value in
+                let isVertical = abs(value.translation.height) > abs(value.translation.width)
+
+                if isVertical {
+                    if value.translation.height < -40 {
+                        // swipe up — only expand if caption exists
+                        if let caption = story.text, !caption.isEmpty {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                isExpanded = true
+                            }
+                        }
+                    } else if value.translation.height > 40 {
+                        // swipe down — collapse
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            isExpanded = false
+                        }
+                    }
+                } else {
+                    // horizontal — navigate
+                    let screenWidth = UIScreen.main.bounds.width
+                    isExpanded = false
+                    if value.location.x > screenWidth / 2 {
+                        if vm.isAtEnd {
+                            Task { await vm.advanceMarkingViewed() }
+                            dismiss()
+                        } else {
+                            Task { await vm.advanceMarkingViewed() }
+                        }
+                    } else {
+                        vm.goBackImage()
+                    }
+                }
+            }
     }
 
     private var dismissButton: some View {
-        Button { dismiss() } label: {
+        Button {
+            dismiss()
+        } label: {
             Image(systemName: "xmark")
                 .font(.title2.bold())
                 .foregroundStyle(.white)
                 .padding(16)
-                .padding(.top, 44)
+                .padding(.top, 64)
         }
     }
 
