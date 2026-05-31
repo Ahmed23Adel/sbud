@@ -45,7 +45,6 @@ final class ViewModelCreateStory {
     var isLoadingImages = false
     var isLoadingEvents = false
     var didPost = false
-    var showEventPicker = false
 
     // MARK: - Event picker data
     var availableEvents: [EventSummary] = []

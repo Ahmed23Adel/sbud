@@ -14,24 +14,23 @@ struct StoryEventPicker: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.darkBackground.ignoresSafeArea()
-                if isLoading {
-                    ProgressView().tint(Color.mainColor)
-                } else if events.isEmpty {
-                    emptyState
-                } else {
-                    eventList
-                }
+        ZStack {
+            Color.darkBackground.ignoresSafeArea()
+            if isLoading {
+                ProgressView()
+                    .tint(Color.mainColor)
+            } else if events.isEmpty {
+                emptyState
+            } else {
+                eventList
             }
-            .navigationTitle("Link an Event")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundStyle(.white.opacity(0.6))
-                }
+        }
+        .navigationTitle("Link an Event")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("Cancel") { dismiss() }
+                    .foregroundStyle(.white.opacity(0.6))
             }
         }
     }

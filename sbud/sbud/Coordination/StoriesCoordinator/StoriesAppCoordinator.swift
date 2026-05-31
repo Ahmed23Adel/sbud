@@ -22,10 +22,29 @@ struct StoriesTabRoot: View {
         .sheet(item: $coordinator.activeSheet) { sheet in
             switch sheet {
             case .createStory:
-                ViewCreateStory(onDidPost: {
-                    coordinator.dismissSheet()
-                    Task { await homeVM.load() }
-                })
+                NavigationStack {
+                    ViewCreateStory(onDidPost: {
+                        coordinator.dismissSheet()
+                        Task { await homeVM.load() }
+                    })
+                }
+                .environmentObject(coordinator)
+                .sheet(item: $coordinator.createStorySheet) { nested in
+                    switch nested {
+                    case .eventPicker(let events, let isLoading, let selectedId, let onSelect):
+                        NavigationStack {
+                            StoryEventPicker(
+                                events: events,
+                                isLoading: isLoading,
+                                selectedId: selectedId,
+                                onSelect: { event in
+                                    if let event { onSelect(event) }
+                                    coordinator.dismissCreateStorySheet()
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
     }

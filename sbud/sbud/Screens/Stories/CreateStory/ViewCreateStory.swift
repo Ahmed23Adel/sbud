@@ -9,86 +9,95 @@ import PhotosUI
 struct ViewCreateStory: View {
     let onDidPost: () -> Void
     @State private var vm = ViewModelCreateStory()
+    @EnvironmentObject private var coordinator: StoriesCoordinator
 
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .bottom) {
-                Color.darkBackground.ignoresSafeArea()
+        ZStack(alignment: .bottom) {
+            Color.darkBackground.ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        mainPreview
-                        thumbnailStrip
-                            .padding(.top, 10)
-                        formFields
-                            .padding(.top, 20)
-                        Spacer(minLength: 110)
-                    }
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    mainPreview
+                    thumbnailStrip
+                        .padding(.top, 10)
+                    formFields
+                        .padding(.top, 20)
+                    postButton
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 32)
+                        .padding(.top, 32)
+                    Spacer(minLength: 110)
                 }
+            }
 
-                postButton
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 32)
-            }
-            .navigationTitle("New Story")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { onDidPost() }
-                        .foregroundStyle(.white.opacity(0.6))
-                }
-                ToolbarItem(placement: .keyboard) {
-                    Button {
-                        UIApplication.shared.sendAction(
-                            #selector(UIResponder.resignFirstResponder),
-                            to: nil, from: nil, for: nil
-                        )
-                    } label: {
-                        Image(systemName: "keyboard.chevron.compact.down")
-                            .foregroundStyle(Color.mainColor)
-                    }
-                }
-            }
-            .sheet(isPresented: $vm.showEventPicker) {
-                StoryEventPicker(
-                    events: vm.availableEvents,
-                    isLoading: vm.isLoadingEvents,
-                    selectedId: vm.selectedEvent?.id
-                ) { event in
-                    vm.selectedEvent = event
-                }
-            }
-            .onChange(of: vm.selectedItems) { _, _ in
-                Task { await vm.onItemsChanged() }
-            }
-            .onChange(of: vm.didPost) { _, posted in
-                if posted { onDidPost() }
-            }
-            .task { await vm.loadUserEvents() }
+            
         }
+        .navigationTitle("New Story")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("Cancel") { onDidPost() }
+                    .foregroundStyle(.white.opacity(0.6))
+            }
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil, from: nil, for: nil
+                    )
+                } label: {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                        .foregroundStyle(Color.mainColor)
+                }
+            }
+        }
+        .onChange(of: vm.selectedItems) { _, _ in
+            Task { await vm.onItemsChanged() }
+        }
+        .onChange(of: vm.didPost) { _, posted in
+            if posted { onDidPost() }
+        }
+        .task { await vm.loadUserEvents() }
     }
 
     // MARK: - Main preview
 
     private var mainPreview: some View {
-        ZStack {
-            Color.blackBackground
+        GeometryReader { geo in
+            let topInset = geo.safeAreaInsets.top
+            let totalHeight = UIScreen.main.bounds.height * 0.52 + topInset
 
-            if vm.isLoadingImages {
-                ProgressView().tint(Color.mainColor)
-            } else if vm.selectedImages.indices.contains(vm.previewIndex) {
-                Image(uiImage: vm.selectedImages[vm.previewIndex])
-                    .resizable()
-                    .scaledToFill()
-                    .frame(maxWidth: .infinity)
-                    .clipped()
-            } else {
-                addPhotosPrompt
+            ZStack {
+                Color.blackBackground
+
+                if vm.isLoadingImages {
+                    ProgressView().tint(Color.mainColor)
+                } else if vm.selectedImages.indices.contains(vm.previewIndex) {
+                    Image(uiImage: vm.selectedImages[vm.previewIndex])
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                } else {
+                    addPhotosPrompt
+//                        .padding(.top, topInset)
+                }
             }
+            .frame(maxWidth: .infinity)
+            .frame(height: totalHeight)
+            .clipShape(
+                .rect(
+                    topLeadingRadius: 0,
+                    bottomLeadingRadius: 24,
+                    bottomTrailingRadius: 24,
+                    topTrailingRadius: 0
+                )
+            )
+//            .offset(y: -topInset)
         }
-        .frame(maxWidth: .infinity)
         .frame(height: UIScreen.main.bounds.height * 0.52)
-        .clipped()
+        .ignoresSafeArea(edges: .top)
     }
 
     private var addPhotosPrompt: some View {
@@ -245,7 +254,14 @@ struct ViewCreateStory: View {
                     .background(Color.mainColor.opacity(0.15), in: Capsule())
             }
 
-            Button { vm.showEventPicker = true } label: {
+            Button {
+                coordinator.showEventPicker(
+                    events: vm.availableEvents,
+                    isLoading: vm.isLoadingEvents,
+                    selectedId: vm.selectedEvent?.id,
+                    onSelect: { vm.selectedEvent = $0 }
+                )
+            } label: {
                 HStack(spacing: 12) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
