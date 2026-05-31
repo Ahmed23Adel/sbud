@@ -6,7 +6,6 @@
 import Foundation
 import PhotosUI
 import SwiftUI
-import FirebaseFirestore
 import FirebaseAuth
 import AdelsonApiCaller
 import AdelsonAuthManager
@@ -21,8 +20,8 @@ final class ViewModelCreateStory {
         let title: String
         let imageUrl: String
         let activityType: ActivityType
-        
-        func toUsersEvent() -> UsersEvent{
+
+        func toUsersEvent() -> UsersEvent {
             UsersEvent(
                 id: UUID(),
                 activityType: activityType,
@@ -49,13 +48,28 @@ final class ViewModelCreateStory {
     // MARK: - Event picker data
     var availableEvents: [EventSummary] = []
 
-    private let storiesRepo = StoriesRepository()
-    private let db = Firestore.firestore()
-    private let logger = Logger(subsystem: "sbud", category: "CreateStory")
-
     var previewIndex = 0
 
     var canPost: Bool { !selectedImages.isEmpty && selectedEvent != nil && !isPosting }
+
+    // MARK: - Dependencies
+
+    private let storiesRepo: any IStoriesRepository
+    private let createdEventsProvider: any ICreatedEventsProviding
+    private let participatedEventsProvider: any IParticipatedEventsProviding
+    private let logger = Logger(subsystem: "sbud", category: "CreateStory")
+
+    init(
+        storiesRepo: any IStoriesRepository = StoriesRepository(),
+        createdEventsProvider: any ICreatedEventsProviding = UsersEventRepository(),
+        participatedEventsProvider: any IParticipatedEventsProviding = JoinedEventsRepository()
+    ) {
+        self.storiesRepo = storiesRepo
+        self.createdEventsProvider = createdEventsProvider
+        self.participatedEventsProvider = participatedEventsProvider
+    }
+
+    // MARK: - Public
 
     // Called from .onChange in the view — avoids didSet/Observable interaction issues
     func onItemsChanged() async {
@@ -85,23 +99,21 @@ final class ViewModelCreateStory {
         defer { isLoadingEvents = false }
 
         async let createdTask = fetchCreatedEvents(uid: uid)
-        async let hostingTask = fetchHostingEvents()
         async let participatedTask = fetchParticipatedEvents(uid: uid)
 
         var created: [EventSummary] = []
-        var hosting: [EventSummary] = []
         var participated: [EventSummary] = []
 
         do { created = try await createdTask } catch {
             PopUpGenerator.shared.show(msg: "Couldn't load your events", type: .warning)
         }
-        do { hosting = try await hostingTask } catch {}
-        do { participated = try await participatedTask } catch {}
+        do { participated = try await participatedTask } catch {
+            PopUpGenerator.shared.show(msg: "Couldn't load your events", type: .warning)
+        }
 
-        // Deduplicate by id
         var seen = Set<String>()
         var merged: [EventSummary] = []
-        for event in created + hosting + participated {
+        for event in created + participated {
             if seen.insert(event.id).inserted { merged.append(event) }
         }
         availableEvents = merged
@@ -136,41 +148,12 @@ final class ViewModelCreateStory {
     // MARK: - Private fetchers
 
     private func fetchCreatedEvents(uid: String) async throws -> [EventSummary] {
-        let snapshot = try await db.collection("Events")
-            .whereField("creatorId", isEqualTo: uid)
-            .limit(to: 30)
-            .getDocuments()
-        return snapshot.documents.compactMap { doc in
-            let data = doc.data()
-            guard let title = data["title"] as? String else { return nil }
-            let activity = ActivityType(rawValue: data["activityType"] as? String ?? "") ?? .running
-            return EventSummary(id: doc.documentID, title: title, imageUrl: data["eventImage"] as? String ?? "", activityType: activity)
-        }
-    }
-
-    private func fetchHostingEvents() async throws -> [EventSummary] {
-        let caller = AdelsonFirebaseApiCaller<[HostingEvent]>()
-        let events = try await caller.callGet(
-            url: "events/hosting",
-            queryParams: [:],
-            config: AdelsonFirebaseAuthConfig.shared
-        )
-        return events.map {
-            EventSummary(id: $0.eventId, title: $0.title, imageUrl: $0.eventImage, activityType: $0.activityTypeEnum)
-        }
+        let events = try await createdEventsProvider.fetchCreated(for: uid)
+        return events.map { EventSummary(id: $0.eventId, title: $0.title, imageUrl: $0.eventImage, activityType: $0.activityType) }
     }
 
     private func fetchParticipatedEvents(uid: String) async throws -> [EventSummary] {
-        let snapshot = try await db.collection("joinedEvents")
-            .whereField("userId", isEqualTo: uid)
-            .limit(to: 30)
-            .getDocuments()
-        return snapshot.documents.compactMap { doc in
-            let data = doc.data()
-            guard let eventId = data["eventId"] as? String,
-                  let title = data["title"] as? String else { return nil }
-            let activity = ActivityType(rawValue: data["activityType"] as? String ?? "") ?? .running
-            return EventSummary(id: eventId, title: title, imageUrl: data["eventImage"] as? String ?? "", activityType: activity)
-        }
+        let joined = try await participatedEventsProvider.fetchParticipated(for: uid)
+        return joined.map { EventSummary(id: $0.eventId, title: $0.title, imageUrl: $0.eventImage, activityType: $0.activityType) }
     }
 }
