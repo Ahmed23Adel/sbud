@@ -38,6 +38,7 @@ class ViewModelMyEventDetails {
     var showDeleteConfirmation = false
     var isDeletingEvent = false
     var eventDeleted = false
+    var showEditEvent = false
     
     init(eventId: String) {
         logger.info("eventId: \(eventId)")
