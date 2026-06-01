@@ -7,6 +7,7 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseAnalytics
 
 struct HostInvitationItem: Identifiable {
     let id: String          // eventId
@@ -21,6 +22,10 @@ class ViewModelHostsRequests {
     var invitations: [HostInvitationItem] = []
     var isLoading = false
     var errorMessage: String?
+
+    init() {
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "HostsRequests"])
+    }
 
     private let db = Firestore.firestore()
     private let friendManager = FriendManager.shared

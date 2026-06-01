@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import FirebaseAnalytics
 
 @Observable
 class ViewModelMyEvents{
@@ -28,6 +29,7 @@ class ViewModelMyEvents{
     init(userId: String){
         logger.info("userId: \(userId)")
         self.userId = userId
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "MyCreatedEvents"])
         loadUsersEvents()
     }
     

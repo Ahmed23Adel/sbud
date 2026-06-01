@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import MapKit
 import FirebaseFirestore
-
+import FirebaseAnalytics
 @Observable
 class ViewModelSearchEvents {
     var searchQuery: String = ""
@@ -29,6 +29,7 @@ class ViewModelSearchEvents {
     let filterResults: AvailabilityFiltersResults?
 
     init(region: MKCoordinateRegion, filterResults: AvailabilityFiltersResults? = nil) {
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "SearchEvents"])
         self.region = region
         self.filterResults = filterResults
         self.useFilters = filterResults != nil

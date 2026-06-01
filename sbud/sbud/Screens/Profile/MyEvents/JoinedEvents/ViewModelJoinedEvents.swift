@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 import OSLog
+import FirebaseAnalytics
 @Observable
 class ViewModelJoinedEvents{
     let userId = ProfileManager.shared.getLocalProfile()?.id
@@ -26,6 +27,7 @@ class ViewModelJoinedEvents{
     var alertMsg = ""
     
     init(){
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "JoinedEvents"])
         if let userId {
             Task {
                 do {

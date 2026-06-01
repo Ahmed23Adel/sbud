@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import _MapKit_SwiftUI
 import OSLog
+import FirebaseAnalytics
 
 @Observable
 class ViewModelFlattenedEventsList{
@@ -27,6 +28,7 @@ class ViewModelFlattenedEventsList{
     init(region: MKCoordinateRegion, filterResults: AvailabilityFiltersResults) {
         self.region = region
         self.filterResults = filterResults
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "EventsList"])
         loadInitialEvents()
         
     }

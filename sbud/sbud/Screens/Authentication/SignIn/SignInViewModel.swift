@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import FirebaseAuth
+import FirebaseAnalytics
 @MainActor
 class SignInViewModel: ObservableObject {
 
@@ -20,6 +21,10 @@ class SignInViewModel: ObservableObject {
     @Published var isSigningIn = false
     @Published var showPassword = false
     @Published var isLoading = false
+
+    init() {
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "SignIn"])
+    }
 
     func setCoordinator(coordinator: MainCoordinator) {
         self.coordinator = coordinator

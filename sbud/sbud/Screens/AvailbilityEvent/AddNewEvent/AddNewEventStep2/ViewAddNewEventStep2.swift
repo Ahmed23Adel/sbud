@@ -27,7 +27,6 @@ struct ViewAddNewEventStep2: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-//        .ignoresSafeArea(.container)
     }
 }
 

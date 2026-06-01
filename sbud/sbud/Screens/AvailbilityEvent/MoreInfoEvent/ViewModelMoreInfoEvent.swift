@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import OSLog
+import FirebaseAnalytics
 
 enum JoinState: Equatable {
     case idle
@@ -75,6 +76,10 @@ class ViewModelMoreInfoEvent {
     init(eventId: String) {
         logger.info("Selected activity: \(eventId)")
         self.eventId = eventId
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "EventDetails",
+            "event_id": eventId
+        ])
         Task { await loadDetails() }
     }
 

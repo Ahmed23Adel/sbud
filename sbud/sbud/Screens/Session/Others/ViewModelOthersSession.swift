@@ -9,6 +9,7 @@ import Foundation
 import OSLog
 import SwiftData
 import FirebaseFirestore
+import FirebaseAnalytics
 
 @Observable
 class ViewModelOthersSession {
@@ -36,6 +37,11 @@ class ViewModelOthersSession {
     init(eventDetails: EventFullDetails, isSessionCreated: Bool) {
         self.eventDetails = eventDetails
         self.isSessionCreated = isSessionCreated
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "LiveSession_Participant",
+            "activity_type": eventDetails.activityType.rawValue,
+            "event_id": eventDetails.id
+        ])
         initMetricsCollector()
     }
 
