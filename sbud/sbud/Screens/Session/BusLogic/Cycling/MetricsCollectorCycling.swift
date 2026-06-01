@@ -14,8 +14,8 @@ import FirebaseFirestore
 struct SplitForCycling: Identifiable, Codable {
     var id = UUID()
     let number: Int
-    let paceInMinPerKm: Double   // used by running
-    let speedKmH: Double         // used by cycling; pass 0 for running splits
+    let paceInMinPerKm: Double
+    let speedKmH: Double
     let dateTimeCreated = Date()
 
     var formattedPace: String {
@@ -55,10 +55,12 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
     private let splitEveryMeters: Double = 1000
     private let checkpointIntervalSeconds: Double = 30
     let isCreator: Bool
+    private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorCycling")
 
-    init(isCreator: Bool) {
+    init(isCreator: Bool, numSessions: Int) {
         self.isCreator = isCreator
+        self.numSessions = numSessions
         locationManager.$lastLocation
             .compactMap { $0 }
             .sink { [weak self] location in
@@ -185,7 +187,7 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
 
     private func creatorEndsSession(eventId: String, userId: String) async throws {
         let endDateTime = Date()
-
+        logger.info("numSession: \(self.numSessions)")
         let metrics = MetricsCollectedCycling(
             startDateTime: startDateTime,
             endDateTime: endDateTime,
@@ -193,31 +195,33 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
             track: trackedLocations.toTrackPoints(),
             totalDistance: totalDistanceMeters,
             elevationGain: elevationGainMeters,
-            splits: splits
+            splits: splits,
+            numSession: numSessions
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
+
+        let sessionEntry: [String: Any] = [
+            "startDateTime": startDate as Any,
+            "endDateTime": endDateTime
+        ]
 
         let db = Firestore.firestore()
         try await db.collection("Events").document(eventId).updateData([
             "finalStartDateTime": startDate as Any,
             "finalEndDateTime": endDateTime,
             "status": UsersEventStatus.completed.rawValue,
-            "avgSpeedKmH": averageSpeedKmH,
-            "minSpeedKmH": minSpeedKmH == .infinity ? 0.0 : minSpeedKmH,
-            "maxSpeedKmH": maxSpeedKmH == -.infinity ? 0.0 : maxSpeedKmH,
-            "participantCount": FieldValue.increment(Int64(1))
+            "numSessions": FieldValue.increment(Int64(1)),
+            "sessionHistory": FieldValue.arrayUnion([sessionEntry])
         ])
     }
 
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
-        let db = Firestore.firestore()
-        let eventRef = db.collection("Events").document(eventId)
-
+        logger.info("numSession: \(self.numSessions)")
         guard let finalEndDateTime = try await MetricsCollectorUtils.readFinalEndDateTime(eventId: eventId) else {
-            logger.info("Cycling participant ended before creator — storing data only")
+            logger.info("Cycling participant ended before creator — storing raw data")
             let metrics = MetricsCollectedCycling(
                 startDateTime: startDateTime,
                 endDateTime: Date(),
@@ -226,7 +230,8 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
                 totalDistance: totalDistanceMeters,
                 elevationGain: elevationGainMeters,
                 splits: splits,
-                endedBeforeCreator: true
+                endedBeforeCreator: true,
+                numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
             return
@@ -236,10 +241,6 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
         let trimmedSplits = splits.filter { $0.dateTimeCreated <= finalEndDateTime }
         let trimmedDistance = MetricsCollectorUtils.computeDistance(from: trimmedTrack.map { $0.1 })
         let trimmedElevation = MetricsCollectorUtils.computeElevationGain(from: trimmedTrack.map { $0.1 })
-        let trimmedElapsed = MetricsCollectorUtils.trimmedElapsed(from: trimmedTrack, fallback: elapsedSeconds)
-        let trimmedAvgSpeed = trimmedElapsed > 0
-            ? (trimmedDistance / 1000) / (trimmedElapsed / 3600)
-            : 0
 
         let metrics = MetricsCollectedCycling(
             startDateTime: startDateTime,
@@ -249,57 +250,11 @@ class MetricsCollectorCycling: MetricsCollector, MetricsCollectorTimeable, Metri
             totalDistance: trimmedDistance,
             elevationGain: trimmedElevation,
             splits: trimmedSplits,
-            endedBeforeCreator: false
+            endedBeforeCreator: false,
+            numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
-
-        guard trimmedAvgSpeed > 0 else {
-            logger.warning("Participant avg speed is 0, skipping event metrics update")
-            return
-        }
-
-        let participantMinSpeed = trimmedSplits.map(\.speedKmH).min() ?? trimmedAvgSpeed
-        let participantMaxSpeed = trimmedSplits.map(\.speedKmH).max() ?? trimmedAvgSpeed
-
-        _ = try await db.runTransaction { transaction, errorPointer in
-            let eventSnap: DocumentSnapshot
-            do {
-                eventSnap = try transaction.getDocument(eventRef)
-            } catch let fetchError as NSError {
-                errorPointer?.pointee = fetchError
-                return nil
-            }
-
-            guard let currentData = eventSnap.data(),
-                  let currentAvg = currentData["avgSpeedKmH"] as? Double,
-                  let currentMin = currentData["minSpeedKmH"] as? Double,
-                  let currentMax = currentData["maxSpeedKmH"] as? Double,
-                  let currentCount = currentData["participantCount"] as? Int
-            else {
-                errorPointer?.pointee = NSError(
-                    domain: "MetricsCollectorCycling",
-                    code: 1,
-                    userInfo: [NSLocalizedDescriptionKey: "Missing metrics fields on event doc"]
-                )
-                return nil
-            }
-
-            let newCount = currentCount + 1
-            let newAvg = (currentAvg * Double(currentCount) + trimmedAvgSpeed) / Double(newCount)
-            let newMin = min(currentMin, participantMinSpeed)
-            let newMax = max(currentMax, participantMaxSpeed)
-
-            transaction.updateData([
-                "avgSpeedKmH": newAvg,
-                "minSpeedKmH": newMin,
-                "maxSpeedKmH": newMax,
-                "participantCount": newCount
-            ], forDocument: eventRef)
-
-            return nil
-        }
-
-        logger.info("Cycling participant metrics uploaded and event averages updated")
+        logger.info("Cycling participant metrics uploaded")
     }
 
     // MARK: - Location config

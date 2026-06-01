@@ -20,7 +20,7 @@ struct ViewFlattenedEventsList: View {
     var body: some View {
         ZStack{
             Color.darkBackground
-            
+
             Group{
                 if viewModel.isLoading{
                     MidnightLoadingView(text: "Loading events")
@@ -49,9 +49,16 @@ struct ViewFlattenedEventsList: View {
                         .padding(.bottom, 65)
                         .scrollContentBackground(.hidden)
                         .background(Color.darkBackground)
-                        
                     }
                     .padding(.top, 60)
+                    .simultaneousGesture(
+                        DragGesture()
+                            .onEnded { value in
+                                if value.translation.height > 80 {
+                                    coordinator.showSearchEvents(region: viewModel.region, filterResults: viewModel.filterResults)
+                                }
+                            }
+                    )
                 }
             }
         }
@@ -122,9 +129,14 @@ struct EventRow: View {
                             .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
                     }
 
-                    Text(event.creatorName)
-                        .font(.system(size: 16, weight: .bold))
+                    Text(event.title)
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.white)
+                        .lineLimit(1)
+
+                    Text(event.creatorName)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(.white.opacity(0.7))
                         .lineLimit(1)
 
                     HStack(spacing: 4) {

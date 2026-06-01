@@ -6,11 +6,10 @@
 //
 
 import SwiftUI
-
 struct PerformanceTargetDetailedTennis: View {
     let t: ExtraArgsHolderTennis
     var body: some View {
-        VStack{
+        VStack(spacing: 10) {
             HStack(spacing: 10) {
                 SinglePerformanceTargetDetailed(
                     targetHeader: "Sets",
@@ -31,7 +30,6 @@ struct PerformanceTargetDetailedTennis: View {
         .padding(.horizontal, 10)
     }
 }
-
 #Preview("Tennis"){
     PerformanceTargetDetailedTennis(t: ExtraArgsHolderTennis())
 }

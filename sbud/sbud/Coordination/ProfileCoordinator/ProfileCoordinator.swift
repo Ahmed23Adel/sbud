@@ -103,6 +103,10 @@ final class ProfileCoordinator: ObservableObject {
     func goToEventConversations(eventId: String, eventTitle: String) {
         push(.eventConversations(eventId: eventId, eventTitle: eventTitle))
     }
+    
+    func goToSessionSummary(evnet: EventFullDetails) {
+        push(.sessionSummary(event: evnet))
+    }
 
     func goToScannedProfile(userId: String) {
         guard !userId.isEmpty else { return }

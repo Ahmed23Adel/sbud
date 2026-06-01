@@ -19,14 +19,20 @@ struct ViewExtraArgsFilterRunning: View {
             GenericRangeTarget(
                 header: "Distance",
                 unitHeader: "KM",
-                minValue: $filter.minDistance,
-                maxValue: $filter.maxDistance
+                minValue: $filter.minDistanceInKm,
+                maxValue: $filter.maxDistanceInKm
             )
             GenericRangeTarget(
                 header: "Pace",
                 unitHeader: "MIN/KM",
                 minValue: $filter.minPace,
                 maxValue: $filter.maxPace
+            )
+            GenericRangeTarget(
+                header: "Duration",
+                unitHeader: "MIN",
+                minValue: $filter.minDurationInMin,
+                maxValue: $filter.maxDurationInMin
             )
         }
     }

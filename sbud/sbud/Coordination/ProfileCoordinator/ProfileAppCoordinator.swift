@@ -169,10 +169,10 @@ struct ProfileDestinationView: View {
         case .myEvents(let userId):
             ViewCombinedEvents(
                 userId: userId,
-                onEventTap: { eventId in
+                onCreatedEventTap: { eventId in
                     pushToParent(.myEventDetails(eventId: eventId))
                 },
-                onOthersEventTap: { eventId in
+                onParticipatedEventTap: { eventId in
                     pushToParent(.othersEventDetails(eventId: eventId))
                 }
             )
@@ -201,6 +201,11 @@ struct ProfileDestinationView: View {
 
         case .eventConversations(let eventId, let eventTitle):
             EventConversationsView(eventId: eventId, eventTitle: eventTitle)
+        case .sessionSummary(event: let event):
+            ViewSessionSummaryConditional(event: event) { userId in
+                guard userId != currentUserId else { return }
+                pushToParent(.othersProfile(userId: userId))
+            }
         }
     }
 }

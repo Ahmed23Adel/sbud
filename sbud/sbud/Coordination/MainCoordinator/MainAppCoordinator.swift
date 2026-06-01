@@ -81,6 +81,8 @@ struct MainAppCoordinator: View {
             )
             .transition(slideTransition)
             .ignoresSafeArea()
+        case .sessionSummary(let eventDetails):
+            ViewSessionSummaryConditional(event: eventDetails)
         }
     }
 

@@ -1,0 +1,439 @@
+//
+//  ViewSessionSummarySkiing.swift
+//  sbud
+//
+//  Created by ahmed on 24/05/2026.
+//
+
+import SwiftUI
+import MapKit
+
+struct ViewSessionSummarySkiing: View {
+    let event: EventFullDetails
+    var onParticipantTapped: (String) -> Void = { _ in }
+
+    @State private var vm: ViewModelSessionSummarySkiing
+    @State private var isRendering = false
+
+    init(event: EventFullDetails, onParticipantTapped: @escaping (String) -> Void = { _ in }) {
+        self.event = event
+        self.onParticipantTapped = onParticipantTapped
+        _vm = State(initialValue: ViewModelSessionSummarySkiing(
+            eventId: event.id, numSessions: event.numSessions
+        ))
+    }
+
+    #if DEBUG
+    init(event: EventFullDetails,
+         previewVM: ViewModelSessionSummarySkiing,
+         onParticipantTapped: @escaping (String) -> Void = { _ in }) {
+        self.event = event
+        self.onParticipantTapped = onParticipantTapped
+        _vm = State(initialValue: previewVM)
+    }
+    #endif
+
+    var body: some View {
+        ZStack {
+            Color.surfaceBg.ignoresSafeArea()
+            if vm.isLoading { loadingView }
+            else if let error = vm.errorMessage { errorView(error) }
+            else if vm.sessions.isEmpty { emptyView }
+            else { mainContent }
+        }
+        .navigationTitle(event.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if !vm.sessionMetrics.isEmpty {
+                ToolbarItem(placement: .navigationBarTrailing) { shareButton }
+            }
+        }
+        .task { await vm.load() }
+    }
+
+    private var mainContent: some View {
+        VStack(spacing: 0) {
+            SessionSelectorView(sessions: vm.sessions, selectedIndex: $vm.selectedSessionIndex)
+            AccentDivider()
+            ScrollView {
+                LazyVStack(spacing: 16) {
+                    if vm.sessionMetrics.isEmpty { noDataForSession }
+                    else {
+                        sessionDateHeader
+                        overallStatsSection
+                        participantsSection
+                        speedComparisonSection
+                        mountainStatsSection
+                        speedTrendSection
+                        splitsSection
+                        routeMapSection
+                    }
+                }
+                .padding(.horizontal, 16).padding(.vertical, 16)
+            }
+        }
+    }
+
+    private var shareButton: some View {
+        Button { renderAndShare() } label: {
+            Group {
+                if isRendering { ProgressView().scaleEffect(0.7).tint(.neonCyan) }
+                else { Image(systemName: "square.and.arrow.up").font(.system(size: 14, weight: .bold)) }
+            }
+            .foregroundColor(.neonCyan)
+        }
+        .disabled(isRendering)
+    }
+
+    @MainActor
+    private func renderAndShare() {
+        guard let session = vm.selectedSession else { return }
+        isRendering = true
+
+        Task { @MainActor in
+            defer { isRendering = false }
+
+            // Snapshot the routes before feeding them into ImageRenderer —
+            // MKMapSnapshotter is async, UIViewRepresentable can't be rendered by ImageRenderer
+            let routeImage = await MapSnapshotBuilder.snapshot(summaries: vm.participantSummaries)
+
+            let card = SessionShareCardView(eventTitle: event.title, session: session,
+                summaries: vm.participantSummaries,
+                routeImage: routeImage,
+                paceInsights: nil, distanceInsights: nil)
+            let renderer = ImageRenderer(content: card)
+            renderer.scale = 3.0
+            guard let uiImage = renderer.uiImage else { return }
+            let av = UIActivityViewController(activityItems: [uiImage], applicationActivities: nil)
+            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let root = scene.windows.first?.rootViewController {
+                var presented = root
+                while let p = presented.presentedViewController { presented = p }
+                presented.present(av, animated: true)
+            }
+        } // end Task
+    }
+
+    private var sessionDateHeader: some View {
+        Group {
+            if let session = vm.selectedSession {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(session.startDateTime.formatted(date: .complete, time: .omitted))
+                            .font(.system(size: 10, weight: .bold, design: .monospaced)).foregroundColor(.labelGray)
+                        Text(SummaryFormatters.duration(session.duration))
+                            .font(.system(size: 18, weight: .black, design: .monospaced)).foregroundColor(.white)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("\(vm.participantCount)")
+                            .font(.system(size: 26, weight: .black, design: .monospaced)).foregroundColor(.neonCyan)
+                            .shadow(color: .neonCyan.opacity(0.5), radius: 6)
+                        Text("SKIERS")
+                            .font(.system(size: 8, weight: .bold, design: .monospaced)).tracking(1.5).foregroundColor(.labelGray)
+                    }
+                }
+                .padding(14)
+                .background(Color.cardBg)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(Color.neonCyan.opacity(0.15), lineWidth: 1))
+            }
+        }
+    }
+
+    private var overallStatsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeaderView(title: "Session Stats", icon: "chart.bar.fill")
+            SummaryStatBanner(stats: [
+                .init(label: "AVG SPEED",  value: String(format: "%.1f", vm.avgSpeedKmH), unit: "km/h", color: .neonCyan),
+                .init(label: "AVG VERT",   value: String(format: "%.0f", vm.avgVerticalDropM), unit: "m", color: .neonGreen),
+                .init(label: "DURATION",   value: SummaryFormatters.durationShort(vm.selectedSession?.duration ?? 0), unit: "", color: .neonPink)
+            ])
+            if let s = vm.speedInsights       { MetricInsightsCard(kind: .speed,        insights: s) }
+            if let v = vm.verticalDropInsights { MetricInsightsCard(kind: .verticalDrop, insights: v) }
+        }
+    }
+
+    private var participantsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeaderView(title: "Participants", icon: "person.2.fill")
+            ForEach(vm.participantSummaries) { summary in
+                ParticipantRowView(summary: summary) { onParticipantTapped(summary.id) }
+            }
+        }
+    }
+
+    private var speedComparisonSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeaderView(title: "Speed Comparison", icon: "gauge.with.needle.fill", accentColor: .neonGreen)
+            ParticipantComparisonBarView(
+                title: "Average Speed", unit: "km/h",
+                entries: vm.participantSummaries.map { s in
+                    .init(label: shortName(s), value: s.avgSpeedKmH,
+                          displayText: String(format: "%.1f km/h", s.avgSpeedKmH), color: s.color)
+                }, lowerIsBetter: false)
+            ParticipantComparisonBarView(
+                title: "Best Split Speed", unit: "km/h",
+                entries: vm.participantSummaries.map { s in
+                    .init(label: shortName(s), value: s.bestSplitSpeedKmH,
+                          displayText: String(format: "%.1f km/h", s.bestSplitSpeedKmH), color: s.color)
+                }, lowerIsBetter: false)
+        }
+    }
+
+    private var mountainStatsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeaderView(title: "Mountain Stats", icon: "mountain.2.fill", accentColor: .neonCyan)
+            ParticipantComparisonBarView(
+                title: "Vertical Drop", unit: "m",
+                entries: vm.participantSummaries.map { s in
+                    .init(label: shortName(s), value: s.verticalDropM,
+                          displayText: String(format: "%.0f m", s.verticalDropM), color: s.color)
+                }, lowerIsBetter: false)
+            let runsEntries = vm.participantSummaries.compactMap { s -> ParticipantComparisonBarView.Entry? in
+                guard s.numberOfRuns > 0 else { return nil }
+                return .init(label: shortName(s), value: Double(s.numberOfRuns),
+                             displayText: "\(s.numberOfRuns) runs", color: s.color)
+            }
+            if !runsEntries.isEmpty {
+                ParticipantComparisonBarView(title: "Number of Runs", unit: "runs",
+                                             entries: runsEntries, lowerIsBetter: false)
+            }
+        }
+    }
+
+    private var speedTrendSection: some View {
+        let summaries = vm.participantSummaries.filter { !$0.splits.isEmpty }
+        guard !summaries.isEmpty else { return AnyView(EmptyView()) }
+        return AnyView(PaceTrendChartView(summaries: summaries, shortName: shortName,
+                                          isSpeed: true, title: "Speed Trend"))
+    }
+
+    @State private var selectedParticipantForSplits: Int = 0
+
+    private var splitsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeaderView(title: "Splits", icon: "stopwatch.fill", accentColor: .neonGreen)
+            if vm.participantSummaries.count > 1 { participantPicker(selected: $selectedParticipantForSplits) }
+            if selectedParticipantForSplits < vm.participantSummaries.count {
+                let summary = vm.participantSummaries[selectedParticipantForSplits]
+                if summary.splits.isEmpty { emptyChartPlaceholder("No splits recorded") }
+                else {
+                    SplitsBarChartView(
+                        bars: summary.splits.map { split in
+                            .init(label: "KM\(split.number)", value: split.chartValue,
+                                  displayText: split.displayText, color: summary.color)
+                        }, unit: "km/h", title: "Split Speed — \(summary.displayName)", isSpeed: true)
+                }
+            }
+        }
+    }
+
+    @State private var selectedRouteIndex: Int? = nil
+
+    private var routeMapSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeaderView(title: "Routes", icon: "map.fill", accentColor: .neonCyan)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .bottom, spacing: 8) {
+                    Button { withAnimation(.spring(response: 0.3)) { selectedRouteIndex = nil } } label: {
+                        Text("ALL")
+                            .font(.system(size: 9, weight: .black, design: .monospaced)).tracking(1.2)
+                            .foregroundColor(selectedRouteIndex == nil ? .black : .labelGray)
+                            .padding(.horizontal, 10).padding(.vertical, 6)
+                            .background(RoundedRectangle(cornerRadius: 8)
+                                .fill(selectedRouteIndex == nil ? Color.neonCyan : Color.cardBg))
+                    }
+                    ForEach(Array(vm.participantSummaries.enumerated()), id: \.offset) { index, s in
+                        let isSelected = selectedRouteIndex == index
+                        Button { withAnimation(.spring(response: 0.3)) { selectedRouteIndex = isSelected ? nil : index } } label: {
+                            routeChip(summary: s, isSelected: isSelected)
+                        }.buttonStyle(.plain)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            let tracks = vm.participantSummaries.map { s in (
+                color: UIColor(s.color),
+                coordinates: s.track.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+            )}
+            MultiRouteMapView(tracks: tracks, selectedTrackIndex: selectedRouteIndex)
+                .frame(height: 260)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(Color.neonCyan.opacity(0.2), lineWidth: 1))
+        }
+    }
+
+    private func routeChip(summary: ParticipantSummary, isSelected: Bool) -> some View {
+        Group {
+            if isSelected {
+                VStack(spacing: 5) {
+                    routeAvatar(summary: summary, size: 44, ringColor: .white.opacity(0.9))
+                    Text(shortName(summary)).font(.system(size: 8, weight: .black, design: .monospaced)).foregroundColor(.white).lineLimit(1)
+                }
+                .padding(.horizontal, 10).padding(.vertical, 8)
+                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(summary.color)
+                    .shadow(color: summary.color.opacity(0.45), radius: 6, y: 2))
+            } else {
+                HStack(spacing: 5) {
+                    routeAvatar(summary: summary, size: 20, ringColor: summary.color)
+                    Text(shortName(summary)).font(.system(size: 9, weight: .bold, design: .monospaced)).foregroundColor(summary.color)
+                }
+                .padding(.horizontal, 8).padding(.vertical, 6)
+                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(summary.color.opacity(0.1))
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(summary.color.opacity(0.25), lineWidth: 1)))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func routeAvatar(summary: ParticipantSummary, size: CGFloat, ringColor: Color) -> some View {
+        AvatarKFImage(url: summary.profileImageUrl.flatMap(URL.init), size: size) {
+            avatarFallback(summary: summary, size: size)
+        }
+        .overlay(Circle().strokeBorder(ringColor, lineWidth: size > 24 ? 2 : 1.5))
+    }
+
+    private func avatarFallback(summary: ParticipantSummary, size: CGFloat) -> some View {
+        Circle().fill(summary.color.opacity(0.25)).frame(width: size, height: size)
+            .overlay(Text(String(summary.displayName.prefix(1)).uppercased())
+                .font(.system(size: size * 0.45, weight: .black, design: .monospaced)).foregroundColor(summary.color))
+    }
+
+    private func participantPicker(selected: Binding<Int>) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(Array(vm.participantSummaries.enumerated()), id: \.offset) { index, s in
+                    let isSel = selected.wrappedValue == index
+                    Button { withAnimation(.spring(response: 0.25)) { selected.wrappedValue = index } } label: {
+                        Text(s.displayName.uppercased())
+                            .font(.system(size: 8, weight: .black, design: .monospaced)).tracking(1)
+                            .foregroundColor(isSel ? .black : s.color)
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(RoundedRectangle(cornerRadius: 7).fill(isSel ? s.color : s.color.opacity(0.1)))
+                    }
+                }
+            }
+        }
+    }
+
+    private func emptyChartPlaceholder(_ text: String) -> some View {
+        Text(text).font(.system(size: 11, design: .monospaced)).foregroundColor(.labelGray)
+            .frame(maxWidth: .infinity).padding(20).background(Color.cardBg).clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var loadingView: some View {
+        VStack(spacing: 16) {
+            ProgressView().tint(.neonCyan)
+            Text("LOADING SESSION DATA").font(.system(size: 10, weight: .bold, design: .monospaced)).tracking(2).foregroundColor(.labelGray)
+        }
+    }
+
+    private func errorView(_ message: String) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 32)).foregroundColor(.neonPink)
+            Text(message).font(.system(size: 12, design: .monospaced)).foregroundColor(.labelGray).multilineTextAlignment(.center)
+        }.padding(40)
+    }
+
+    private var emptyView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "snowflake.circle").font(.system(size: 48)).foregroundColor(.labelGray)
+            Text("NO SESSIONS YET").font(.system(size: 12, weight: .bold, design: .monospaced)).tracking(2).foregroundColor(.labelGray)
+        }
+    }
+
+    private var noDataForSession: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "tray").font(.system(size: 32)).foregroundColor(.labelGray)
+            Text("NO DATA FOR THIS SESSION").font(.system(size: 11, weight: .bold, design: .monospaced)).tracking(1.5).foregroundColor(.labelGray)
+        }.frame(maxWidth: .infinity).padding(40)
+    }
+
+    private func shortName(_ s: ParticipantSummary) -> String {
+        if let name = s.userName, !name.isEmpty {
+            return name.split(separator: " ").first.map(String.init) ?? "S\(s.displayIndex)"
+        }
+        let myId = ProfileManager.shared.getLocalProfile()?.id ?? ""
+        return s.id == myId ? "You" : "S\(s.displayIndex)"
+    }
+}
+
+// MARK: - Previews
+
+#if DEBUG
+private func makeSkiingVM() -> ViewModelSessionSummarySkiing {
+    let vm = ViewModelSessionSummarySkiing(eventId: "preview", numSessions: 1)
+    vm.sessions = [PreviewData.session]
+    vm.selectedSessionIndex = 0
+    vm.allMetrics = [
+        MetricsCollectedSkiing(
+            userId: "preview-user1",
+            startDateTime: PreviewData.session.startDateTime,
+            endDateTime: PreviewData.session.endDateTime,
+            metricsCreatorType: .creator,
+            track: [],
+            totalDistance: 28_000,
+            verticalDrop: 1_200,
+            elevationGain: 1_450,
+            numberOfRuns: 6,
+            splits: [
+                SplitForSkiing(number: 1, speedKmH: 62.4),
+                SplitForSkiing(number: 2, speedKmH: 71.8),
+                SplitForSkiing(number: 3, speedKmH: 68.3),
+                SplitForSkiing(number: 4, speedKmH: 74.1),
+            ],
+            numSession: 0
+        ),
+        MetricsCollectedSkiing(
+            userId: "preview-user2",
+            startDateTime: PreviewData.session.startDateTime,
+            endDateTime: PreviewData.session.endDateTime.addingTimeInterval(900),
+            metricsCreatorType: .normalParticipant,
+            track: [],
+            totalDistance: 24_500,
+            verticalDrop: 980,
+            elevationGain: 1_150,
+            numberOfRuns: 5,
+            splits: [
+                SplitForSkiing(number: 1, speedKmH: 55.2),
+                SplitForSkiing(number: 2, speedKmH: 63.7),
+                SplitForSkiing(number: 3, speedKmH: 60.1),
+                SplitForSkiing(number: 4, speedKmH: 66.4),
+            ],
+            numSession: 0
+        ),
+    ]
+    vm.profiles = [
+        "preview-user1": PreviewData.profile(id: "preview-user1", first: "Ahmed", last: "H."),
+        "preview-user2": PreviewData.profile(id: "preview-user2", first: "Sara",  last: "M."),
+    ]
+    vm.isLoading = false
+    return vm
+}
+
+#Preview("Skiing — With Data") {
+    NavigationStack {
+        ViewSessionSummarySkiing(
+            event: PreviewData.event(activity: .skiing, title: "Cortina d'Ampezzo"),
+            previewVM: makeSkiingVM()
+        )
+    }
+    .preferredColorScheme(.dark)
+}
+
+#Preview("Skiing — Empty") {
+    let vm = ViewModelSessionSummarySkiing(eventId: "preview", numSessions: 0)
+    vm.sessions = []
+    vm.isLoading = false
+    return NavigationStack {
+        ViewSessionSummarySkiing(
+            event: PreviewData.event(activity: .skiing, title: "Cortina d'Ampezzo"),
+            previewVM: vm
+        )
+    }
+    .preferredColorScheme(.dark)
+}
+#endif

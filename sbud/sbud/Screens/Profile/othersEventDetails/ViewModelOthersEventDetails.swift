@@ -31,6 +31,15 @@ class ViewModelOthersEventDetails {
         isSessionCreated(eventId: eventId)
     }
 
+    // MARK: - Refresh
+
+    /// Re-fetches event details and re-checks whether an active session exists.
+    /// Called by pull-to-refresh in the view.
+    func refresh() async {
+        await loadDetails()
+        await checkSession()
+    }
+
     private func loadDetails() async {
         await MainActor.run { isLoading = true }
         do {
@@ -91,12 +100,21 @@ class ViewModelOthersEventDetails {
     }
 
     private func isSessionCreated(eventId: String) {
-        Task {
-            let repo = OnGoingSessionRepository()
-            var queryRef = repo.initQueryBuilderObject()
-            queryRef = queryRef.appendFilter(Filter(field: repo.constants.eventId, operation: .isEqualTo, value: eventId))
+        Task { await checkSession() }
+    }
+
+    /// Async version used by both the init-time check and pull-to-refresh.
+    private func checkSession() async {
+        let repo = OnGoingSessionRepository()
+        var queryRef = repo.initQueryBuilderObject()
+        queryRef = queryRef.appendFilter(Filter(field: repo.constants.eventId, operation: .isEqualTo, value: eventId))
+        do {
             let sessions = try await repo.fetch(query: queryRef)
-            isShowJoinSessionButton = sessions.count > 0
+            logger.info("sessions count: \(sessions.count)")
+            isShowJoinSessionButton = sessions.count != 0
+        } catch {
+            logger.error("Error checking session status: \(error)")
+
         }
     }
 }

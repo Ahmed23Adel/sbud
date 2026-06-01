@@ -8,31 +8,31 @@
 import SwiftUI
 import Combine
 
-
 struct ViewExtraArgsRunning: View {
-    @State var args: ExtraArgsHolderRunning
-    
+    @Bindable var args: ExtraArgsHolderRunning
+
     var body: some View {
-        VStack{
-            
+        VStack(spacing: 16) {
             TextOptionSelector(
-                header: "Cycling Type",
+                header: "Running Type",
                 selected: $args.proposedRunningType
             )
-          GenericPerformanceTarget(
-            targetHeader: "Target Distance",
-            unitHeader: "KM",
-            targetValue: $args.proposedDistance)
-            
             GenericPerformanceTarget(
-              targetHeader: "Target Pace",
-              unitHeader: "MIN/KM",
-              targetValue: $args.proposedPace)
-            
+                targetHeader: "Target Distance",
+                unitHeader: "KM",
+                targetValue: $args.proposedDistance
+            )
+            GenericPerformanceTarget(
+                targetHeader: "Target Pace",
+                unitHeader: "MIN/KM",
+                targetValue: $args.proposedPace
+            )
+            GenericPerformanceTarget(
+                targetHeader: "Duration",
+                unitHeader: "MIN",
+                targetValue: $args.proposedDurationInMin
+            )
         }
-        
-        
-        
     }
 }
 

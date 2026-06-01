@@ -11,11 +11,12 @@ import SwiftUI
 struct ViewCombinedEvents: View {
     let userId: String
     @State private var selectedTab: EventsTab = .created
-    let onEventTap: (String) -> Void         // created events → myEventDetails
-    let onOthersEventTap: (String) -> Void   // hosted/participated → othersEventDetails
-
+    let onCreatedEventTap: (String) -> Void
+    let onParticipatedEventTap: (String) -> Void
+    
     var body: some View {
         VStack(spacing: 0) {
+            // Segmented Picker
             Picker("Events", selection: $selectedTab) {
                 ForEach(EventsTab.allCases) { tab in
                     Text(tab.title).tag(tab)
@@ -25,19 +26,22 @@ struct ViewCombinedEvents: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
 
+            // Swipeable TabView
             TabView(selection: $selectedTab) {
-                CreatedEventsView(userId: userId, onEventTap: onEventTap)
+                CreatedEventsView(userId: userId, onEventTap: onCreatedEventTap)
                     .tag(EventsTab.created)
+                    
 
-                HostedEventsView(userId: userId, onEventTap: onOthersEventTap)
+                HostedEventsView(userId: userId, onEventTap: onParticipatedEventTap)
                     .tag(EventsTab.hostedEvents)
 
-                ParticipatedEventsView(userId: userId, onEventTap: onOthersEventTap)
+                ParticipatedEventsView(userId: userId, onEventTap: onParticipatedEventTap)
                     .tag(EventsTab.participatedEvents)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: selectedTab)
         }
+        
         .background(Color.darkBackground)
     }
 }

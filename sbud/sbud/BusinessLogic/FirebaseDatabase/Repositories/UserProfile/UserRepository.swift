@@ -52,7 +52,6 @@ class UserRepository: IFirebaesRepository{
     }
     
     func fetchProfile(_ id: String) async throws -> UserProfile? {
-        logger.info("id: \(id)")
         let snapshot = try await db.collection("users").document(id).getDocument()
         guard snapshot.exists else { return nil }
 

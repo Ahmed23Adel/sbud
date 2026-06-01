@@ -12,7 +12,7 @@ struct ViewMyEventDetails: View {
     @EnvironmentObject private var coordinator: ProfileCoordinator
     @EnvironmentObject private var mainCoordinator: MainCoordinator
     @State var isPulsing = false
-
+    @Environment(\.dismiss) var dismiss
     init(eventId: String) {
         _viewModel = State(wrappedValue: ViewModelMyEventDetails(eventId: eventId))
     }
@@ -25,46 +25,55 @@ struct ViewMyEventDetails: View {
 
             ScrollView {
                 if let details = viewModel.myEventDertails {
-                    eventContent(details)
-                        .padding(.top, 200)
-                        .padding(.horizontal, 24)
-                        .frame(maxWidth: .infinity)
-                        .toolbar {
-                            ToolbarItem {
-                                Button("Edit") { }
-                            }
-                        }
-                }
-            }
+                    VStack(spacing: 0) {
+                        eventContent(details)
+                            .padding(.top, 200)
+                            .padding(.horizontal, 24)
+                            .frame(maxWidth: .infinity)
 
-            if !viewModel.isLoading {
-                if viewModel.role == .creator {
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            if viewModel.isSessionCreated {
-                                BasicFloatingButton(iconName: "flag.pattern.checkered") {
-                                    viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
-                                }
-                                .padding(.trailing)
-                                .scaleEffect(isPulsing ? 1.4 : 1.0)
-                                .animation(
-                                    .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
-                                    value: isPulsing
-                                )
-                                .onAppear { isPulsing = true }
-                            } else {
-                                BasicFloatingButton(iconName: "flag.pattern.checkered") {
-                                    viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
-                                }
-                                .padding(.trailing)
-                            }
+                        
+                    }
+                    .toolbar {
+                        ToolbarItem {
+                            Button("Edit") { }
                         }
                     }
                 }
             }
+            .refreshable { await viewModel.refresh() }
 
+            if !viewModel.isLoading{
+                VStack {
+                    Spacer()
+                    HStack {
+                        BasicFloatingButton(iconName: "chart.dots.scatter"){
+                            coordinator.goToSessionSummary(evnet: viewModel.myEventDertails!)
+                        }
+                        .padding(.leading, 36)
+                        
+                        Spacer()
+                        if viewModel.isSessionCreated {
+                            BasicFloatingButton(iconName: "flag.pattern.checkered"){
+                                viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
+                            }
+                            .padding(.trailing)
+                            .scaleEffect(isPulsing ? 1.4 : 1.0)
+                            .animation(
+                                .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
+                                value: isPulsing
+                            )
+                            .onAppear{
+                                isPulsing = true
+                            }
+                        } else {
+                            BasicFloatingButton(iconName: "flag.pattern.checkered"){
+                                viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
+                            }
+                            .padding(.trailing)
+                        }
+                    }
+                }
+            }
             if viewModel.isLoading {
                 MidnightLoadingView(text: "Loading event details").ignoresSafeArea()
             }
@@ -77,12 +86,30 @@ struct ViewMyEventDetails: View {
                 StartSessionConfirmation(eventDetails: viewModel.myEventDertails ?? .empty)
                     .environmentObject(coordinator)
             }
+                
         }
-        .onAppear {
+        .onAppear{
             viewModel.setMainCoordinator(mainCoordinator: mainCoordinator)
         }
         .fullScreenCover(isPresented: $viewModel.showQueue) {
             queueCover
+        }
+        .alert("Delete Event", isPresented: $viewModel.showDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                Task {
+                    await viewModel.deleteEvent()
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This action cannot be undone. Are you sure you want to delete this event?")
+        }
+        .onChange(of: viewModel.eventDeleted) { _, newValue in
+            if newValue {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    dismiss()
+                }
+            }
         }
     }
 
@@ -106,6 +133,19 @@ struct ViewMyEventDetails: View {
                 notes: details.notes,
                 dateLocations: details.dateLocations
             )
+            if details.isDateConfirmed,
+               let finalStart = details.finalStartDateTime,
+               let finalEnd   = details.finalEndDateTime,
+               let firstLoc   = details.dateLocations.first?.locations.first {
+
+                EventWeatherWidget(
+                    finalStart: finalStart,
+                    finalEnd:   finalEnd,
+                    latitude:   firstLoc.latitude,
+                    longitude:  firstLoc.longitude
+                )
+                .padding(.horizontal)
+            }
 
             EventActionButtons(
                 eventId: viewModel.eventId,
@@ -115,6 +155,7 @@ struct ViewMyEventDetails: View {
                 role: viewModel.role,
                 queueResponse: viewModel.queueResponse,
                 onConfirmTap: {
+                    print("onConfirmTap")
                     viewModel.activeSheet = .confirmation
                 },
                 onMessagesTap: {
@@ -134,6 +175,8 @@ struct ViewMyEventDetails: View {
                 }
             )
 
+            deleteButtonSection
+            
             Spacer().frame(height: 40)
         }
     }
@@ -176,6 +219,22 @@ struct ViewMyEventDetails: View {
                     }
                 }
             )
+        }
+    }
+
+    @ViewBuilder
+    private var deleteButtonSection: some View {
+        VStack {
+            Spacer().frame(height: 40)
+            Button {
+                viewModel.showDeleteConfirmation = true
+            } label: {
+                Text("Delete Event")
+            }
+            .buttonStyle(DestructiveButton())
+            .disabled(viewModel.isDeletingEvent)
+            .opacity(viewModel.isDeletingEvent ? 0.6 : 1.0)
+            .padding(.bottom, 16)
         }
     }
 }

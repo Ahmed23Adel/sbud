@@ -89,6 +89,9 @@ struct AvailabilityAppCoordinator: View {
 
         case .chat(let user, let eventId, let eventTitle):
             ChatView(user: user, eventId: eventId, eventTitle: eventTitle)
+
+        case .searchEvents(let region, let filterResults):
+            ViewSearchEvents(viewModel: ViewModelSearchEvents(region: region, filterResults: filterResults))
         }
     }
 
