@@ -33,6 +33,15 @@ struct HomeView: View {
                     )
                     .animation(.easeInOut(duration: 0.4), value: viewModel.upcomingEvents.count)
 
+                    if !viewModel.privateEvents.isEmpty || (viewModel.isLoading && viewModel.privateEvents.isEmpty) {
+                        PrivateEventsSection(
+                            events: viewModel.privateEvents,
+                            isLoading: viewModel.isLoading && viewModel.privateEvents.isEmpty,
+                            onTapEvent: { event in onTapOthersEvent(event.eventId) }
+                        )
+                        .animation(.easeInOut(duration: 0.4), value: viewModel.privateEvents.count)
+                    }
+
                     if !viewModel.recommendedEvents.isEmpty || (viewModel.isLoading && viewModel.recommendedEvents.isEmpty) {
                         RecommendedEventsSection(
                             events: viewModel.recommendedEvents,
