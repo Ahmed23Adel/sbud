@@ -53,8 +53,8 @@ struct UpcomingEventsSection: View {
         }
         .padding(20)
         .background(Color(white: 0.07))
+        .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
         .padding(.horizontal, 16)
-        .cornerRadius(4)
     }
 }
 
@@ -91,6 +91,6 @@ struct UpcomingEventCard: View {
             .background(Color(red: 0.13, green: 0.13, blue: 0.13))
         }
         .frame(height: 140)
-        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
     }
 }
