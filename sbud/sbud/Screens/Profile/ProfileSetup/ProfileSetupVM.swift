@@ -139,10 +139,8 @@ final class ProfileSetupVM: ObservableObject {
     }
 
     func validateStepTwo() -> Bool {
-        guard PhoneService.validate(phoneNumber) else {
-            errorMessage = phoneNumber.trimmed.isEmpty
-                ? "Phone number is required."
-                : "Invalid phone number."
+        guard isPhoneVerified else {
+            errorMessage = "Verify your phone number with the SMS code to continue."
             return false
         }
         guard let gender = profile.gender, !gender.trimmed.isEmpty else {
@@ -182,6 +180,11 @@ final class ProfileSetupVM: ObservableObject {
     // MARK: - Persist
 
     func save() async -> Bool {
+        
+        guard isPhoneVerified else {
+            errorMessage = "Verify your phone number before saving your profile."
+            return false
+        }
         guard validateStepOne(),
               validateStepTwo(),
               validateStepThree(),
