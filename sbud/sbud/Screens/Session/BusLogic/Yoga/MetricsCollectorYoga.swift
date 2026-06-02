@@ -7,6 +7,7 @@
 
 
 import Foundation
+import HealthKit
 import OSLog
 import FirebaseFirestore
 
@@ -34,6 +35,7 @@ class MetricsCollectorYoga: MetricsCollector, MetricsCollectorTimeable {
     // MARK: - Control
 
     func startSession(eventId: String) {
+        Task { await HealthKitService.shared.requestAuthorization() }
         logger.info("Starting Yoga session")
         reset()
         startDate = Date()
@@ -76,6 +78,11 @@ class MetricsCollectorYoga: MetricsCollector, MetricsCollectorTimeable {
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
+        try? await HealthKitService.shared.saveTimeBasedWorkout(
+            activityType: .yoga,
+            start: startDateTime,
+            end: endDateTime
+        )
 
         let sessionEntry: [String: Any] = [
             "startDateTime": startDate as Any,
@@ -98,13 +105,19 @@ class MetricsCollectorYoga: MetricsCollector, MetricsCollectorTimeable {
         guard let finalEndDateTime = try await MetricsCollectorUtils
             .readFinalEndDateTime(eventId: eventId) else {
             logger.info("Yoga participant ended before creator — storing data only")
+            let endNow = Date()
             try await MetricsCollectedGym(
                 startDateTime: startDateTime,
-                endDateTime: Date(),
+                endDateTime: endNow,
                 metricsCreatorType: .normalParticipant,
                 endedBeforeCreator: true,
                 numSession: numSessions
             ).upload(eventId: eventId, userId: userId)
+            try? await HealthKitService.shared.saveTimeBasedWorkout(
+                activityType: .yoga,
+                start: startDateTime,
+                end: endNow
+            )
             return
         }
 
@@ -115,6 +128,11 @@ class MetricsCollectorYoga: MetricsCollector, MetricsCollectorTimeable {
             endedBeforeCreator: false,
             numSession: numSessions
         ).upload(eventId: eventId, userId: userId)
+        try? await HealthKitService.shared.saveTimeBasedWorkout(
+            activityType: .yoga,
+            start: startDateTime,
+            end: finalEndDateTime
+        )
 
         logger.info("Yoga participant metrics uploaded")
     }

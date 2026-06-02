@@ -9,6 +9,7 @@
 import Foundation
 import CoreLocation
 import Combine
+import HealthKit
 import OSLog
 import FirebaseFirestore
 
@@ -67,6 +68,7 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
     // MARK: - Control
 
     func startSession(eventId: String) {
+        Task { await HealthKitService.shared.requestAuthorization() }
         currentEventId = eventId
 
         if restoreCheckpoint(eventId: eventId) {
@@ -199,6 +201,13 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
+        try? await HealthKitService.shared.saveGPSWorkout(
+            activityType: .hiking,
+            start: startDateTime,
+            end: endDateTime,
+            distanceMeters: totalDistanceMeters,
+            locations: trackedLocations.map { $0.1 }
+        )
 
         let sessionEntry: [String: Any] = [
             "startDateTime": startDate as Any,
@@ -214,16 +223,17 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
             "sessionHistory": FieldValue.arrayUnion([sessionEntry])
         ])
     }
-    
+
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
         guard let finalEndDateTime = try await MetricsCollectorUtils
             .readFinalEndDateTime(eventId: eventId) else {
             logger.info("Hiking participant ended before creator — storing data only")
+            let endNow = Date()
             let metrics = MetricsCollectedHiking(
                 startDateTime: startDateTime,
-                endDateTime: Date(),
+                endDateTime: endNow,
                 metricsCreatorType: .normalParticipant,
                 track: trackedLocations.toTrackPoints(),
                 totalDistance: totalDistanceMeters,
@@ -235,6 +245,13 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
                 numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
+            try? await HealthKitService.shared.saveGPSWorkout(
+                activityType: .hiking,
+                start: startDateTime,
+                end: endNow,
+                distanceMeters: totalDistanceMeters,
+                locations: trackedLocations.map { $0.1 }
+            )
             return
         }
 
@@ -260,6 +277,13 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
             numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
+        try? await HealthKitService.shared.saveGPSWorkout(
+            activityType: .hiking,
+            start: startDateTime,
+            end: finalEndDateTime,
+            distanceMeters: trimmedDistance,
+            locations: trimmedTrack.map { $0.1 }
+        )
         logger.info("Hiking participant metrics uploaded")
     }
 

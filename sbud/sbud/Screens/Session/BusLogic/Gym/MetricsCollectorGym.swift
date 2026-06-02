@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import HealthKit
 import OSLog
 import FirebaseFirestore
 
@@ -33,6 +34,7 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
     // MARK: - Control
 
     func startSession(eventId: String) {
+        Task { await HealthKitService.shared.requestAuthorization() }
         logger.info("Starting gym session")
         reset()
         startDate = Date()
@@ -75,6 +77,11 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
+        try? await HealthKitService.shared.saveTimeBasedWorkout(
+            activityType: .traditionalStrengthTraining,
+            start: startDateTime,
+            end: endDateTime
+        )
 
         let sessionEntry: [String: Any] = [
             "startDateTime": startDate as Any,
@@ -96,13 +103,19 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
         guard let finalEndDateTime = try await MetricsCollectorUtils
             .readFinalEndDateTime(eventId: eventId) else {
             logger.info("Gym participant ended before creator — storing data only")
+            let endNow = Date()
             try await MetricsCollectedGym(
                 startDateTime: startDateTime,
-                endDateTime: Date(),
+                endDateTime: endNow,
                 metricsCreatorType: .normalParticipant,
                 endedBeforeCreator: true,
                 numSession: numSessions
             ).upload(eventId: eventId, userId: userId)
+            try? await HealthKitService.shared.saveTimeBasedWorkout(
+                activityType: .traditionalStrengthTraining,
+                start: startDateTime,
+                end: endNow
+            )
             return
         }
 
@@ -113,6 +126,11 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
             endedBeforeCreator: false,
             numSession: numSessions
         ).upload(eventId: eventId, userId: userId)
+        try? await HealthKitService.shared.saveTimeBasedWorkout(
+            activityType: .traditionalStrengthTraining,
+            start: startDateTime,
+            end: finalEndDateTime
+        )
 
         logger.info("Gym participant metrics uploaded")
     }
