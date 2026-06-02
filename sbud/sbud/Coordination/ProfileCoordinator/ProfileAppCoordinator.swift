@@ -183,7 +183,9 @@ struct ProfileDestinationView: View {
             }
 
         case .friendsList(let userId):
-            FriendListView(userId: userId)
+            FriendListView(userId: userId) { targetId in
+                pushToParent(.othersProfile(userId: targetId))
+            }
 
         case .myEventDetails(let eventId):
             ViewMyEventDetails(eventId: eventId)
