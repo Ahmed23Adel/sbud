@@ -122,7 +122,7 @@ struct EventRow: View {
                         // Visibility badge
                         Text(event.isPublic ? "Public" : "Only friends")
                             .font(.system(size: 10))
-                            .foregroundColor(event.isPublic ? .black : Color.mainColor)
+                            .foregroundColor(.black)
                             .padding(.vertical, 5)
                             .padding(.horizontal, 10)
                             .background(event.isPublic ? Color(red: 0, green: 227/255, blue: 253/255) : Color.mainColor)
