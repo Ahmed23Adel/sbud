@@ -223,7 +223,7 @@ private struct ProfileSheetView: View {
 
         case .qrCode:
             QRCodeSheetView(userId: coordinator.userId) { scannedId in
-                coordinator.goToScannedProfile(userId: coordinator.userId)
+                coordinator.goToScannedProfile(userId: scannedId)
             }
         }
     }
