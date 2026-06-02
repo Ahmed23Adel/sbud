@@ -35,7 +35,9 @@ struct ViewMyEventDetails: View {
                     }
                     .toolbar {
                         ToolbarItem {
-                            Button("Edit") { }
+                            Button("Edit") {
+                                viewModel.showEditEvent = true
+                            }
                         }
                     }
                 }
@@ -90,6 +92,18 @@ struct ViewMyEventDetails: View {
         }
         .onAppear{
             viewModel.setMainCoordinator(mainCoordinator: mainCoordinator)
+        }
+        .fullScreenCover(isPresented: $viewModel.showEditEvent) {
+            if let details = viewModel.myEventDertails {
+                NavigationStack {
+                    ViewMyEventEdit(event: details)
+                }
+            }
+        }
+        .onChange(of: viewModel.showEditEvent) { _, isShowing in
+            if !isShowing {
+                Task { await viewModel.refresh() }
+            }
         }
         .fullScreenCover(isPresented: $viewModel.showQueue) {
             queueCover
