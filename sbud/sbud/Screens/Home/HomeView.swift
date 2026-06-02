@@ -77,9 +77,6 @@ struct HomeView: View {
             }
         }
         .navigationBarHidden(true)
-        .onAppear {
-            Task { await viewModel.load() }
-        }
     }
 }
 
