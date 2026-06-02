@@ -68,6 +68,16 @@ struct EventActionButtons: View {
                     .font(.system(size: 15, weight: .semibold))
                 Text(queueButtonLabel(pending: pendingCount, waitlist: waitlistCount))
                     .font(.system(size: 15, weight: .semibold))
+                
+                if pendingCount > 0 {
+                    Text("\(pendingCount)")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.red)
+                        .clipShape(Capsule())
+                }
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)

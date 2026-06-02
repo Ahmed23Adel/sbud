@@ -36,16 +36,38 @@ struct ViewMyEventDetails: View {
                 }
             }
 
-            if !viewModel.isLoading{
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
+            if !viewModel.isLoading {
+                    VStack(spacing: 16) { // Incolonna Inbox e Start Session con 16pt di spazio
+                        
+                        // 1. INBOX BUTTON (Sopra)
+                        if let details = viewModel.myEventDertails {
+                            Button {
+                                coordinator.goToEventConversations(
+                                    eventId: viewModel.eventId,
+                                    eventTitle: details.title
+                                )
+                            } label: {
+                                ZStack(alignment: .topTrailing) {
+                                    Image(systemName: "tray.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(.black)
+                                        .frame(width: 56, height: 56)
+                                        .background(Color.mainColor)
+                                        .clipShape(Circle())
+                                        .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
+                                    
+                                    EventUnreadBadge(eventId: viewModel.eventId)
+                                        .offset(x: 0, y: 0)
+                                }
+                            }
+                            .padding(.trailing, 24)
+                        }
+                        
+                        // 2. START SESSION BUTTON (Sotto)
                         if viewModel.isSessionCreated {
                             BasicFloatingButton(iconName: "flag.pattern.checkered"){
                                 viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
                             }
-                            .padding(.trailing)
                             .scaleEffect(isPulsing ? 1.4 : 1.0)
                             .animation(
                                 .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
@@ -58,11 +80,12 @@ struct ViewMyEventDetails: View {
                             BasicFloatingButton(iconName: "flag.pattern.checkered"){
                                 viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
                             }
-                            .padding(.trailing)
                         }
                     }
+                    .padding(.trailing, 24) // Spinge i bottoni dentro lo schermo
+                    .padding(.bottom, 15)   // Li solleva dalla Tab Bar
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing) // Ancoraggio infallibile in basso a destra
                 }
-            }
             if viewModel.isLoading {
                 MidnightLoadingView(text: "Loading event details").ignoresSafeArea()
             }
@@ -91,7 +114,7 @@ struct ViewMyEventDetails: View {
     private func eventContent(_ details: EventFullDetails) -> some View {
         VStack {
                
-            HStack(alignment: .top) {
+            
                 
                 EventMetaBadgesRow(
                     isDateConfirmed: details.isDateConfirmed,
@@ -101,67 +124,35 @@ struct ViewMyEventDetails: View {
                     maxAllowedToJoin: details.maxAllowedToJoin
                 )
                 
-                Spacer()
-                
-                
-                Button {
-                    coordinator.goToEventConversations(
-                        eventId: viewModel.eventId,
-                        eventTitle: details.title
-                    )
-                } label: {
-                    VStack(spacing: 4) {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "tray.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            
-                            
-                            EventUnreadBadge(eventId: viewModel.eventId)
-                                .scaleEffect(0.75)
-                                .offset(x: 14, y: -10)
+
+                EventInfoSection(
+                    title: details.title,
+                    activityType: details.activityType,
+                    activityDetails: details.activityDetails,
+                    notes: details.notes,
+                    dateLocations: details.dateLocations
+                )
+
+                EventActionButtons(
+                    eventId: viewModel.eventId,
+                    eventTitle: details.title,
+                    isDateConfirmed: details.isDateConfirmed,
+                    isLocationConfirmed: details.isLocationConfirmed,
+                    queueResponse: viewModel.queueResponse,
+                    onConfirmTap: {
+                        viewModel.activeSheet = .confirmation
+                    },
+                    onHostsTap: {
+                        coordinator.showHostsSheet(eventId: viewModel.eventId)
+                    },
+                    onQueueTap: {
+                        Task {
+                            await viewModel.loadQueue()
+                            viewModel.showQueue = true
                         }
-                        Text("Inbox")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.black)
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 14)
-                    .background(Color.mainColor)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-            }
-            .padding(.bottom, 12)
-
-            EventInfoSection(
-                title: details.title,
-                activityType: details.activityType,
-                activityDetails: details.activityDetails,
-                notes: details.notes,
-                dateLocations: details.dateLocations
-            )
-
-            EventActionButtons(
-                eventId: viewModel.eventId,
-                eventTitle: details.title,
-                isDateConfirmed: details.isDateConfirmed,
-                isLocationConfirmed: details.isLocationConfirmed,
-                queueResponse: viewModel.queueResponse,
-                onConfirmTap: {
-                    viewModel.activeSheet = .confirmation
-                },
-                onHostsTap: {
-                    coordinator.showHostsSheet(eventId: viewModel.eventId)
-                },
-                onQueueTap: {
-                    Task {
-                        await viewModel.loadQueue()
-                        viewModel.showQueue = true
-                    }
-                }
-            )
-
-            Spacer().frame(height: 40)
+                )
+                Spacer().frame(height: 40)
         }
     }
 
