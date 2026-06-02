@@ -76,6 +76,7 @@ struct HomeView: View {
                 .padding(.top, 16)
             }
         }
+        .refreshable { await viewModel.load() }
         .navigationBarHidden(true)
     }
 }
