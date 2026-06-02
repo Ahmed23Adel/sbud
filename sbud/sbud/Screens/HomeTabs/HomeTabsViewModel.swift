@@ -7,7 +7,12 @@
 
 import Foundation
 import Combine
+import FirebaseAnalytics
 
 class HomeTabsViewModel: ObservableObject {
     @Published var selectedTab = 0
+
+    init() {
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "Home"])
+    }
 }

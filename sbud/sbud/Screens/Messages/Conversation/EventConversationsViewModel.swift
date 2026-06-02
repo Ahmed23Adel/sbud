@@ -10,6 +10,7 @@ import Foundation
 import FirebaseFirestore
 import FirebaseAuth
 import Combine
+import FirebaseAnalytics
 
 class EventConversationsViewModel: ObservableObject {
     @Published var recentMessages = [Message]()
@@ -17,6 +18,10 @@ class EventConversationsViewModel: ObservableObject {
     
     init(eventId: String) {
         self.eventId = eventId
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "EventConversations",
+            "event_id": eventId
+        ])
     }
     
     @MainActor

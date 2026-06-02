@@ -11,6 +11,7 @@ import FirebaseAuth
 import FirebaseCore
 import FirebaseFirestore
 import AdelsonValidator
+import FirebaseAnalytics
 
 @MainActor
 class SignUpViewModel: ObservableObject {
@@ -31,7 +32,7 @@ class SignUpViewModel: ObservableObject {
     @Published var showConfirmPassword = false
 
     init() {
-
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "SignUp"])
     }
     func setCoordinator(coordinator: MainCoordinator) {
         self.coordinator = coordinator

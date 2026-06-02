@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import FirebaseFirestore
+import FirebaseAnalytics
 
 enum MyEventDetailsSheet: Identifiable {
     case confirmation
@@ -43,6 +44,10 @@ class ViewModelMyEventDetails {
     init(eventId: String) {
         logger.info("eventId: \(eventId)")
         self.eventId = eventId
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "MyEventDetails",
+            "event_id": eventId
+        ])
         Task { await loadDetails() }
         Task {
             do {

@@ -6,12 +6,18 @@
 //
 
 import Foundation
+import FirebaseAnalytics
+
 @Observable
 class ViewModelCoordinatorAddNewEvent {
     var currentStep = AddNewEventSteps.step1
     var newEventBuilder = NewEventBuilder()
     var isDismissed = false
     var isLoading = false
+
+    init() {
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "CreateEvent"])
+    }
 
     func createEvent() {
         if !newEventBuilder.areFieldsValid() {

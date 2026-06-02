@@ -8,6 +8,7 @@
 import Foundation
 import Observation
 import SwiftUI
+import FirebaseAnalytics
 
 /// Generic ViewModel for time-only activities: Gym, Swimming, Tennis, Yoga.
 /// No GPS or split data — only duration metrics.
@@ -35,6 +36,10 @@ class ViewModelSessionSummaryTimeBased<M: SessionMetricsBase>: SessionSummaryVie
          repo: ActivityMetricsRepository<M> = ActivityMetricsRepository()) {
         self.eventId    = eventId
         self.metricsRepo = repo
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "SessionSummary_TimeBased",
+            "event_id": eventId
+        ])
     }
 
     // MARK: - Participant summaries

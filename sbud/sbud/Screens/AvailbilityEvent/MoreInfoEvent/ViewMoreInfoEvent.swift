@@ -151,5 +151,5 @@ struct ViewMoreInfoEvent: View {
         .ignoresSafeArea()
     }
 
-    
+
 }

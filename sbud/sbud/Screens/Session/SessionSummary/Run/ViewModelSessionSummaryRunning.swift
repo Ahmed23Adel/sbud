@@ -8,6 +8,7 @@
 import Foundation
 import Observation
 import SwiftUI
+import FirebaseAnalytics
 
 @Observable
 class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
@@ -33,6 +34,10 @@ class ViewModelSessionSummaryRunning: SessionSummaryViewModel {
          repo: ActivityMetricsRepository<MetricsCollectedRun> = ActivityMetricsRepository()) {
         self.eventId    = eventId
         self.metricsRepo = repo
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "SessionSummary_Running",
+            "event_id": eventId
+        ])
     }
 
     // MARK: - Participant summaries

@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import SwiftData
+import FirebaseAnalytics
 @Observable
 class ViewModelOwnerSession{
     var mainCoordinator: MainCoordinator?
@@ -26,6 +27,11 @@ class ViewModelOwnerSession{
     init(eventDetails: EventFullDetails, isSessionCreated: Bool){
         self.eventDetails = eventDetails
         self.isSessionCreated = isSessionCreated
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "LiveSession_Owner",
+            "activity_type": eventDetails.activityType.rawValue,
+            "event_id": eventDetails.id
+        ])
         initMetricsCollector()
         Task {
             do {

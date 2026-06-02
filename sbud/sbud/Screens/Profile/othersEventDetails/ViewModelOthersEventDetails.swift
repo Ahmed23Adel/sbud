@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import FirebaseFirestore
+import FirebaseAnalytics
 
 @Observable
 class ViewModelOthersEventDetails{
@@ -22,6 +23,10 @@ class ViewModelOthersEventDetails{
     init(eventId: String) {
         logger.info("eventId: \(eventId)")
         self.eventId = eventId
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "OthersEventDetails",
+            "event_id": eventId
+        ])
         Task { await loadDetails() }
         isSessionCreated(eventId: eventId)
     }

@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import Combine
+import FirebaseAnalytics
 
 @MainActor
 final class OwnProfileVM: BaseProfileVM {
@@ -20,6 +21,13 @@ final class OwnProfileVM: BaseProfileVM {
     // MARK: - Dependencies
 
     private let friendManager = FriendManager.shared
+
+    // MARK: - Init
+
+    override init(userId: String) {
+        super.init(userId: userId)
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "OwnProfile"])
+    }
 
     // MARK: - Load
 
