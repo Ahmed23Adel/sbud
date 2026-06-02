@@ -27,21 +27,40 @@ class ViewModelOthersEventDetails{
     }
 
     private func loadDetails() async {
-        await MainActor.run { isLoading = true }
-        do {
-            let requester = EventByIdRequester()
-            let details = try await requester.fetchEvent(eventId: eventId)
-            await MainActor.run {
-                myEventDertails = details
-                isLoading = false
+            await MainActor.run { isLoading = true }
+            do {
+                let requester = EventByIdRequester()
+                var details = try await requester.fetchEvent(eventId: eventId)
+                
+                // MARK: ANTI-DUPLICATI
+                if details.isDateConfirmed && details.isLocationConfirmed {
+                    if let firstLocation = details.dateLocations.first {
+                        details.dateLocations = [firstLocation]
+                    }
+                } else {
+                    var uniqueLocations: [DateLocationEntry] = []
+                    var seenIds = Set<String>()
+                    for loc in details.dateLocations {
+                        if !seenIds.contains(loc.id) {
+                            uniqueLocations.append(loc)
+                            seenIds.insert(loc.id)
+                        }
+                    }
+                    details.dateLocations = uniqueLocations
+                }
+                // ------------------------------------
+                
+                await MainActor.run {
+                    myEventDertails = details
+                    isLoading = false
+                }
+                logger.log("Full others event loaded \(self.eventId)")
+            } catch {
+                logger.error("Error: \(error)")
+                await MainActor.run { isLoading = false }
+                PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
             }
-            logger.log("Full others event loaded \(self.eventId)")
-        } catch {
-            logger.error("Error: \(error)")
-            await MainActor.run { isLoading = false }
-            PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
         }
-    }
     
     private func isSessionCreated(eventId: String){
         Task {

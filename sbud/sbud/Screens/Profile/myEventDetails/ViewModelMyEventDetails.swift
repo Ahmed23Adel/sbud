@@ -57,7 +57,28 @@ class ViewModelMyEventDetails {
         await MainActor.run { isLoading = true }
         do {
             let requester = EventByIdRequester()
-            let details = try await requester.fetchEvent(eventId: eventId)
+            var details = try await requester.fetchEvent(eventId: eventId)
+            
+            // MARK: - 🛡️ SCUDO ANTI-DUPLICATI
+            if details.isDateConfirmed && details.isLocationConfirmed {
+                // Se è confermato, DEVE esserci una sola location. Prendiamo la prima e ignoriamo i "fantasmi" del server.
+                if let firstLocation = details.dateLocations.first {
+                    details.dateLocations = [firstLocation]
+                }
+            } else {
+                // Se non è confermato, rimuoviamo eventuali ID doppi creati dal database
+                var uniqueLocations: [DateLocationEntry] = []
+                var seenIds = Set<String>()
+                for loc in details.dateLocations {
+                    if !seenIds.contains(loc.id) {
+                        uniqueLocations.append(loc)
+                        seenIds.insert(loc.id)
+                    }
+                }
+                details.dateLocations = uniqueLocations
+            }
+            // ------------------------------------
+
             await MainActor.run {
                 myEventDertails = details
                 isLoading = false

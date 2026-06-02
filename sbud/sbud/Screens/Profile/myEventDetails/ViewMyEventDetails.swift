@@ -90,8 +90,6 @@ struct ViewMyEventDetails: View {
     @ViewBuilder
     private func eventContent(_ details: EventFullDetails) -> some View {
         VStack {
-               
-            HStack(alignment: .top) {
                 
                 EventMetaBadgesRow(
                     isDateConfirmed: details.isDateConfirmed,
@@ -101,38 +99,6 @@ struct ViewMyEventDetails: View {
                     maxAllowedToJoin: details.maxAllowedToJoin
                 )
                 
-                Spacer()
-                
-                
-                Button {
-                    coordinator.goToEventConversations(
-                        eventId: viewModel.eventId,
-                        eventTitle: details.title
-                    )
-                } label: {
-                    VStack(spacing: 4) {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "tray.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            
-                            
-                            EventUnreadBadge(eventId: viewModel.eventId)
-                                .scaleEffect(0.75)
-                                .offset(x: 14, y: -10)
-                        }
-                        Text("Inbox")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.black)
-                    }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 14)
-                    .background(Color.mainColor)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-            }
-            .padding(.bottom, 12)
-
             EventInfoSection(
                 title: details.title,
                 activityType: details.activityType,
