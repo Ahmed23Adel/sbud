@@ -21,12 +21,19 @@ import SwiftUI
 struct ProfileTabRoot: View {
     @StateObject private var coordinator: ProfileCoordinator
     weak var authDelegate: AuthCoordinatorDelegate?
+    @Binding var deepLinkedUserId: String?
 
-    init(userId: String, currentUserId: String, authDelegate: AuthCoordinatorDelegate?) {
+    init(
+        userId: String,
+        currentUserId: String,
+        authDelegate: AuthCoordinatorDelegate?,
+        deepLinkedUserId: Binding<String?>
+    ) {
         _coordinator = StateObject(
             wrappedValue: ProfileCoordinator(userId: userId, currentUserId: currentUserId)
         )
         self.authDelegate = authDelegate
+        _deepLinkedUserId = deepLinkedUserId
     }
 
     var body: some View {
@@ -51,7 +58,18 @@ struct ProfileTabRoot: View {
         }
         .onAppear {
             coordinator.delegate = authDelegate
+            handleDeepLink()
         }
+        .onChange(of: deepLinkedUserId) { _, _ in
+            handleDeepLink()
+        }
+    }
+
+    private func handleDeepLink() {
+        guard let userId = deepLinkedUserId else { return }
+        print("🔗 [ProfileTabRoot] navigating to profile userId=\(userId)")
+        deepLinkedUserId = nil
+        coordinator.goToOthersProfile(userId: userId)
     }
 }
 

@@ -23,6 +23,8 @@ final class MainCoordinator: ObservableObject {
     // MARK: - Published State
 
     @Published private(set) var currentRoute: MainRoute = .loading
+    @Published var deepLinkProfileUserId: String? = nil
+    private var pendingProfileUserId: String? = nil
 
     // MARK: - Private Dependencies
 
@@ -57,6 +59,7 @@ final class MainCoordinator: ObservableObject {
 
     func goToHome() {
         currentRoute = .home
+        openPendingProfileIfNeeded()
     }
 
     func goToSignUp() {
@@ -125,6 +128,45 @@ extension MainCoordinator: AuthCoordinatorDelegate {
 
     func coordinatorDidCompleteProfileSetup() {
         currentRoute = .home
+    }
+}
+
+// MARK: - Deep Link / URL Handling
+
+extension MainCoordinator {
+    /// Handles both custom scheme (sbud://profile/<id>)
+    /// and universal links (https://sbud-backend.onrender.com/profile/<id>).
+    func handle(universalLink url: URL) {
+        print("🔗 [DeepLink] received url: \(url)")
+        guard let scheme = url.scheme else { return } // url.scheme is the part before ://
+
+        let userId: String?
+        if scheme == "sbud" {
+            // sbud://profile/<userId>  →  host="profile", path="/<userId>"
+            guard url.host == "profile" else { return } // between :// and /
+            userId = url.pathComponents.filter { $0 != "/" }.first
+        } else if url.host == "sbud-backend.onrender.com" {
+            // https://sbud-backend.onrender.com/profile/<userId>
+            let parts = url.pathComponents.filter { $0 != "/" }
+            guard parts.count >= 2, parts[0] == "profile" else { return }
+            userId = parts[1]
+        } else {
+            return
+        }
+
+        guard let userId else { return }
+        print("🔗 [DeepLink] userId=\(userId) currentRoute=\(currentRoute)")
+        pendingProfileUserId = userId
+        if currentRoute == .home {
+            openPendingProfileIfNeeded()
+        }
+    }
+
+    func openPendingProfileIfNeeded() {
+        guard let userId = pendingProfileUserId else { return }
+        pendingProfileUserId = nil
+        print("🔗 [DeepLink] setting deepLinkProfileUserId=\(userId)")
+        deepLinkProfileUserId = userId
     }
 }
 

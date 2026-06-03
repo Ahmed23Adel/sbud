@@ -2,11 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSHealthShareUsageDescription</key>
-    <string>sBud reads your health data to display activity history.</string>
-    <key>NSHealthUpdateUsageDescription</key>
-    <string>sBud saves your workouts to Apple Health.</string>
-    
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -15,6 +10,16 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.863852529120-hr37cpjvgq3rb56mbi41cd39va19tek2</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>com.sbud.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>sbud</string>
 			</array>
 		</dict>
 	</array>

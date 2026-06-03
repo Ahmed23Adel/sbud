@@ -52,13 +52,16 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 struct SbudApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject var authManager = AuthenticationManager.shared
+    @StateObject var mainCoordinator = MainCoordinator(
+        authService: AuthenticationManager.shared,
+        profileService: ProfileManager.shared
+    )
     let locationManager = LocationManager.shared
     let service = GeohashService.shared
-    
+
     let logger = Logger(subsystem: "sbud", category: "SbudApp")
-    
+
     init(){
-        
         AdelsonFirebaseAuthConfig.shared = AdelsonFirebaseAuthConfig(
             appName: "sBud",
             baseUrl: "https://sbud-backend.onrender.com/api/v1/",
@@ -66,22 +69,16 @@ struct SbudApp: App {
                 await FirebaseTokenExtractor().getIDToken()
             }
         )
-        
     }
-    
-    var body: some Scene {
-        
-        WindowGroup {
-            MainAppCoordinator(coordinator: MainCoordinator(
-                authService: AuthenticationManager.shared,
-                profileService: ProfileManager.shared))
-            .onOpenURL { url in
-                GIDSignIn.sharedInstance.handle(url)
-            }
-            
 
+    var body: some Scene {
+        WindowGroup {
+            MainAppCoordinator(coordinator: mainCoordinator)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                    mainCoordinator.handle(universalLink: url)
+                }
         }
         .modelContainer(for: LocalOnGoingSession.self)
-
     }
 }
