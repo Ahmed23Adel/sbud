@@ -149,7 +149,20 @@ struct ViewMoreInfoEvent: View {
             .scrollIndicators(.hidden)
         }
         .ignoresSafeArea()
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    guard let eventId = viewModel.fullDetails?.id,
+                          let url = URL(string: "https://sbud-backend.onrender.com/event/\(eventId)") else { return }
+                    let av = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                    UIApplication.shared.connectedScenes
+                        .compactMap { $0 as? UIWindowScene }
+                        .first?.windows.first?.rootViewController?
+                        .present(av, animated: true)
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
     }
-
-
 }

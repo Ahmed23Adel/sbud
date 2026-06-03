@@ -34,7 +34,14 @@ struct ViewMyEventDetails: View {
                         
                     }
                     .toolbar {
-                        ToolbarItem {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                shareEvent(eventId: viewModel.myEventDertails?.id ?? "")
+                            } label: {
+                                Image(systemName: "square.and.arrow.up")
+                            }
+                        }
+                        ToolbarItem(placement: .topBarTrailing) {
                             Button("Edit") {
                                 viewModel.showEditEvent = true
                             }
@@ -52,7 +59,7 @@ struct ViewMyEventDetails: View {
                             coordinator.goToSessionSummary(evnet: viewModel.myEventDertails!)
                         }
                         .padding(.leading, 36)
-                        
+
                         Spacer()
                         if viewModel.isSessionCreated {
                             BasicFloatingButton(iconName: "flag.pattern.checkered"){
@@ -233,6 +240,16 @@ struct ViewMyEventDetails: View {
                 }
             )
         }
+    }
+
+    private func shareEvent(eventId: String) {
+        guard !eventId.isEmpty,
+              let url = URL(string: "https://sbud-backend.onrender.com/event/\(eventId)") else { return }
+        let av = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.rootViewController?
+            .present(av, animated: true)
     }
 
     @ViewBuilder

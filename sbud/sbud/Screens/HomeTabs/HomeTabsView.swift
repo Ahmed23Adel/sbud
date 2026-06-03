@@ -11,6 +11,7 @@ struct HomeTabsView: View {
     @StateObject var viewModel = HomeTabsViewModel()
     @EnvironmentObject private var coordinator: MainCoordinator
     @State private var deepLinkedUserId: String? = nil
+    @State private var deepLinkedEventId: String? = nil
 
     var body: some View {
         if let profile = ProfileManager.shared.getLocalProfile() {
@@ -35,7 +36,8 @@ struct HomeTabsView: View {
                     userId: profile.id,
                     currentUserId: profile.id,
                     authDelegate: coordinator,
-                    deepLinkedUserId: $deepLinkedUserId
+                    deepLinkedUserId: $deepLinkedUserId,
+                    deepLinkedEventId: $deepLinkedEventId
                 )
                 .tabItem {
                     Label("Profile", systemImage: "person.fill")
@@ -45,10 +47,15 @@ struct HomeTabsView: View {
             .ignoresSafeArea()
             .onChange(of: coordinator.deepLinkProfileUserId) { _, userId in
                 guard let userId else { return }
-                print("🔗 [HomeTabsView] deepLinkProfileUserId changed: \(userId)")
                 coordinator.deepLinkProfileUserId = nil
                 viewModel.selectedTab = 3
                 deepLinkedUserId = userId
+            }
+            .onChange(of: coordinator.deepLinkEventId) { _, eventId in
+                guard let eventId else { return }
+                coordinator.deepLinkEventId = nil
+                viewModel.selectedTab = 3
+                deepLinkedEventId = eventId
             }
         } else {
             Color.darkBackground.ignoresSafeArea()
