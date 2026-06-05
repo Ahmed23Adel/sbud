@@ -14,7 +14,7 @@ import Geohash
 import FirebaseCore
 import OSLog
 
-class AvailabilityDataFetcher {
+class AvailabilityDataFetcher: AvailabilityDataFetching {
 
     private let individualsPrecision = 6
     private let individualsLimit = 200

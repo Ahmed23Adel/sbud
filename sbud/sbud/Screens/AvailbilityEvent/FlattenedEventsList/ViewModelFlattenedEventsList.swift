@@ -12,7 +12,7 @@ import OSLog
 import FirebaseAnalytics
 
 @Observable
-class ViewModelFlattenedEventsList{
+class ViewModelFlattenedEventsList {
     let region: MKCoordinateRegion
     let filterResults: AvailabilityFiltersResults
     var isLoading: Bool = true
@@ -21,44 +21,44 @@ class ViewModelFlattenedEventsList{
     var events: [PaginatedEvent] = []
     var showAlert = false
     var alertMsg = ""
-    private var canLoadMore = true
+    var canLoadMore = true          // internal so tests can inspect it
     var isLoadingNewPage = false
     let logger = Logger(subsystem: "sBud", category: "ViewModelFlattenedEventsList")
-    
-    init(region: MKCoordinateRegion, filterResults: AvailabilityFiltersResults) {
+
+    private let requester: PaginatedFlattenedEventsRequesting
+
+    init(
+        region: MKCoordinateRegion,
+        filterResults: AvailabilityFiltersResults,
+        requester: PaginatedFlattenedEventsRequesting = PaginatedFlattenedEventsRequester()
+    ) {
         self.region = region
         self.filterResults = filterResults
+        self.requester = requester
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "EventsList"])
         loadInitialEvents()
-        
     }
-    
+
     private func loadInitialEvents() {
         isLoadingNewPage = true
         Task {
             await loadEvents()
-            await MainActor.run {
-                self.isLoading = false
-            }
+            await MainActor.run { self.isLoading = false }
         }
     }
-    
-    private func finishLoading(){
+
+    private func finishLoading() {
         isLoading = false
         isLoadingNewPage = false
     }
-    
-    func loadEventsPaginnated(){
-        if canLoadMore{
-            Task {
-                await loadEvents()
-            }
-        }
+
+    func loadEventsPaginnated() {
+        guard canLoadMore else { return }
+        Task { await loadEvents() }
     }
-    
-    private func loadEvents() async{
+
+    private func loadEvents() async {
         canLoadMore = false
-        let requester = PaginatedFlattenedEventsRequester()
         do {
             let requestParams = PaginatedFlattenedEventsRequest(
                 topLeft: region.topLeft,
@@ -71,31 +71,29 @@ class ViewModelFlattenedEventsList{
             )
             logger.info("requestParamslist \(requestParams.toDict())")
             let results = try await requester.fetchEvents(requestParams: requestParams)
-            
+
             await MainActor.run {
                 logger.notice("results \(results.events.count)")
-                events.append(contentsOf: results.events)
-                incPage()
-                finishLoading()
-                canLoadMore = results.hasNext
+                self.events.append(contentsOf: results.events)
+                self.incPage()
+                self.finishLoading()
+                self.canLoadMore = results.hasNext
             }
-            
         } catch {
             logger.error("error For requesting list \(error)")
             await MainActor.run {
-                showError()
-                canLoadMore = false
+                self.showError()
+                self.canLoadMore = false
             }
         }
-            
     }
-    
-    private func showError(){
+
+    private func showError() {
         showAlert = true
         alertMsg = "Error with fetching the events, please try again later"
     }
-    
-    private func incPage(){
+
+    private func incPage() {
         currentPage += 1
     }
 }

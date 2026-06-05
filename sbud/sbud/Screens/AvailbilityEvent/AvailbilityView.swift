@@ -11,7 +11,7 @@ internal import FirebaseFirestoreInternal
 
 struct AvailbilityView: View {
     @StateObject var viewModel = AvailbilityViewModel(
-        locationManager: LocationManager.shared,
+        locationProvider: LocationManager.shared,
         availabilityFiltersResults: AvailabilityFiltersResults())
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
 
@@ -83,6 +83,6 @@ struct AvailbilityView: View {
 }
 #Preview {
     AvailbilityView(viewModel: AvailbilityViewModel(
-        locationManager: LocationManager.shared,
+        locationProvider: LocationManager.shared,
         availabilityFiltersResults: AvailabilityFiltersResults()))
 }

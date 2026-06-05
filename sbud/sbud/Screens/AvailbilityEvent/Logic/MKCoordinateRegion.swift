@@ -26,14 +26,14 @@ extension MKCoordinateRegion {
     var topLeftExtended: GeoPoint {
         GeoPoint(
             latitude: topLeft.latitude + extensionAmount,
-            longitude: topLeft.latitude - extensionAmount
+            longitude: topLeft.longitude - extensionAmount
         )
     }
-    
+
     var bottomRightExtended: GeoPoint {
         GeoPoint(
             latitude: bottomRight.latitude - extensionAmount,
-            longitude: bottomRight.latitude + extensionAmount
+            longitude: bottomRight.longitude + extensionAmount
         )
     }
     
