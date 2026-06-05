@@ -28,6 +28,7 @@ struct ViewSearchEvents: View {
                         TextField("Search events by title", text: $viewModel.searchQuery)
                             .textFieldStyle(.plain)
                             .foregroundColor(.white)
+                            .accessibilityIdentifier("search.queryField")
                             .onSubmit {
                                 Task {
                                     await viewModel.performSearch()
@@ -42,6 +43,7 @@ struct ViewSearchEvents: View {
                                 Image(systemName: "xmark.circle.fill")
                                     .foregroundColor(.white.opacity(0.5))
                             }
+                            .accessibilityIdentifier("search.clearButton")
                         }
                     }
                     .padding(.horizontal, 12)

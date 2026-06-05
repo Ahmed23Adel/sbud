@@ -28,7 +28,8 @@ struct ViewAddNewEventStep1: View {
                     fieldName: "Description",
                     placeholder: "Ex: Come join us",
                     iconString: "pencil",
-                    text: $eventBuilder.description)
+                    text: $eventBuilder.description,
+                    accessibilityId: "addEvent.descriptionField")
                 .padding(.horizontal, 30)
                 
                 ActivityTypeSelector(selectedActivityType: $eventBuilder.activityType, extraArgsHolder: $eventBuilder.activityExtraArgs)

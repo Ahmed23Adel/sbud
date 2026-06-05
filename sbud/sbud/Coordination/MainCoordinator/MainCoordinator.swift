@@ -44,6 +44,16 @@ final class MainCoordinator: ObservableObject {
 
     /// Called once on launch from the root view. Determines where the user lands.
     func resolveInitialRoute() {
+        // Skip Firebase auth entirely when running under UI tests.
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING") {
+            // HomeTabsView guards on getLocalProfile() != nil, so seed a stub.
+            var stub = UserProfile(id: "ui-test-user")
+            stub.name = "Test"
+            stub.surName = "User"
+            ProfileManager.shared.saveProfileToLocale(profile: stub)
+            currentRoute = .home
+            return
+        }
         Task {
             currentRoute = await determineRoute()
         }

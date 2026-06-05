@@ -61,7 +61,8 @@ final class AvailbilityViewModel: ObservableObject {
 
     private func fetchNewData() {
         if currentCameraPrecision == .individuals {
-            Task {
+            Task { [weak self] in
+                guard let self else { return }
                 do {
                     shouldShowIndividuals = true
                     anchorAvailabilityEvents = try await dataFetcher.fetchIndividuals(
@@ -81,7 +82,8 @@ final class AvailbilityViewModel: ObservableObject {
                 }
             }
         } else {
-            Task {
+            Task { [weak self] in
+                guard let self else { return }
                 do {
                     shouldShowIndividuals = false
                     anchorsClusters = try await dataFetcher.fetchClusters(
