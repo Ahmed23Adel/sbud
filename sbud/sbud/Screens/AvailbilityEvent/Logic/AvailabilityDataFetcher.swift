@@ -20,7 +20,54 @@ class AvailabilityDataFetcher: AvailabilityDataFetching {
     private let individualsLimit = 200
     private let clustersLimit = 100
     private let logger = Logger(subsystem: "sBud", category: "AvailabilityDataFetcher")
+
+    // MARK: - Cache
+
+    private static let cacheTTL: TimeInterval = 180 // 3 minutes
+
+    private struct CacheEntry<T> {
+        let results: T
+        let cachedAt: Date
+
+        var isExpired: Bool {
+            Date().timeIntervalSince(cachedAt) > AvailabilityDataFetcher.cacheTTL
+        }
+    }
+
+    private var clustersCache: [String: CacheEntry<[AnchorCluster]>] = [:]
+    private var individualsCache: [String: CacheEntry<[AnchorAvailabilityEvent]>] = [:]
+
+    private func clustersKey(
+        topLeft: GeoPoint,
+        bottomRight: GeoPoint,
+        activityType: String,
+        startTime: Date,
+        endTime: Date,
+        extraFilters: [String: String]
+    ) -> String {
+        let centerLat = (topLeft.latitude + bottomRight.latitude) / 2
+        let centerLon = (topLeft.longitude + bottomRight.longitude) / 2
+        // precision 4 → ~40 km × 20 km cells, appropriate for cluster-level zoom
+        let geohash = Geohash.encode(latitude: centerLat, longitude: centerLon, length: 4)
+        let filtersKey = extraFilters.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: ",")
+        return "\(geohash)|\(activityType)|\(Int(startTime.timeIntervalSince1970))|\(Int(endTime.timeIntervalSince1970))|\(filtersKey)"
+    }
+
+    private func individualsKey(
+        region: MKCoordinateRegion,
+        activityType: String,
+        startTime: Date,
+        endTime: Date,
+        extraFilters: [String: String]
+    ) -> String {
+        // precision 6 → ~1.2 km × 0.6 km cells, appropriate for individual-event zoom
+        let geohash = Geohash.encode(latitude: region.center.latitude, longitude: region.center.longitude, length: 6)
+        let filtersKey = extraFilters.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: ",")
+        return "\(geohash)|\(activityType)|\(Int(startTime.timeIntervalSince1970))|\(Int(endTime.timeIntervalSince1970))|\(filtersKey)"
+    }
+
     // MARK: - Individuals
+
     func fetchIndividuals(
         in region: MKCoordinateRegion,
         selectedStartDateTime: Date,
@@ -28,6 +75,19 @@ class AvailabilityDataFetcher: AvailabilityDataFetching {
         selectedActivityType: ActivityType,
         extraFilters: [String: String]
     ) async throws -> [AnchorAvailabilityEvent] {
+        let key = individualsKey(
+            region: region,
+            activityType: selectedActivityType.rawValue,
+            startTime: selectedStartDateTime,
+            endTime: selectedEndDateTime,
+            extraFilters: extraFilters
+        )
+
+        if let entry = individualsCache[key], !entry.isExpired {
+            logger.debug("Cache hit (individuals): \(key)")
+            return entry.results
+        }
+
         let requestParams = createQueryForIndividual(
             region: region,
             selectedStartDateTime: selectedStartDateTime,
@@ -39,7 +99,8 @@ class AvailabilityDataFetcher: AvailabilityDataFetching {
         let requester = FlattenedEventsRequester()
         let results = try await requester.fetchIndividuals(requestParams: requestParams)
         let anchors = results.events.map { $0.covertToAnchor() }
-//        logger.info("Individual sample results: \(anchors[0])")
+
+        individualsCache[key] = CacheEntry(results: anchors, cachedAt: Date())
         return anchors
     }
 
@@ -64,6 +125,7 @@ class AvailabilityDataFetcher: AvailabilityDataFetching {
     }
 
     // MARK: - Clusters
+
     func fetchClusters(
         selectedStartTime: Date,
         selectedEndTime: Date,
@@ -72,6 +134,20 @@ class AvailabilityDataFetcher: AvailabilityDataFetching {
         selectedActivityType: ActivityType,
         extraFilters: [String: String]
     ) async throws -> [AnchorCluster] {
+        let key = clustersKey(
+            topLeft: topLeft,
+            bottomRight: bottomRight,
+            activityType: selectedActivityType.rawValue,
+            startTime: selectedStartTime,
+            endTime: selectedEndTime,
+            extraFilters: extraFilters
+        )
+
+        if let entry = clustersCache[key], !entry.isExpired {
+            logger.debug("Cache hit (clusters): \(key)")
+            return entry.results
+        }
+
         let requestParams = createRequestParamsForClusters(
             selectedStartTime: selectedStartTime,
             selectedEndTime: selectedEndTime,
@@ -84,6 +160,8 @@ class AvailabilityDataFetcher: AvailabilityDataFetching {
         let requester = AvailbilityClusterRequester()
         let results = try await requester.fetchClusters(requestParams: requestParams)
         let anchors = results.clusters.map { $0.convertToAnchorCluster() }
+
+        clustersCache[key] = CacheEntry(results: anchors, cachedAt: Date())
         return anchors
     }
 
