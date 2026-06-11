@@ -8,6 +8,7 @@ import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseAnalytics
+internal import Alamofire
 import AdelsonAuthManager
 import AdelsonApiCaller
 
