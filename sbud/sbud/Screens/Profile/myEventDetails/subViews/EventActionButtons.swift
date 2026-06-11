@@ -11,7 +11,8 @@ struct EventActionButtons: View {
     let eventTitle: String
     let isDateConfirmed: Bool
     let isLocationConfirmed: Bool
-    let queueResponse: JoinQueueResponse?   
+    let role: EventUserRole?
+    let queueResponse: JoinQueueResponse?
     let onConfirmTap: () -> Void
     let onMessagesTap: () -> Void
     let onHostsTap: () -> Void
@@ -19,12 +20,25 @@ struct EventActionButtons: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if !isDateConfirmed || !isLocationConfirmed {
-                confirmButton
+            switch role {
+            case .creator:
+
+                if !isDateConfirmed || !isLocationConfirmed {
+                    confirmButton
+                }
+                messagesButton
+                hostsButton
+                queueButton
+
+            case .acceptedHost:
+
+                messagesButton
+                queueButton
+
+            default:
+
+                EmptyView()
             }
-            messagesButton
-            hostsButton
-            queueButton
         }
     }
 
@@ -39,7 +53,6 @@ struct EventActionButtons: View {
             }
         }
         .buttonStyle(PrimaryButton())
-
     }
 
     private var messagesButton: some View {
@@ -49,7 +62,6 @@ struct EventActionButtons: View {
                     .font(.system(size: 20))
                 Text("View Messages")
             }
-            
         }
         .buttonStyle(PrimaryButton())
     }
@@ -99,4 +111,3 @@ struct EventActionButtons: View {
         return "Review Requests (\(pending) pending\(waitlistSuffix))"
     }
 }
-

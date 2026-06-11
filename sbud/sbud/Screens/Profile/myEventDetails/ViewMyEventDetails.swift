@@ -166,6 +166,7 @@ struct ViewMyEventDetails: View {
                 eventTitle: details.title,
                 isDateConfirmed: details.isDateConfirmed,
                 isLocationConfirmed: details.isLocationConfirmed,
+                role: viewModel.role,
                 queueResponse: viewModel.queueResponse,
                 onConfirmTap: {
                     print("onConfirmTap")

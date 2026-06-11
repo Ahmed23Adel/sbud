@@ -93,7 +93,6 @@ class HostsRepository: IFirebaesRepository{
         QueryCollectionBuilder(collectionPath: collectionPath, firebaseClient: firebaseClient)
     }
     
-    
     func inviteHost(_ invitation: HostInvitation) async throws {
         let batch = firebaseClient.db.batch()
 
@@ -125,7 +124,6 @@ class HostsRepository: IFirebaesRepository{
         try await batch.commit()
     }
 
-    /// Removes both docs atomically — used for cancel, remove host, or re-invite cleanup.
     func removeInvitation(targetUserId: String) async throws {
         let batch = firebaseClient.db.batch()
 
@@ -143,8 +141,17 @@ class HostsRepository: IFirebaesRepository{
         batch.deleteDocument(userInviteRef)
 
         try await batch.commit()
-    }
 
-    
-    
+        let joinedEventsSnap = try await db.collection("joinedEvents")
+            .whereField("userId", isEqualTo: targetUserId)
+            .whereField("eventId", isEqualTo: eventId)
+            .whereField("participationStatus", isEqualTo: "host")
+            .getDocuments()
+
+        for doc in joinedEventsSnap.documents {
+            try await doc.reference.delete()
+        }
+
+        logger.info("Removed host \(targetUserId) from event \(self.eventId) including joinedEvents")
+    }
 }

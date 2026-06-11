@@ -76,6 +76,32 @@ struct ViewOthersEventDetails: View {
                         LocationMapCard(dateLocations: details.dateLocations)
                             .padding()
                         
+                        if viewModel.role == .acceptedHost {
+                                                    let pendingCount = viewModel.queueResponse?.pendingCount ?? 0
+                                                    let waitlistCount = viewModel.queueResponse?.waitlistCount ?? 0
+                                                    Button {
+                                                        Task {
+                                                            await viewModel.loadQueue()
+                                                            viewModel.showQueue = true
+                                                        }
+                                                    } label: {
+                                                        HStack(spacing: 10) {
+                                                            Image(systemName: "person.badge.clock")
+                                                                .font(.system(size: 15, weight: .semibold))
+                                                            Text(pendingCount > 0 ? "Review Requests (\(pendingCount) pending)" : "No Pending Requests")
+                                                                .font(.system(size: 15, weight: .semibold))
+                                                        }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                                .background(pendingCount > 0 ? Color.mainColor : Color.backgroundColor.opacity(0.5))
+                                .foregroundColor(pendingCount > 0 ? .black : .white)
+                                .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
+                                }
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 20)
+                        }
+
+                        
                         if details.isDateConfirmed,
                            let finalStart = details.finalStartDateTime,
                            let finalEnd   = details.finalEndDateTime,

@@ -14,7 +14,7 @@ struct HomeTabsView: View {
     var body: some View {
         if let profile = ProfileManager.shared.getLocalProfile() {
             TabView(selection: $viewModel.selectedTab) {
-                HomeView()
+                HomeAppCoordinator()
                     .tabItem {
                         Label("Home", systemImage: "house")
                     }

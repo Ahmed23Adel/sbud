@@ -78,7 +78,12 @@ struct SbudApp: App {
             .onOpenURL { url in
                 GIDSignIn.sharedInstance.handle(url)
             }
-            
+            .onAppear {
+                Task {
+                    let token = try? await Auth.auth().currentUser?.getIDToken()
+                    print("🔑 TOKEN:", token ?? "nil")
+                }
+            }
 
         }
         .modelContainer(for: LocalOnGoingSession.self)

@@ -22,7 +22,11 @@ final class AvailabilityCoordinator: ObservableObject {
 
     @Published var navigationPath = NavigationPath()
     @Published var activeSheet: AvailabilitySheet?
-
+    
+    // MARK: - Callbacks
+    var onShowProfile: ((String) -> Void)?
+    var onShowChat: ((UserProfile, String, String) -> Void)?
+    
     // MARK: - Dependencies
 
     /// Weak — MainCoordinator conforms to this if auth actions are ever needed from here.
@@ -43,6 +47,22 @@ final class AvailabilityCoordinator: ObservableObject {
     func showProfile(userId: String) {
         navigationPath.append(AvailabilityDestination.profile(userId: userId))
     }
+    
+    /*func showProfile(userId: String) {
+            if let onShowProfile {
+                onShowProfile(userId)
+            } else {
+                navigationPath.append(AvailabilityDestination.profile(userId: userId))
+            }
+        }
+
+        func showChat(user: UserProfile, eventId: String, eventTitle: String) {
+            if let onShowChat {
+                onShowChat(user, eventId, eventTitle)
+            } else {
+                navigationPath.append(AvailabilityDestination.chat(user: user, eventId: eventId, eventTitle: eventTitle))
+            }
+        }*/
 
     func showChat(user: UserProfile, eventId: String, eventTitle: String) {
         navigationPath.append(AvailabilityDestination.chat(user: user, eventId: eventId, eventTitle: eventTitle))

@@ -6,7 +6,7 @@
     <string>sBud reads your health data to display activity history.</string>
     <key>NSHealthUpdateUsageDescription</key>
     <string>sBud saves your workouts to Apple Health.</string>
-    
+
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
