@@ -28,6 +28,7 @@ struct ViewSearchEvents: View {
                         TextField("Search events by title", text: $viewModel.searchQuery)
                             .textFieldStyle(.plain)
                             .foregroundColor(.white)
+                            .accessibilityIdentifier("search.queryField")
                             .onSubmit {
                                 Task {
                                     await viewModel.performSearch()
@@ -42,6 +43,7 @@ struct ViewSearchEvents: View {
                                 Image(systemName: "xmark.circle.fill")
                                     .foregroundColor(.white.opacity(0.5))
                             }
+                            .accessibilityIdentifier("search.clearButton")
                         }
                     }
                     .padding(.horizontal, 12)
@@ -181,12 +183,21 @@ struct SearchEventRow: View {
 
     private let accentColor = Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
 
+    private static let startFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f
+    }()
+
+    private static let endFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d, HH:mm"
+        return f
+    }()
+
     private var dateRangeText: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        let start = formatter.string(from: event.startDateTime)
-        formatter.dateFormat = "MMM d, HH:mm"
-        let end = formatter.string(from: event.endDateTime)
+        let start = Self.startFormatter.string(from: event.startDateTime)
+        let end = Self.endFormatter.string(from: event.endDateTime)
         return "\(start) → \(end)"
     }
 

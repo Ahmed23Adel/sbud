@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseAuth
 import OSLog
 import FirebaseAnalytics
 
@@ -74,11 +73,21 @@ class ViewModelMoreInfoEvent {
     var isLoadingQueue = false
     var showQueue = false
 
-    private let joinRequester = JoinEventRequester()
+    private let joinRequester: JoinEventRequesting
+    private let eventFetcher: EventFetching
+    private let currentUserProvider: CurrentUserProviding
 
-    init(eventId: String) {
+    init(
+        eventId: String,
+        joinRequester: JoinEventRequesting = JoinEventRequester(),
+        eventFetcher: EventFetching = EventByIdRequester(),
+        currentUserProvider: CurrentUserProviding = FirebaseCurrentUserProvider()
+    ) {
         logger.info("Selected activity: \(eventId)")
         self.eventId = eventId
+        self.joinRequester = joinRequester
+        self.eventFetcher = eventFetcher
+        self.currentUserProvider = currentUserProvider
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [
             AnalyticsParameterScreenName: "EventDetails",
             "event_id": eventId
@@ -86,14 +95,12 @@ class ViewModelMoreInfoEvent {
         Task { await loadDetails() }
     }
 
-    private func loadDetails() async {
+    func loadDetails() async {
         await MainActor.run { isLoading = true }
         do {
-            async let detailsTask = EventByIdRequester().fetchEvent(eventId: eventId)
-            async let roleTask = EventRoleService.getRole(eventId: eventId)
-
-            let (details, role) = try await (detailsTask, roleTask)
-            let isHost = role == .creator || role == .acceptedHost
+            let details = try await eventFetcher.fetchEvent(eventId: eventId)
+            let uid = currentUserProvider.currentUserId ?? ""
+            let isHost = !uid.isEmpty && details.creator.id == uid
 
             await MainActor.run {
                 fullDetails = details
@@ -148,7 +155,7 @@ class ViewModelMoreInfoEvent {
         }
     }
 
-    private func loadMyStatus() async {
+    func loadMyStatus() async {
         do {
             let resp = try await joinRequester.getMyStatus(eventId: eventId)
             await MainActor.run {

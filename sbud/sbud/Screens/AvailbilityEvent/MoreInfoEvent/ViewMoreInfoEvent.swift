@@ -39,6 +39,7 @@ struct ViewMoreInfoEvent: View {
                 MidnightLoadingView(text: "Loading event")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
+                    .accessibilityIdentifier("moreInfo.loadingView")
             }
 
             ScrollView {
@@ -49,6 +50,7 @@ struct ViewMoreInfoEvent: View {
                             Text("Error loading full details of event, pleaes try again")
                                 .font(.title)
                                 .fontWeight(.bold)
+                                .accessibilityIdentifier("moreInfo.errorText")
                             Spacer()
                         }
                     } else if let details = viewModel.fullDetails {
@@ -75,6 +77,7 @@ struct ViewMoreInfoEvent: View {
                                 .font(.title).foregroundColor(.white).italic()
                                 .padding(.horizontal)
                                 .padding(.horizontal)
+                                .accessibilityIdentifier("moreInfo.eventTitle")
                             Spacer()
                         }
 
