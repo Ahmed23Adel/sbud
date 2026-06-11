@@ -25,9 +25,9 @@ struct HomeTabsView: View {
                         Label("Availability", systemImage: "figure.run")
                     }
                     .tag(1)
-                AllEventsView()
+                StoriesTabRoot()
                     .tabItem {
-                        Label("Events", systemImage: "person.3")
+                        Label("Stories", systemImage: "play.circle.fill")
                     }
                     .tag(2)
                 ProfileTabRoot(userId: profile.id, currentUserId: profile.id, authDelegate: coordinator)

@@ -48,10 +48,8 @@ class ViewModelJoinedEvents{
             .whereField("userId", isEqualTo: userId)
             .getDocuments()
         
-        print("snapshot")
         return snapshot.documents.compactMap { doc -> UsersEvent? in
             let data = doc.data()
-            print("Data: ", data)
             guard let rawStatus = data["status"] as? String,
                   let status = UsersEventStatus(rawValue: rawStatus) else { return nil }
 

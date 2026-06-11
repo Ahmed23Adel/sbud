@@ -31,12 +31,14 @@ sbud/                        ← Xcode project root (contains sbud.xcodeproj)
     │   ├── Profile/          ← own/others profiles, event lists, settings
     │   ├── Session/          ← live session + post-session summary
     │   ├── Messages/
+    │   ├── Stories/          ← stories feed, viewer, create flow
     │   ├── Basic/            ← reusable UI primitives + color tokens
     │   └── ...
     ├── BusinessLogic/        Data layer (~53 files)
     │   ├── Authentication/
     │   ├── UserProfile/
     │   ├── Location/
+    │   ├── StoriesHelper/    ← StoriesHelperService (groups feed by user)
     │   └── FirebaseDatabase/ ← repository pattern + Firestore wrappers
     ├── LocalDB/              SwiftData model for offline session storage
     ├── Modifiers/            SwiftUI modifiers (glass, popup, input styling)
@@ -82,6 +84,11 @@ MainCoordinator  (@StateObject in SbudApp, @EnvironmentObject everywhere)
 │           .othersEventDetails(eventId) | .friendsList | .othersProfile(userId)
 │           .scannedProfile | .eventConversations | .sessionSummary(event)
 │   sheets: .hosts(eventId) | .qrCode
+│
+├── StoriesAppCoordinator        (Stories tab — feed + viewer + create)
+│   pushed: .friendStories(userId)
+│   sheets: .createStory
+│   nested sheets: .eventPicker(...)
 │
 └── (Messages — Tab 4, direct view, no coordinator)
 ```
@@ -151,6 +158,72 @@ ViewSessionSummaryTimeBased<M>  (generic — covers Gym, Swimming, Tennis, Yoga)
 ### Share card
 
 `SessionShareCardView` is rendered to a `UIImage` via `ImageRenderer` at 3× scale and shared via `UIActivityViewController`. Before rendering, `MapSnapshotBuilder.snapshot(summaries:)` takes an async `MKMapSnapshotter` snapshot (dark map, no POIs) and draws colored polylines onto it — because `MultiRouteMapView` (a `UIViewRepresentable`) can't be captured by `ImageRenderer`.
+
+---
+
+## Stories feature
+
+Stories are ephemeral user posts (images + optional caption, optional event link) that expire after a period set by the backend. They are separate from the session summary system and use the REST API exclusively — no Firestore.
+
+### Key files
+
+| Path | Purpose |
+|---|---|
+| `BusinessLogic/FirebaseDatabase/Models/Story.swift` | `Story`, `StoryImage`, `FriendWithStories`, `StoriesFeedResponse`, `CreateStoryResponse` |
+| `BusinessLogic/FirebaseDatabase/Repositories/Stories/StoriesRepository.swift` | REST repository — feed, create, view, react, delete |
+| `BusinessLogic/FirebaseDatabase/Repositories/Stories/IStoriesRepository.swift` | Repository protocol |
+| `BusinessLogic/StoriesHelper/StoriesHelperService.swift` | Groups feed stories by user → `[FriendWithStories]`; injects `myReaction` from reactions dict |
+| `Coordination/StoriesCoordinator/StoriesCoordinator.swift` | `ObservableObject` coordinator — push, sheets |
+| `Coordination/StoriesCoordinator/StoriesRoute.swift` | `StoriesRoutePushed`, `StoriesSheetType`, `StoriesCreateStorySheet` |
+| `Coordination/StoriesCoordinator/StoriesAppCoordinator.swift` | Embeds coordinator in a `NavigationStack` |
+| `Screens/Stories/ViewModelStoriesHome.swift` | Home feed VM |
+| `Screens/Stories/ViewModelFriendStories.swift` | Viewer VM (progress, reactions, view tracking) |
+| `Screens/Stories/ViewModelCreateStory.swift` | Create flow VM, exposes `EventSummary` for event picker |
+| `Screens/Stories/Home/` | `ViewStoriesHome`, `FriendStoryAvatar` |
+| `Screens/Stories/FriendStories/` | `ViewFriendStories`, `StoryImagePage`, `StoryProgressBar`, `StoryReactionBar` |
+| `Screens/Stories/CreateStory/` | `ViewCreateStory` + sub-views (`StoryCaptionFieldView`, `StoryThumbnailStripView`, `StoryMainPreviewView`, `StoryEventFieldView`, `EventPickerRow`, `StoryEventPicker`) |
+
+### Data model
+
+```
+Story
+  id              String           // "storyId" on the wire
+  userId          String
+  authorName      String?          // "userName"
+  authorProfileImageUrl String?    // "userAvatarUrl"
+  eventId/eventName/eventImage/activityType  optional event link
+  images          [StoryImage]     // server sends [String] URLs, decoded to indexed StoryImage
+  text            String?
+  reactions       [String: String] // userId → emoji
+  createdAt       Date
+  expiresAt       Date?
+  myReaction      String?          // set client-side by StoriesHelperService
+```
+
+`StoryImage` wraps a URL string with its index so pages and progress bars can be keyed by index.
+
+### REST endpoints (relative to `/api/v1`)
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/stories/feed?limit=&offset=` | Paginated friend feed |
+| POST | `/stories` | Create story (multipart: images + optional eventId/text) |
+| POST | `/stories/{id}/view-image` | Mark an image viewed (`{ imageIndex }`) |
+| POST | `/stories/{id}/react` | Set/clear emoji reaction (`{ emoji: String? }`) |
+| DELETE | `/stories/{id}` | Delete own story |
+
+### Auth for REST
+
+`StoriesRepository` uses `IAuthTokenProvider` / `FirebaseAuthTokenProvider` to attach a `Bearer` JWT to every request. This is the same token pattern used by all other REST calls in the app.
+
+### Coordinator routes
+
+```
+StoriesAppCoordinator
+  pushed: .friendStories(userId: String)
+  sheets: .createStory
+  nested sheets (within create flow): .eventPicker(events:isLoading:selectedId:onSelect:)
+```
 
 ---
 

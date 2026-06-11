@@ -11,7 +11,6 @@ import Kingfisher
 
 struct MyEventRow: View {
     var event: UsersEvent
-    @EnvironmentObject var coordinator: ProfileCoordinator
     
     private let accent = Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
 
