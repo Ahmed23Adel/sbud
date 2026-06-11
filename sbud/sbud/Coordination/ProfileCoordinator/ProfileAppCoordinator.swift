@@ -21,12 +21,22 @@ import SwiftUI
 struct ProfileTabRoot: View {
     @StateObject private var coordinator: ProfileCoordinator
     weak var authDelegate: AuthCoordinatorDelegate?
+    @Binding var deepLinkedUserId: String?
+    @Binding var deepLinkedEventId: String?
 
-    init(userId: String, currentUserId: String, authDelegate: AuthCoordinatorDelegate?) {
+    init(
+        userId: String,
+        currentUserId: String,
+        authDelegate: AuthCoordinatorDelegate?,
+        deepLinkedUserId: Binding<String?>,
+        deepLinkedEventId: Binding<String?>
+    ) {
         _coordinator = StateObject(
             wrappedValue: ProfileCoordinator(userId: userId, currentUserId: currentUserId)
         )
         self.authDelegate = authDelegate
+        _deepLinkedUserId = deepLinkedUserId
+        _deepLinkedEventId = deepLinkedEventId
     }
 
     var body: some View {
@@ -51,7 +61,23 @@ struct ProfileTabRoot: View {
         }
         .onAppear {
             coordinator.delegate = authDelegate
+            handleProfileDeepLink()
+            handleEventDeepLink()
         }
+        .onChange(of: deepLinkedUserId) { _, _ in handleProfileDeepLink() }
+        .onChange(of: deepLinkedEventId) { _, _ in handleEventDeepLink() }
+    }
+
+    private func handleProfileDeepLink() {
+        guard let userId = deepLinkedUserId else { return }
+        deepLinkedUserId = nil
+        coordinator.goToOthersProfile(userId: userId)
+    }
+
+    private func handleEventDeepLink() {
+        guard let eventId = deepLinkedEventId else { return }
+        deepLinkedEventId = nil
+        coordinator.goToOthersEventDetails(eventId: eventId)
     }
 }
 

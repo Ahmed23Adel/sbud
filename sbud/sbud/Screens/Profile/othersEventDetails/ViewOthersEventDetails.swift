@@ -122,6 +122,15 @@ struct ViewOthersEventDetails: View {
                 .padding(.bottom, 100)
             }
             .refreshable { await viewModel.refresh() }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        shareEvent(eventId: viewModel.myEventDertails?.id ?? "")
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                }
+            }
             .ignoresSafeArea()
 
             if !viewModel.isLoading, let eventDetails = viewModel.myEventDertails {
@@ -156,6 +165,18 @@ struct ViewOthersEventDetails: View {
                 }
             }
         }
+    }
+}
+
+private extension ViewOthersEventDetails {
+    func shareEvent(eventId: String) {
+        guard !eventId.isEmpty,
+              let url = URL(string: "https://sbud-backend.onrender.com/event/\(eventId)") else { return }
+        let av = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.rootViewController?
+            .present(av, animated: true)
     }
 }
 

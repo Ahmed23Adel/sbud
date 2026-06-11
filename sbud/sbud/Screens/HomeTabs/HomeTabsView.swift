@@ -10,6 +10,8 @@ import SwiftUI
 struct HomeTabsView: View {
     @StateObject var viewModel = HomeTabsViewModel()
     @EnvironmentObject private var coordinator: MainCoordinator
+    @State private var deepLinkedUserId: String? = nil
+    @State private var deepLinkedEventId: String? = nil
 
     var body: some View {
         if let profile = ProfileManager.shared.getLocalProfile() {
@@ -30,13 +32,31 @@ struct HomeTabsView: View {
                         Label("Stories", systemImage: "play.circle.fill")
                     }
                     .tag(2)
-                ProfileTabRoot(userId: profile.id, currentUserId: profile.id, authDelegate: coordinator)
-                    .tabItem {
-                        Label("Profile", systemImage: "person.fill")
-                    }
-                    .tag(3)
+                ProfileTabRoot(
+                    userId: profile.id,
+                    currentUserId: profile.id,
+                    authDelegate: coordinator,
+                    deepLinkedUserId: $deepLinkedUserId,
+                    deepLinkedEventId: $deepLinkedEventId
+                )
+                .tabItem {
+                    Label("Profile", systemImage: "person.fill")
+                }
+                .tag(3)
             }
             .ignoresSafeArea()
+            .onChange(of: coordinator.deepLinkProfileUserId) { _, userId in
+                guard let userId else { return }
+                coordinator.deepLinkProfileUserId = nil
+                viewModel.selectedTab = 3
+                deepLinkedUserId = userId
+            }
+            .onChange(of: coordinator.deepLinkEventId) { _, eventId in
+                guard let eventId else { return }
+                coordinator.deepLinkEventId = nil
+                viewModel.selectedTab = 3
+                deepLinkedEventId = eventId
+            }
         } else {
             Color.darkBackground.ignoresSafeArea()
         }
