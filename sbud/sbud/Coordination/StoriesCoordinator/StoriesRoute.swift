@@ -7,6 +7,8 @@ import Foundation
 
 enum StoriesRoutePushed: Equatable, Hashable {
     case friendStories(userId: String)
+    case myStories
+    case manageMyStories
 }
 
 enum StoriesSheetType: Identifiable, Equatable, Hashable {

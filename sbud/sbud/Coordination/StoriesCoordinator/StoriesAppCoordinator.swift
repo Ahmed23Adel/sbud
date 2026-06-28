@@ -63,6 +63,12 @@ private struct StoriesDestinationView: View {
             ViewFriendStories(stories: stories) { remaining in
                 homeVM.updateStories(for: userId, remaining: remaining)
             }
+        case .myStories:
+            ViewFriendStories(stories: homeVM.myStories) { remaining in
+                homeVM.updateMyStories(remaining: remaining)
+            }
+        case .manageMyStories:
+            ViewMyStories()
         }
     }
 }

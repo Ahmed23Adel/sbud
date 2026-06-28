@@ -9,6 +9,7 @@ import Foundation
 @Observable
 final class ViewModelStoriesHome {
     var friendsWithStories: [FriendWithStories] = []
+    var myStories: [Story] = []
     var myStoryCards: [MyStoryImageCard] = []
     var isLoading = false
     var errorMessage: String?
@@ -33,13 +34,19 @@ final class ViewModelStoriesHome {
     func load() async {
         isLoading = true
         defer { isLoading = false }
-        async let friends = helper.fetchFriendsWithStories()
+        async let allGroups = helper.fetchFriendsWithStoriesAndOwn()
         async let myCards = myStoriesRepo.fetchMyRandomImages()
         do {
-            friendsWithStories = try await friends
+            let (friends, own) = try await allGroups
+            friendsWithStories = friends
+            myStories = own
             myStoryCards = (try? await myCards) ?? []
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    func updateMyStories(remaining: [Story]) {
+        myStories = remaining
     }
 }

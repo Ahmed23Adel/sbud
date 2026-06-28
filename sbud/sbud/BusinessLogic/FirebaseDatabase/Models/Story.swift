@@ -5,12 +5,12 @@
 
 import Foundation
 
-struct StoryImage: Equatable, Hashable {
+nonisolated struct StoryImage: Equatable, Hashable, Sendable {
     let index: Int
     let url: String
 }
 
-struct Story: Decodable, Identifiable, Equatable, Hashable {
+nonisolated struct Story: Decodable, Identifiable, Equatable, Hashable, Sendable {
     let id: String               // "storyId" on the wire
     let userId: String
     let authorName: String?      // "userName"
@@ -77,13 +77,13 @@ struct Story: Decodable, Identifiable, Equatable, Hashable {
     }
 }
 
-struct StoriesFeedResponse: Decodable {
+nonisolated struct StoriesFeedResponse: Decodable, Sendable {
     let stories: [Story]
     let total: Int
     let hasMore: Bool
 }
 
-struct CreateStoryResponse: Decodable {
+nonisolated struct CreateStoryResponse: Decodable, Sendable {
     let id: String
 
     private enum CodingKeys: String, CodingKey {
@@ -91,7 +91,7 @@ struct CreateStoryResponse: Decodable {
     }
 }
 
-struct FriendWithStories: Identifiable {
+nonisolated struct FriendWithStories: Identifiable, Sendable {
     let id: String
     let name: String
     let profileImageUrl: String?

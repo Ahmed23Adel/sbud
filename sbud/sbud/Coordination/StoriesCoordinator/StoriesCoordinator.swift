@@ -17,6 +17,14 @@ final class StoriesCoordinator: ObservableObject {
         navigationPath.append(.friendStories(userId: userId))
     }
 
+    func goToMyStories() {
+        navigationPath.append(.myStories)
+    }
+
+    func goToManageMyStories() {
+        navigationPath.append(.manageMyStories)
+    }
+
     func showCreateStory() {
         activeSheet = .createStory
     }

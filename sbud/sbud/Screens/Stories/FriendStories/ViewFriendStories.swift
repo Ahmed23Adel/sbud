@@ -8,6 +8,7 @@ import SwiftUI
 struct ViewFriendStories: View {
     @State private var vm: ViewModelFriendStories
     @State private var isExpanded = false
+    @State private var showDeleteMenu = false
     @Environment(\.dismiss) private var dismiss
 
     var onStoriesChanged: (([Story]) -> Void)?
@@ -48,7 +49,14 @@ struct ViewFriendStories: View {
                     .frame(height: imageHeight)
                     .contentShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
                     .clipShape(RoundedRectangle(cornerRadius: isExpanded ? 20 : UIConstants.cornerRadius))
-                    .overlay(alignment: .topTrailing) { dismissButton }
+                    .overlay(alignment: .topTrailing) {
+                        HStack(spacing: 0) {
+                            if let story = vm.currentStory, story.userId == vm.currentUserId {
+                                deleteMenuButton
+                            }
+                            dismissButton
+                        }
+                    }
                     .overlay(alignment: .bottom) {
                         if !isExpanded {
                             reactionBar(story: story)
@@ -136,6 +144,33 @@ struct ViewFriendStories: View {
             dismiss()
         } label: {
             Image(systemName: "xmark")
+                .font(.title2.bold())
+                .foregroundStyle(.white)
+                .padding(16)
+                .padding(.top, 64)
+        }
+    }
+
+    private var deleteMenuButton: some View {
+        Menu {
+            Button(role: .destructive) {
+                Task {
+                    await vm.deleteCurrentImage { dismiss() }
+                }
+            } label: {
+                Label("Delete this photo", systemImage: "photo.badge.minus")
+            }
+
+            Button(role: .destructive) {
+                Task {
+                    await vm.deleteCurrentStory { dismiss() }
+                    if vm.stories.isEmpty { dismiss() }
+                }
+            } label: {
+                Label("Delete entire story", systemImage: "trash")
+            }
+        } label: {
+            Image(systemName: "ellipsis")
                 .font(.title2.bold())
                 .foregroundStyle(.white)
                 .padding(16)

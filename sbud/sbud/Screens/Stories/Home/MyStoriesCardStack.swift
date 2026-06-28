@@ -9,22 +9,32 @@ struct MyStoriesCardStack: View {
     @State private var cards: [MyStoryImageCard]
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging = false
+    var onViewAll: (() -> Void)?
 
     // Pre-computed random rotations so they don't shift on re-render
     private let rotations: [Double]
 
-    init(cards: [MyStoryImageCard]) {
+    init(cards: [MyStoryImageCard], onViewAll: (() -> Void)? = nil) {
         _cards = State(initialValue: cards)
         rotations = cards.indices.map { _ in Double.random(in: -12...12) }
+        self.onViewAll = onViewAll
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Your stories")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white.opacity(0.7))
-                .padding(.horizontal)
+            HStack {
+                Text("Your stories")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white.opacity(0.7))
+                Spacer()
+                if onViewAll != nil {
+                    Button("View all") { onViewAll?() }
+                        .font(.subheadline)
+                        .foregroundStyle(Color.mainColor)
+                }
+            }
+            .padding(.horizontal)
 
             ZStack {
                 ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
