@@ -11,4 +11,6 @@ protocol IStoriesRepository {
     func markImageViewed(storyId: String, imageIndex: Int) async throws
     func react(storyId: String, emoji: String?) async throws -> [String: String]
     func deleteStory(_ storyId: String) async throws
+    func deleteStoryImage(storyId: String, imageIndex: Int) async throws
+    func fetchMyStories(limit: Int, offset: Int) async throws -> StoriesFeedResponse
 }

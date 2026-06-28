@@ -5,6 +5,7 @@
 
 import Foundation
 import FirebaseAuth
+import Combine
 
 @MainActor
 @Observable
@@ -22,6 +23,8 @@ final class ViewModelFriendStories {
         self.stories = stories
         self.onStoriesChanged = onStoriesChanged
     }
+
+    let currentUserId: String = Auth.auth().currentUser?.uid ?? ""
 
     var currentStory: Story? {
         guard currentStoryIndex < stories.count else { return nil }
@@ -73,6 +76,51 @@ final class ViewModelFriendStories {
         } else if currentStoryIndex > 0 {
             currentStoryIndex -= 1
             currentImageIndex = max(0, stories[currentStoryIndex].images.count - 1)
+        }
+    }
+
+    // MARK: - Delete (own stories only)
+
+    /// Deletes the currently viewed image. Removes story entirely if it was the last image.
+    func deleteCurrentImage(onLastImageDeleted: () -> Void) async {
+        guard let story = currentStory, let image = currentImage else { return }
+        do {
+            if story.images.count == 1 {
+                try await storiesRepo.deleteStory(story.id)
+                stories.remove(at: currentStoryIndex)
+                if currentStoryIndex >= stories.count {
+                    currentStoryIndex = max(0, stories.count - 1)
+                }
+                currentImageIndex = 0
+                onStoriesChanged?(stories)
+                if stories.isEmpty { onLastImageDeleted() }
+            } else {
+                try await storiesRepo.deleteStoryImage(storyId: story.id, imageIndex: image.index)
+                stories[currentStoryIndex].images.remove(at: currentImageIndex)
+                if currentImageIndex >= stories[currentStoryIndex].images.count {
+                    currentImageIndex = max(0, stories[currentStoryIndex].images.count - 1)
+                }
+                onStoriesChanged?(stories)
+            }
+        } catch {
+            PopUpGenerator.shared.show(msg: error.localizedDescription, type: .error)
+        }
+    }
+
+    /// Deletes the entire current story.
+    func deleteCurrentStory(onDeleted: () -> Void) async {
+        guard let story = currentStory else { return }
+        do {
+            try await storiesRepo.deleteStory(story.id)
+            stories.remove(at: currentStoryIndex)
+            if currentStoryIndex >= stories.count {
+                currentStoryIndex = max(0, stories.count - 1)
+            }
+            currentImageIndex = 0
+            onStoriesChanged?(stories)
+            if stories.isEmpty { onDeleted() }
+        } catch {
+            PopUpGenerator.shared.show(msg: error.localizedDescription, type: .error)
         }
     }
 

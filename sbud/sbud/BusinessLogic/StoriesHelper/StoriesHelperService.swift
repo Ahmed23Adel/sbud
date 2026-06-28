@@ -14,29 +14,36 @@ final class StoriesHelperService {
     private let storiesRepo = StoriesRepository()
 
     func fetchFriendsWithStories() async throws -> [FriendWithStories] {
+        let (friends, _) = try await fetchFriendsWithStoriesAndOwn()
+        return friends
+    }
+
+    /// Returns friends' stories and the current user's own stories separately.
+    func fetchFriendsWithStoriesAndOwn() async throws -> ([FriendWithStories], [Story]) {
         let currentUserId = Auth.auth().currentUser?.uid ?? ""
 
         let feed = try await storiesRepo.fetchFeed()
 
-        // Inject myReaction from reactions dict, then group by userId
         var storiesByUser: [String: [Story]] = [:]
         for var story in feed.stories {
             story.myReaction = story.reactions[currentUserId]
             storiesByUser[story.userId, default: []].append(story)
         }
 
-        // Build one FriendWithStories per user — author info comes from the story itself
-        return storiesByUser
+        let ownStories = storiesByUser.removeValue(forKey: currentUserId) ?? []
+
+        let friends = storiesByUser
             .map { userId, stories -> FriendWithStories in
                 let first = stories[0]
-                let name = first.authorName ?? userId
                 return FriendWithStories(
                     id: userId,
-                    name: name,
+                    name: first.authorName ?? userId,
                     profileImageUrl: first.authorProfileImageUrl,
                     stories: stories
                 )
             }
             .sorted { $0.name < $1.name }
+
+        return (friends, ownStories)
     }
 }

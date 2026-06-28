@@ -68,6 +68,19 @@ final class StoriesRepository: IStoriesRepository {
         _ = try await session.data(for: req)
     }
 
+    func deleteStoryImage(storyId: String, imageIndex: Int) async throws {
+        let url = URL(string: "\(baseURL)/stories/\(storyId)/images/\(imageIndex)")!
+        let req = try await authedRequest(url: url, method: "DELETE")
+        _ = try await session.data(for: req)
+    }
+
+    func fetchMyStories(limit: Int = 20, offset: Int = 0) async throws -> StoriesFeedResponse {
+        let url = URL(string: "\(baseURL)/stories/my?limit=\(limit)&offset=\(offset)")!
+        let req = try await authedRequest(url: url, method: "GET")
+        let (data, _) = try await session.data(for: req)
+        return try decoder.decode(StoriesFeedResponse.self, from: data)
+    }
+
     // MARK: - Private
 
     private func authedRequest(url: URL, method: String) async throws -> URLRequest {

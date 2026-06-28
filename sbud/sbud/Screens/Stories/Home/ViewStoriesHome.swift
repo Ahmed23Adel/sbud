@@ -21,6 +21,15 @@ struct ViewStoriesHome: View {
         .navigationTitle("Stories")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    coordinator.goToManageMyStories()
+                } label: {
+                    Image(systemName: "person.crop.rectangle.stack")
+                        .foregroundStyle(Color.mainColor)
+                        .font(.title3)
+                }
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     coordinator.showCreateStory()
@@ -56,8 +65,10 @@ struct ViewStoriesHome: View {
                 }
 
                 if !vm.myStoryCards.isEmpty {
-                    MyStoriesCardStack(cards: vm.myStoryCards)
-                        .padding(.top, 4)
+                    MyStoriesCardStack(cards: vm.myStoryCards) {
+                        coordinator.goToMyStories()
+                    }
+                    .padding(.top, 4)
                 }
             }
         }
