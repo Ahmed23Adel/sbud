@@ -16,6 +16,7 @@ import OSLog
 import FirebaseFirestore
 import SwiftData
 import FirebaseAnalytics
+import BackgroundTasks
 // Note: Used to enable push notification in future
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
@@ -29,7 +30,35 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         UNUserNotificationCenter.current().delegate = self
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
         UIApplication.shared.registerForRemoteNotifications()
+        registerBackgroundTasks()
         return true
+    }
+
+    private func registerBackgroundTasks() {
+        //I'm telling iOS what to do when it's fired in background
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: "com.sbud.event.remindersync",
+            using: nil
+        ) { task in
+            guard let refreshTask = task as? BGAppRefreshTask else { return }
+            refreshTask.expirationHandler = { refreshTask.setTaskCompleted(success: false) }
+            Task {
+                await EventReminderScheduler.shared.syncReminders()
+                refreshTask.setTaskCompleted(success: true)
+                self.scheduleNextReminderSync() // // ← submits the NEXT request
+            }
+        }
+        scheduleNextReminderSync()
+    }
+    // BGTaskScheduler only keeps one pending request per identifier. Submitting a new one overwrites the old one.
+    // the BGTask is just a safety net for when the user doesn't open the app.
+    // otherwise it uses scenePhase
+    func scheduleNextReminderSync() {
+        // "iOS, please wake my app at some point after 12 hours from now, and run the handler registered for this identifier."
+        let request = BGAppRefreshTaskRequest(identifier: "com.sbud.event.remindersync")
+        // earliestBeginDate is a lower bound, not a schedule
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 12 * 60 * 60) // ~twice a day
+        try? BGTaskScheduler.shared.submit(request)
     }
 
     func application(_ application: UIApplication,
@@ -44,8 +73,14 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register for remote notifications: \(error)")
     }
-    
-    
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound])
+    }
 }
 
 @main
@@ -56,6 +91,7 @@ struct SbudApp: App {
         authService: AuthenticationManager.shared,
         profileService: ProfileManager.shared
     )
+    @Environment(\.scenePhase) private var scenePhase
     let locationManager = LocationManager.shared
     let service = GeohashService.shared
 
@@ -80,5 +116,10 @@ struct SbudApp: App {
                 }
         }
         .modelContainer(for: LocalOnGoingSession.self)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task { await EventReminderScheduler.shared.syncReminders() }
+            }
+        }
     }
 }

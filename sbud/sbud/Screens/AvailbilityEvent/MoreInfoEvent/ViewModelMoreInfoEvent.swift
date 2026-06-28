@@ -168,6 +168,14 @@ class ViewModelMoreInfoEvent {
                 default:           joinState = .idle
                 }
             }
+            if resp.status == "confirmed", let start = fullDetails?.finalStartDateTime {
+                await EventReminderScheduler.shared.scheduleReminder(
+                    eventId: eventId,
+                    title: fullDetails?.title ?? "",
+                    activityType: fullDetails?.activityType ?? .running,
+                    startDateTime: start
+                )
+            }
         } catch {
             logger.error("loadMyStatus error: \(error)")
             await MainActor.run { joinState = .idle }
@@ -218,6 +226,7 @@ class ViewModelMoreInfoEvent {
                 joinState = .withdrawn
                 PopUpGenerator.shared.show(msg: "Withdrawn. You can re-join anytime.", type: .information)
             }
+            await EventReminderScheduler.shared.cancelReminderOnLeave(eventId: eventId)
         } catch {
             PopUpGenerator.shared.show(msg: "Error: \(error.localizedDescription)", type: .error)
         }
@@ -230,6 +239,7 @@ class ViewModelMoreInfoEvent {
                 joinState = .withdrawn
                 PopUpGenerator.shared.show(msg: "You have left the event. You can re-join anytime.", type: .information)
             }
+            await EventReminderScheduler.shared.cancelReminderOnLeave(eventId: eventId)
         } catch {
             PopUpGenerator.shared.show(msg: "Error: \(error.localizedDescription)", type: .error)
         }
