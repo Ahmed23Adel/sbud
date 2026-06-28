@@ -47,22 +47,6 @@ final class AvailabilityCoordinator: ObservableObject {
     func showProfile(userId: String) {
         navigationPath.append(AvailabilityDestination.profile(userId: userId))
     }
-    
-    /*func showProfile(userId: String) {
-            if let onShowProfile {
-                onShowProfile(userId)
-            } else {
-                navigationPath.append(AvailabilityDestination.profile(userId: userId))
-            }
-        }
-
-        func showChat(user: UserProfile, eventId: String, eventTitle: String) {
-            if let onShowChat {
-                onShowChat(user, eventId, eventTitle)
-            } else {
-                navigationPath.append(AvailabilityDestination.chat(user: user, eventId: eventId, eventTitle: eventTitle))
-            }
-        }*/
 
     func showChat(user: UserProfile, eventId: String, eventTitle: String) {
         navigationPath.append(AvailabilityDestination.chat(user: user, eventId: eventId, eventTitle: eventTitle))

@@ -16,6 +16,7 @@ class HomeViewModel: NSObject, CLLocationManagerDelegate {
     var recommendedEvents: [RecommendedEvent] = []
     var friendsActivity: [FriendActivityItem] = []
     var meetPeople: [MeetPersonItem] = []
+    var privateEvents: [PrivateEvent] = []
     var isLoading = false
 
     private var userLocation: CLLocation?
@@ -44,6 +45,7 @@ class HomeViewModel: NSObject, CLLocationManagerDelegate {
                 withAnimation(.easeInOut(duration: 0.4)) {
                     upcomingEvents = response.upcoming
                     meetPeople = response.meetPeople
+                    privateEvents = response.privateEvents
                     isLoading = false
                 }
                 withAnimation(.easeOut(duration: 0.35)) {

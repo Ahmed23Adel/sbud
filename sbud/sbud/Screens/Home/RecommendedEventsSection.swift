@@ -74,8 +74,8 @@ struct RecommendedEventsSection: View {
         }
         .padding(20)
         .background(Color(white: 0.07))
+        .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
         .padding(.horizontal, 16)
-        .cornerRadius(4)
     }
 
     // MARK: - Auto Scroll
@@ -161,8 +161,8 @@ struct RecommendedEventCard: View {
                 .padding(20),
                 alignment: .bottomLeading
             )
-            .clipShape(RoundedRectangle(cornerRadius: 4))
-            .overlay(RoundedRectangle(cornerRadius: 4).stroke(accentColor.opacity(0.4), lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
+            .overlay(RoundedRectangle(cornerRadius: UIConstants.cornerRadius).stroke(accentColor.opacity(0.4), lineWidth: 1))
             .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
             .onTapGesture { onTap() }
     }

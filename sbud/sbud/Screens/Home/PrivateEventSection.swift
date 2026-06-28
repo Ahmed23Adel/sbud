@@ -1,49 +1,46 @@
 //
-//  UpcomingEventsSection.swift
+//  PrivateEventSection.swift
 //  sbud
 //
-//  Created by Erdal on 1.06.2026.
+//  Created by Erdal on 2.06.2026.
 //
 
 import SwiftUI
 import Kingfisher
 
-enum CardColorScheme {
-    case cyan, lime
-    var accent: Color {
-        switch self {
-        case .cyan: return Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
-        case .lime: return Color("palelime")
-        }
-    }
-}
-
-struct UpcomingEventsSection: View {
-    let events: [UpcomingEvent]
+struct PrivateEventsSection: View {
+    let events: [PrivateEvent]
     let isLoading: Bool
-    let onTapEvent: (UpcomingEvent) -> Void
-    private let cyan = Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
+    let onTapEvent: (PrivateEvent) -> Void
+
+    private let accent = Color(red: 1.0, green: 0.82, blue: 0.0) // gold
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("UPCOMING EVENTS")
-                    .font(.system(size: 15, weight: .black)).foregroundColor(.white)
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(accent)
+                Text("PRIVATE EVENTS")
+                    .font(.system(size: 15, weight: .black))
+                    .foregroundColor(.white)
                 Spacer()
             }
 
             if isLoading {
-                HStack { ProgressView().tint(cyan) }
-                    .frame(maxWidth: .infinity).frame(height: 140)
+                HStack { ProgressView().tint(accent) }
+                    .frame(maxWidth: .infinity).frame(height: 120)
             } else if events.isEmpty {
-                Text("No upcoming events yet.")
+                Text("No private events from friends yet.")
                     .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(.gray).frame(maxWidth: .infinity).padding(.vertical, 30)
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(Array(events.enumerated()), id: \.element.id) { index, event in
-                            UpcomingEventCard(event: event, colorScheme: index % 2 == 0 ? .cyan : .lime)
+                        ForEach(events) { event in
+                            PrivateEventCard(event: event, accent: accent)
                                 .onTapGesture { onTapEvent(event) }
                         }
                     }
@@ -58,24 +55,29 @@ struct UpcomingEventsSection: View {
     }
 }
 
-struct UpcomingEventCard: View {
-    let event: UpcomingEvent
-    let colorScheme: CardColorScheme
+struct PrivateEventCard: View {
+    let event: PrivateEvent
+    let accent: Color
 
     var body: some View {
         HStack(spacing: 0) {
-            Rectangle().fill(colorScheme.accent).frame(width: 3)
+            Rectangle().fill(accent).frame(width: 3)
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text(event.activityType.uppercased())
                         .font(.system(size: 9, weight: .bold)).kerning(1.5)
-                        .foregroundColor(colorScheme.accent)
+                        .foregroundColor(accent)
                     Spacer()
-                    Text(event.isConfirmed ? "CONFIRMED" : "PROPOSED")
-                        .font(.system(size: 10, weight: .medium)).foregroundColor(.black)
-                        .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(colorScheme.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                    HStack(spacing: 4) {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 9, weight: .bold))
+                        Text("PRIVATE")
+                            .font(.system(size: 9, weight: .bold)).kerning(1)
+                    }
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
                 }
                 Text(event.title.uppercased())
                     .font(.system(size: 13, weight: .black)).foregroundColor(.white)

@@ -142,10 +142,11 @@ class HostsRepository: IFirebaesRepository{
 
         try await batch.commit()
 
+        let repo = JoinedEventsRepository()
         let joinedEventsSnap = try await db.collection("joinedEvents")
-            .whereField("userId", isEqualTo: targetUserId)
-            .whereField("eventId", isEqualTo: eventId)
-            .whereField("participationStatus", isEqualTo: "host")
+            .whereField(repo.constants.userId, isEqualTo: targetUserId)
+            .whereField(repo.constants.eventId, isEqualTo: eventId)
+            .whereField(repo.constants.participationStatus, isEqualTo: ParticipationStatus.host.rawValue)
             .getDocuments()
 
         for doc in joinedEventsSnap.documents {

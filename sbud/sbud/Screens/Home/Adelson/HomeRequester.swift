@@ -17,6 +17,7 @@ nonisolated struct HomeResponse: Decodable, Sendable {
     var recommended: [RecommendedEvent]
     var friendsActivity: [FriendActivityItem]
     var meetPeople: [MeetPersonItem]
+    var privateEvents: [PrivateEvent]
 }
 
 // MARK: - FriendActivityItem

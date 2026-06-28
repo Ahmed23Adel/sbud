@@ -9,10 +9,11 @@ import SwiftUI
 import Kingfisher
 struct FriendListView: View {
     @StateObject private var vm: FriendListVM
-    @EnvironmentObject var coordinator: ProfileCoordinator
+    let onSelectUser: (String) -> Void
 
-    init(userId: String) {
+    init(userId: String, onSelectUser: @escaping (String) -> Void) {
         _vm = StateObject(wrappedValue: FriendListVM(userId: userId))
+        self.onSelectUser = onSelectUser
     }
 
     var body: some View {
@@ -48,7 +49,7 @@ struct FriendListView: View {
                             ForEach(vm.users) { user in
                                 UserRowCell(user: user)
                                     .onTapGesture {
-                                        coordinator.goToOthersProfile(userId: user.id)
+                                        onSelectUser(user.id)
                                     }
 
                                 Divider().background(Color(white: 0.1))

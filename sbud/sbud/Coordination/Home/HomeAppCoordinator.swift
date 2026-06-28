@@ -94,8 +94,9 @@ struct HomeAppCoordinator: View {
             .environmentObject(makeProfileCoordinator(userId: userId, currentUserId: currentUserId))
 
         case .friendsList(let userId):
-            FriendListView(userId: userId)
-                .environmentObject(makeProfileCoordinator(userId: userId, currentUserId: currentUserId))
+            FriendListView(userId: userId) { targetId in
+                coordinator.goToProfile(userId: targetId)
+            }
 
         case .chat(let user, let eventId, let eventTitle):
             ChatView(user: user, eventId: eventId, eventTitle: eventTitle)

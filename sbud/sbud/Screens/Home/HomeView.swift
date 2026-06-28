@@ -33,17 +33,22 @@ struct HomeView: View {
                     )
                     .animation(.easeInOut(duration: 0.4), value: viewModel.upcomingEvents.count)
 
-                    if !viewModel.recommendedEvents.isEmpty || (viewModel.isLoading && viewModel.recommendedEvents.isEmpty) {
-                        RecommendedEventsSection(
-                            events: viewModel.recommendedEvents,
-                            isLoading: viewModel.isLoading && viewModel.recommendedEvents.isEmpty,
-                            onTapEvent: { event in onTapOthersEvent(event.eventId) },
-                            onJoin: { event in
-                                Task { await viewModel.joinEvent(eventId: event.eventId) }
-                            }
-                        )
-                        .animation(.easeInOut(duration: 0.3), value: viewModel.recommendedEvents.count)
-                    }
+                    PrivateEventsSection(
+                        events: viewModel.privateEvents,
+                        isLoading: viewModel.isLoading && viewModel.privateEvents.isEmpty,
+                        onTapEvent: { event in onTapOthersEvent(event.eventId) }
+                    )
+                    .animation(.easeInOut(duration: 0.4), value: viewModel.privateEvents.count)
+
+                    RecommendedEventsSection(
+                        events: viewModel.recommendedEvents,
+                        isLoading: viewModel.isLoading && viewModel.recommendedEvents.isEmpty,
+                        onTapEvent: { event in onTapOthersEvent(event.eventId) },
+                        onJoin: { event in
+                            Task { await viewModel.joinEvent(eventId: event.eventId) }
+                        }
+                    )
+                    .animation(.easeInOut(duration: 0.3), value: viewModel.recommendedEvents.count)
 
                     FriendsActivitySection(
                                             items: viewModel.friendsActivity,
@@ -71,10 +76,8 @@ struct HomeView: View {
                 .padding(.top, 16)
             }
         }
+        .refreshable { await viewModel.load() }
         .navigationBarHidden(true)
-        .onAppear {
-            Task { await viewModel.load() }
-        }
     }
 }
 

@@ -73,8 +73,8 @@ struct FriendsActivitySection: View {
         }
         .padding(20)
         .background(Color(white: 0.07))
+        .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
         .padding(.horizontal, 16)
-        .cornerRadius(4)
     }
 
     // MARK: - Rows View (ayırıcı çizgili)

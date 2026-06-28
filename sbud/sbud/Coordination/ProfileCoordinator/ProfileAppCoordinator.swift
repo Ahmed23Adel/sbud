@@ -209,7 +209,9 @@ struct ProfileDestinationView: View {
             }
 
         case .friendsList(let userId):
-            FriendListView(userId: userId)
+            FriendListView(userId: userId) { targetId in
+                pushToParent(.othersProfile(userId: targetId))
+            }
 
         case .myEventDetails(let eventId):
             ViewMyEventDetails(eventId: eventId)
@@ -249,7 +251,7 @@ private struct ProfileSheetView: View {
 
         case .qrCode:
             QRCodeSheetView(userId: coordinator.userId) { scannedId in
-                coordinator.goToScannedProfile(userId: coordinator.userId)
+                coordinator.goToScannedProfile(userId: scannedId)
             }
         }
     }
