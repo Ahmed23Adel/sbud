@@ -67,6 +67,17 @@ final class MockJoinRequester: JoinEventRequesting {
         case .failure(let e): throw e
         }
     }
+
+    func getPendingQueue(eventId: String) async throws -> JoinQueueResponse {
+        JoinQueueResponse(
+            confirmedCount: 0, pendingCount: 0, waitlistCount: 0,
+            capacity: nil, isCapacityFull: false, waitlistMax: 0, pendingUsers: []
+        )
+    }
+
+    func respondToRequest(eventId: String, requesterId: String, accept: Bool) async throws -> JoinRespondResponse {
+        JoinRespondResponse(status: "ok", message: "ok")
+    }
 }
 
 final class MockCurrentUserProvider: CurrentUserProviding {
@@ -246,7 +257,7 @@ final class ViewModelMoreInfoEventTests: XCTestCase {
         mockJoin.stubbedStatusResult = .success(MyStatusResponse(status: "left", waitlistPosition: nil))
         let sut = makeSUT(userId: "other-user")
         try await Task.sleep(nanoseconds: 200_000_000)
-        XCTAssertEqual(sut.joinState, .left)
+        XCTAssertEqual(sut.joinState, .withdrawn)
     }
 
     func test_loadMyStatus_waitlisted_setsJoinStateWithPosition() async throws {
@@ -338,7 +349,7 @@ final class ViewModelMoreInfoEventTests: XCTestCase {
         let sut = makeSUT(userId: "other-user")
         try await Task.sleep(nanoseconds: 200_000_000)
         await sut.leave()
-        XCTAssertEqual(sut.joinState, .left)
+        XCTAssertEqual(sut.joinState, .withdrawn)
     }
 
     func test_leave_callsLeaveOnce() async throws {

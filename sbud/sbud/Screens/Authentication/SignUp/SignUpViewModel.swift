@@ -8,9 +8,6 @@
 import Foundation
 import Combine
 import FirebaseAuth
-import FirebaseCore
-import FirebaseFirestore
-import AdelsonValidator
 import FirebaseAnalytics
 
 @MainActor
@@ -18,22 +15,30 @@ class SignUpViewModel: ObservableObject {
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var confirmPassword: String = ""
-    @Published var emailIsValid = false // to ensure
+    @Published var emailIsValid = false
     @Published var isLoading = false
     @Published var emailValidationFailed = false
     @Published var usernameValidationFailed = false
     @Published var isSigningUp = false
-    let authManager = AuthenticationManager.shared
     @Published var showAlert = false
     @Published var alertMsg = ""
-    var coordinator: MainCoordinator?
     @Published var isSigningIn = false
     @Published var showPassword = false
     @Published var showConfirmPassword = false
 
-    init() {
+    private let authManager: any IAuthOrchestrator
+    private let emailChecker: any IEmailExistenceChecker
+    var coordinator: MainCoordinator?
+
+    init(
+        authManager: any IAuthOrchestrator = AuthenticationManager.shared,
+        emailChecker: any IEmailExistenceChecker = FirestoreEmailExistenceChecker()
+    ) {
+        self.authManager = authManager
+        self.emailChecker = emailChecker
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "SignUp"])
     }
+
     func setCoordinator(coordinator: MainCoordinator) {
         self.coordinator = coordinator
     }
@@ -45,10 +50,8 @@ class SignUpViewModel: ObservableObject {
             try await authManager.signUp()
             coordinator?.coordinatorDidCompleteSignIn()
         } catch {
-            await MainActor.run {
-                showAlert = true
-                alertMsg = "Problem with user registration, please try again"
-            }
+            showAlert = true
+            alertMsg = "Problem with user registration, please try again"
         }
     }
 
@@ -62,23 +65,22 @@ class SignUpViewModel: ObservableObject {
             email: email,
             password: password,
             emailAlertFunction: showAlertEmail,
-            passwordAlertFunction: showAlertPassword) {return}
+            passwordAlertFunction: showAlertPassword) { return }
+
         startLoading()
         authManager.setAuthTypeEmailAndPassword()
         isSigningUp = true
         do {
             try await authManager.signUp(email: email, password: password)
-            AuthenticationManagerEmailAndPassword.shared.sendVerificationEmail()
+            authManager.sendVerificationEmail()
             isSigningUp = false
             stopLoading()
             coordinator?.coordinatorDidCompleteSignIn()
         } catch {
-            await MainActor.run {
-                isSigningUp = false
-                showAlert = true
-                stopLoading()
-                showAlertForEmail(error: error)
-            }
+            isSigningUp = false
+            showAlert = true
+            stopLoading()
+            showAlertForEmail(error: error)
         }
     }
 
@@ -108,14 +110,11 @@ class SignUpViewModel: ObservableObject {
         startLoading()
         self.emailValidationFailed = false
 
-        let snapshot = try await Firestore.firestore().collection("users")
-            .whereField("email", isEqualTo: email)
-            .getDocuments()
+        let taken = try await emailChecker.isEmailTaken(email)
 
-        self.emailValidationFailed = !snapshot.isEmpty
-        self.emailIsValid = snapshot.isEmpty
+        self.emailValidationFailed = taken
+        self.emailIsValid = !taken
         stopLoading()
-
     }
 
     // MARK: Navigation
@@ -132,20 +131,13 @@ class SignUpViewModel: ObservableObject {
         self.isLoading = false
     }
 
-    @MainActor
     private func showAlertEmail() {
-        Task { @MainActor in
-            alertMsg = "Insert a valid email (ex. name@mail.com)"
-            showAlert = true
-        }
-
+        alertMsg = "Insert a valid email (ex. name@mail.com)"
+        showAlert = true
     }
-    @MainActor
+
     private func showAlertPassword() {
-        Task { @MainActor in
-            alertMsg = "Password must contain at least 6 characters, 1 letter, and 1 number at least"
-            showAlert = true
-        }
+        alertMsg = "Password must contain at least 6 characters, 1 letter, and 1 number at least"
+        showAlert = true
     }
-
 }
