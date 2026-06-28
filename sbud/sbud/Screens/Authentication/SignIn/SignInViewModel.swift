@@ -7,12 +7,12 @@
 
 import Foundation
 import Combine
-import FirebaseAuth
 import FirebaseAnalytics
+
 @MainActor
 class SignInViewModel: ObservableObject {
 
-    let authManager = AuthenticationManager.shared
+    private let authManager: any IAuthOrchestrator
     @Published var showAlert = false
     @Published var alertMsg = ""
     var coordinator: MainCoordinator?
@@ -22,7 +22,8 @@ class SignInViewModel: ObservableObject {
     @Published var showPassword = false
     @Published var isLoading = false
 
-    init() {
+    init(authManager: any IAuthOrchestrator = AuthenticationManager.shared) {
+        self.authManager = authManager
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "SignIn"])
     }
 
@@ -34,13 +35,11 @@ class SignInViewModel: ObservableObject {
     func signUpWithGoogle() async {
         authManager.setAuthTypeGoogle()
         do {
-//            try await authManager.signIn()
-//            coordinator?.check
+            try await authManager.signIn()
+            coordinator?.coordinatorDidCompleteSignIn()
         } catch {
-            await MainActor.run {
-                showAlert = true
-                alertMsg = "Problem with user registration, please try again"
-            }
+            showAlert = true
+            alertMsg = "Problem with user registration, please try again"
         }
     }
 
@@ -50,7 +49,7 @@ class SignInViewModel: ObservableObject {
             email: email,
             password: password,
             emailAlertFunction: showAlertEmail,
-            passwordAlertFunction: showAlertPassword) {return}
+            passwordAlertFunction: showAlertPassword) { return }
 
         startLoading()
         isSigningIn = true
@@ -64,8 +63,7 @@ class SignInViewModel: ObservableObject {
             stopLoading()
             isSigningIn = false
             showAlert = true
-                alertMsg = "Email or password are incorrect, please try again"
-
+            alertMsg = "Email or password are incorrect, please try again"
         }
     }
 
@@ -73,20 +71,14 @@ class SignInViewModel: ObservableObject {
         coordinator?.goToSignUp()
     }
 
-    @MainActor
     private func showAlertEmail() {
-        Task { @MainActor in
-            alertMsg = "Insert a valid email (ex. name@mail.com)"
-            showAlert = true
-        }
-
+        alertMsg = "Insert a valid email (ex. name@mail.com)"
+        showAlert = true
     }
-    @MainActor
+
     private func showAlertPassword() {
-        Task { @MainActor in
-            alertMsg = "Password must contain at least 6 characters, 1 letter, and 1 number at least"
-            showAlert = true
-        }
+        alertMsg = "Password must contain at least 6 characters, 1 letter, and 1 number at least"
+        showAlert = true
     }
 
     // MARK: view helpers
@@ -97,17 +89,17 @@ class SignInViewModel: ObservableObject {
     private func stopLoading() {
         self.isLoading = false
     }
-    
+
     func forgotPassword() async {
         guard !email.isEmpty else {
             showAlert = true
             alertMsg = "Please enter your email address first"
             return
         }
-        
+
         startLoading()
         do {
-            try await Auth.auth().sendPasswordReset(withEmail: email)
+            try await authManager.sendPasswordReset(email: email)
             stopLoading()
             showAlert = true
             alertMsg = "Password reset email sent! Check your inbox."
