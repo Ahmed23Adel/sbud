@@ -60,9 +60,12 @@ struct ActivityFiltersView: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Done") { isAnyFieldFocused = false }
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color.mainColor)
+                Button {
+                    isAnyFieldFocused = false
+                } label: {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                        .foregroundStyle(Color.mainColor)
+                }
             }
         }
     }
