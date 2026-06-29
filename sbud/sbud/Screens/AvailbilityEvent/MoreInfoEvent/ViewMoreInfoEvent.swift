@@ -11,9 +11,11 @@ import Kingfisher
 import Lottie
 import OSLog
 import FirebaseAuth
+
 struct ViewMoreInfoEvent: View {
     @State var viewModel: ViewModelMoreInfoEvent
     @EnvironmentObject var coordinator: AvailabilityCoordinator
+    @State private var showHostsList = false
 
     let logger = Logger(subsystem: "sbud", category: "ViewMoreInfoEvent")
 
@@ -37,16 +39,18 @@ struct ViewMoreInfoEvent: View {
                 MidnightLoadingView(text: "Loading event")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
+                    .accessibilityIdentifier("moreInfo.loadingView")
             }
 
             ScrollView {
-                VStack{
+                VStack {
                     if viewModel.isErrorLoading {
-                        VStack{
+                        VStack {
                             Spacer()
                             Text("Error loading full details of event, pleaes try again")
-                            .font(.title)
-                            .fontWeight(.bold)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .accessibilityIdentifier("moreInfo.errorText")
                             Spacer()
                         }
                     } else if let details = viewModel.fullDetails {
@@ -73,6 +77,7 @@ struct ViewMoreInfoEvent: View {
                                 .font(.title).foregroundColor(.white).italic()
                                 .padding(.horizontal)
                                 .padding(.horizontal)
+                                .accessibilityIdentifier("moreInfo.eventTitle")
                             Spacer()
                         }
 
@@ -88,12 +93,11 @@ struct ViewMoreInfoEvent: View {
                             text: details.notes ?? ""
                         )
                         .padding(.horizontal)
+
                         if Auth.auth().currentUser?.uid != details.creator.id {
                             CreatorContactDetailed(
                                 creatorInfo: details.creator,
                                 onTapProfile: {
-                                    logger.info("CreatorContactDetailed \(type(of: coordinator))")
-                                    logger.info("details.creator.id: \(details.creator.id)")
                                     coordinator.showProfile(userId: details.creator.id)
                                 },
                                 onTapContact: {
@@ -101,15 +105,50 @@ struct ViewMoreInfoEvent: View {
                                     chatUser.name = details.creator.name
                                     chatUser.surName = details.creator.surName
                                     chatUser.profileImageUrl = details.creator.profileImageUrl
-
                                     let eTitle = details.title
                                     coordinator.showChat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle)
                                 }
                             )
                             .padding(.horizontal)
                         }
+
+                        Button {
+                            showHostsList = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "person.2.fill")
+                                    .foregroundColor(Color("palelime"))
+                                Text("View Hosts")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundColor(.white)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
+                                    .font(.system(size: 12))
+                            }
+                            .padding()
+                            .background(Color.backgroundColor)
+                            .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
+                            .padding(.horizontal)
+                        }
+
                         LocationMapCard(dateLocations: details.dateLocations).padding()
                             .padding(.horizontal)
+                        
+                        if details.isDateConfirmed,
+                           let finalStart = details.finalStartDateTime,
+                           let finalEnd   = details.finalEndDateTime,
+                           let firstLoc   = details.dateLocations.first?.locations.first {
+
+                            EventWeatherWidget(
+                                finalStart: finalStart,
+                                finalEnd:   finalEnd,
+                                latitude:   firstLoc.latitude,
+                                longitude:  firstLoc.longitude
+                            )
+                            .padding(.horizontal)
+                        }
+              
                         if !viewModel.isCurrentUserHost {
                             JoinEventButton(
                                 joinCondition: details.joinCondition,
@@ -122,9 +161,11 @@ struct ViewMoreInfoEvent: View {
                             .padding(.horizontal)
                             .padding(.vertical, 8)
                         }
-
+                        
+                        
                         Spacer()
                     }
+                    
                 }
                 .padding(.top, 200)
                 .padding(.bottom, 120)
@@ -132,7 +173,33 @@ struct ViewMoreInfoEvent: View {
             .scrollIndicators(.hidden)
         }
         .ignoresSafeArea()
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    guard let eventId = viewModel.fullDetails?.id,
+                          let url = URL(string: "https://sbud-backend.onrender.com/event/\(eventId)") else { return }
+                    let av = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                    UIApplication.shared.connectedScenes
+                        .compactMap { $0 as? UIWindowScene }
+                        .first?.windows.first?.rootViewController?
+                        .present(av, animated: true)
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $showHostsList) {
+            ViewHostsList(
+                eventId: viewModel.eventId,
+                onTapHost: { userId in
+                    showHostsList = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        coordinator.showProfile(userId: userId)
+                    }
+                },
+                onDismiss: { showHostsList = false }
+            )
+        }
     }
-
-    
 }
+

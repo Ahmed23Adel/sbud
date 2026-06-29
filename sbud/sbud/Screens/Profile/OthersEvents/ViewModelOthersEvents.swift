@@ -6,8 +6,11 @@
 //
 
 import Foundation
+import FirebaseAnalytics
 
 @Observable
 class ViewModelOthersEvents{
-    
+    init() {
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "OthersEvents"])
+    }
 }

@@ -7,6 +7,7 @@
 import Foundation
 import FirebaseAuth
 import Combine
+import FirebaseAnalytics
 
 @MainActor
 final class SettingsVM: ObservableObject {
@@ -18,6 +19,10 @@ final class SettingsVM: ObservableObject {
     @Published var isSaving = false
 
     private let profileManager = ProfileManager.shared
+
+    init() {
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "Settings"])
+    }
 
     func loadFromLocal() {
         guard let local = profileManager.getLocalProfile() else { return }

@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import FirebaseFirestore
+import FirebaseAnalytics
 
 enum MyEventDetailsSheet: Identifiable {
     case confirmation
@@ -23,22 +24,31 @@ class ViewModelMyEventDetails {
     var myEventDertails: EventFullDetails? = nil
     var isLoading: Bool = false
     var eventId: String
+    var role: EventUserRole? = nil  
 
     var queueResponse: JoinQueueResponse? = nil
     var isLoadingQueue: Bool = false
     var showQueue: Bool = false
 
     private let joinRequester = JoinEventRequester()
+    private let deleteRequester = DeleteEventRequester()
 
     private var mainCoordinator: MainCoordinator?
     var activeSheet: MyEventDetailsSheet?
-    
-    
+
     var isSessionCreated = false
+    var showDeleteConfirmation = false
+    var isDeletingEvent = false
+    var eventDeleted = false
+    var showEditEvent = false
     
     init(eventId: String) {
         logger.info("eventId: \(eventId)")
         self.eventId = eventId
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "MyEventDetails",
+            "event_id": eventId
+        ])
         Task { await loadDetails() }
         Task {
             do {
@@ -53,25 +63,40 @@ class ViewModelMyEventDetails {
     func setMainCoordinator(mainCoordinator: MainCoordinator){
         self.mainCoordinator = mainCoordinator
     }
+    // MARK: - Refresh
+
+    /// Re-fetches event details, the join queue, and the session-created flag in one shot.
+    /// Called by pull-to-refresh in the view.
+    func refresh() async {
+        await loadDetails()
+        do {
+            isSessionCreated = try await isSessionCreated()
+        } catch {
+            logger.fault("Error refreshing session status: \(error)")
+        }
+    }
+
     private func loadDetails() async {
         await MainActor.run { isLoading = true }
         do {
-            let requester = EventByIdRequester()
-            let details = try await requester.fetchEvent(eventId: eventId)
+            async let detailsTask = EventByIdRequester().fetchEvent(eventId: eventId)
+            async let roleTask = EventRoleService.getRole(eventId: eventId)
+
+            let (details, resolvedRole) = try await (detailsTask, roleTask)
+
             await MainActor.run {
                 myEventDertails = details
+                role = resolvedRole
                 isLoading = false
             }
             await loadQueue()
-            logger.log("Full event loaded \(self.eventId)")
+            logger.log("Full event loaded \(self.eventId), role: \(String(describing: resolvedRole))")
         } catch {
             logger.error("Error: \(error)")
             await MainActor.run { isLoading = false }
             PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
         }
     }
-
-    // MARK: - Queue
 
     func loadQueue() async {
         await MainActor.run { isLoadingQueue = true }
@@ -116,34 +141,27 @@ class ViewModelMyEventDetails {
         }
     }
 
-    // MARK: - Confirm Event
-
     func confirmEventFinalChoice(selectedDateEntry: DateLocationEntry, selectedLocation: LocationPoint, finalStartDate: Date, finalEndDate: Date) async {
         await MainActor.run { isLoading = true }
         let db = Firestore.firestore()
-
         let batch = db.batch()
-
         let eventRef = db.collection("Events").document(eventId)
-        let finalizedDateLocation: [[String: Any]] = [
-            [
-                "id": selectedDateEntry.id,
-                "startDateTime": Timestamp(date: finalStartDate),
-                "endDateTime": Timestamp(date: finalEndDate),
-                "locations": [
-                    [
-                        "latitude": selectedLocation.latitude,
-                        "longitude": selectedLocation.longitude,
-                        "geohash": selectedLocation.geohash
-                    ]
-                ]
-            ]
-        ]
+
+        let finalizedDateLocation: [[String: Any]] = [[
+            "id": selectedDateEntry.id,
+            "startDateTime": Timestamp(date: finalStartDate),
+            "endDateTime": Timestamp(date: finalEndDate),
+            "locations": [[
+                "latitude": selectedLocation.latitude,
+                "longitude": selectedLocation.longitude,
+                "geohash": selectedLocation.geohash
+            ]]
+        ]]
 
         batch.updateData([
             "isDateConfirmed": true,
             "isLocationConfirmed": true,
-            "status": "confirmed",
+            "status": UsersEventStatus.confirmed.rawValue,
             "dateLocations": finalizedDateLocation
         ], forDocument: eventRef)
 
@@ -154,7 +172,6 @@ class ViewModelMyEventDetails {
 
             for doc in flattenedSnapshot.documents {
                 let data = doc.data()
-
                 let docDateLocationId = data["dateLocationId"] as? String ?? ""
                 var isChosenLocation = false
 
@@ -166,9 +183,7 @@ class ViewModelMyEventDetails {
                     isChosenLocation = (geohash == selectedLocation.geohash)
                 }
 
-                let isChosenEntry = (docDateLocationId == selectedDateEntry.id)
-
-                if isChosenEntry && isChosenLocation {
+                if docDateLocationId == selectedDateEntry.id && isChosenLocation {
                     batch.updateData([
                         "startDateTime": Timestamp(date: finalStartDate),
                         "endDateTime": Timestamp(date: finalEndDate),
@@ -181,12 +196,10 @@ class ViewModelMyEventDetails {
             }
 
             try await batch.commit()
-
             await loadDetails()
             await MainActor.run { isLoading = false }
-
         } catch {
-            logger.error("Error confirming event & deleting flattened locations: \(error.localizedDescription)")
+            logger.error("Error confirming event: \(error.localizedDescription)")
             await MainActor.run { isLoading = false }
             PopUpGenerator.shared.show(msg: "Error confirming event", type: .error)
         }
@@ -215,6 +228,24 @@ class ViewModelMyEventDetails {
         let sessions = try await repo.fetch(query: queryRef)
         logger.info("sessions count: \(sessions.count), \(sessions.count != 0)")
         return sessions.count != 0
-            
+
+    }
+
+    // MARK: - Delete Event
+
+    func deleteEvent() async {
+        await MainActor.run { isDeletingEvent = true }
+        do {
+            try await deleteRequester.deleteEvent(eventId: eventId)
+            await MainActor.run {
+                isDeletingEvent = false
+                eventDeleted = true
+            }
+            PopUpGenerator.shared.show(msg: "Event deleted successfully", type: .notification)
+        } catch {
+            logger.error("Error deleting event: \(error.localizedDescription)")
+            await MainActor.run { isDeletingEvent = false }
+            PopUpGenerator.shared.show(msg: "Error deleting event", type: .error)
+        }
     }
 }

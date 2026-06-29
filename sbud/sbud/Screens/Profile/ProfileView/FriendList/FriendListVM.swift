@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import FirebaseAnalytics
 
 @MainActor
 final class FriendListVM: ObservableObject {
@@ -20,6 +21,7 @@ final class FriendListVM: ObservableObject {
 
     init(userId: String) {
         self.userId = userId
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "FriendList"])
     }
 
     func load() async {

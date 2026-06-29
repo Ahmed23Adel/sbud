@@ -39,6 +39,3 @@ struct ScanQRView: View {
     }
 }
 
-
-// MARK: - AVFoundation camera preview
-

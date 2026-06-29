@@ -41,6 +41,7 @@ struct PaginatedEvent: Decodable, Sendable {
     let activityType: ActivityType
     let creatorName: String
     let numFlattenedEvents: Int
+    let title: String
 
     enum CodingKeys: String, CodingKey {
         case createdAt
@@ -54,6 +55,7 @@ struct PaginatedEvent: Decodable, Sendable {
         case activityType
         case creatorName
         case numFlattenedEvents = "NumFlattenedEvents"
+        case title
     }
 
     var startDate: Date { Date(timeIntervalSince1970: startDateTime) }

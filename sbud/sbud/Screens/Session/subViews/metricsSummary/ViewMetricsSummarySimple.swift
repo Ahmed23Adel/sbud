@@ -79,10 +79,6 @@ struct ViewMetricsSummarySimple: View {
 
                 // ── Elapsed timer ─────────────────────────────────────────
                 VStack(spacing: 6) {
-                    Text("ELAPSED")
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .tracking(3)
-                        .foregroundColor(.labelGray)
 
                     SessionTimerView(collector: collector)
                 }

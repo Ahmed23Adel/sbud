@@ -8,6 +8,7 @@
 import Foundation
 import AdelsonAuthManager
 import AdelsonApiCaller
+internal import Alamofire
 
 nonisolated struct JoinEventResponse: Decodable, Sendable {
     var status: String        // "pending" | "waitlisted"

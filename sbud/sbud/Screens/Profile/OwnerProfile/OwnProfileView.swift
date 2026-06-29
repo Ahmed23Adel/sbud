@@ -111,6 +111,14 @@ private extension OwnProfileView {
                     pendingRequestCount: $vm.pendingHostsRequestCount)
 
                 Button {
+                    shareProfile(userId: vm.userId)
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
+                }
+
+                Button {
                     coordinator.goToSettings()
                 } label: {
                     Image(systemName: "gearshape")
@@ -188,6 +196,15 @@ private extension OwnProfileView {
             showEmail: true,
             showPhone: true
         )
+    }
+
+    func shareProfile(userId: String) {
+        guard let url = URL(string: "https://sbud-backend.onrender.com/profile/\(userId)") else { return }
+        let av = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.rootViewController?
+            .present(av, animated: true)
     }
 
     var editButton: some View {

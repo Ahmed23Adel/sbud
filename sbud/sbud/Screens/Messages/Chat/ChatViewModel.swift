@@ -18,6 +18,7 @@ import Firebase
 import FirebaseAuth
 import Combine
 import FirebaseFirestore
+import FirebaseAnalytics
 
 
 class ChatViewModel: ObservableObject {
@@ -28,6 +29,10 @@ class ChatViewModel: ObservableObject {
     init(user: UserProfile, eventId: String) {
         self.user = user
         self.eventId = eventId
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "Chat",
+            "event_id": eventId
+        ])
         fetchMessages()
     }
     

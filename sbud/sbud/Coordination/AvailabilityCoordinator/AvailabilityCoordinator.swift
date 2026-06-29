@@ -13,6 +13,7 @@ import Foundation
 import SwiftUI
 import OSLog
 import Combine
+import MapKit
 
 @MainActor
 final class AvailabilityCoordinator: ObservableObject {
@@ -21,7 +22,11 @@ final class AvailabilityCoordinator: ObservableObject {
 
     @Published var navigationPath = NavigationPath()
     @Published var activeSheet: AvailabilitySheet?
-
+    
+    // MARK: - Callbacks
+    var onShowProfile: ((String) -> Void)?
+    var onShowChat: ((UserProfile, String, String) -> Void)?
+    
     // MARK: - Dependencies
 
     /// Weak — MainCoordinator conforms to this if auth actions are ever needed from here.
@@ -45,6 +50,10 @@ final class AvailabilityCoordinator: ObservableObject {
 
     func showChat(user: UserProfile, eventId: String, eventTitle: String) {
         navigationPath.append(AvailabilityDestination.chat(user: user, eventId: eventId, eventTitle: eventTitle))
+    }
+
+    func showSearchEvents(region: MKCoordinateRegion, filterResults: AvailabilityFiltersResults? = nil) {
+        navigationPath.append(AvailabilityDestination.searchEvents(region: region, filterResults: filterResults))
     }
 
     // MARK: - Pop Navigation

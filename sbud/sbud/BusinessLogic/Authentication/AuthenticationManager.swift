@@ -8,7 +8,7 @@ import Combine
 import FirebaseAuth
 import SwiftUI
 
-class AuthenticationManager: IAuthenticationManager {
+class AuthenticationManager: IAuthenticationManager, IAuthOrchestrator {
     static let shared = AuthenticationManager()
     @Published var isSignedIn: Bool = false
     @Published var currentUser: FirebaseAuth.User?
@@ -79,6 +79,17 @@ class AuthenticationManager: IAuthenticationManager {
             return false
         }
         return signInMethodManager.checkAuthStatus()
+    }
+
+    // MARK: IAuthOrchestrator extras
+
+    func sendPasswordReset(email: String) async throws {
+        try await Auth.auth().sendPasswordReset(withEmail: email)
+    }
+
+    func sendVerificationEmail() {
+        (signInMethodManager as? AuthenticationManagerEmailAndPassword)?
+            .sendVerificationEmail()
     }
 
 }

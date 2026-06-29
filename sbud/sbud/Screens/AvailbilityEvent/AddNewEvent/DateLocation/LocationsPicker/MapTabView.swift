@@ -129,11 +129,10 @@ struct MapTabView: UIViewRepresentable {
         }
         // Every time the map needs to draw a pin, it calls this on your Coordinator:
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            //  if it's the blue dot (current location)→ don't touch it, return nil
             guard !(annotation is MKUserLocation) else { return nil }
-            //  else → it's one of my red pins → build and return a red balloon
-            let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "pin")
-            // A simple `Bool` property. Enables the popup bubble when user taps the pin:
+            let view = mapView.dequeueReusableAnnotationView(withIdentifier: "pin") as? MKMarkerAnnotationView
+                ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "pin")
+            view.annotation = annotation
             view.canShowCallout = true
             return view
         }

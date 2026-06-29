@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import FirebaseAnalytics
 
 
 @Observable
@@ -32,6 +33,10 @@ class ViewModelHosts{
         self.eventId = eventId
         self.userId = userId
         hostRepo = HostsRepository(eventId: eventId)
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "ManageHosts",
+            "event_id": eventId
+        ])
         Task{
             await loadHostsInvitationsAndFriendAndCombine()
         }

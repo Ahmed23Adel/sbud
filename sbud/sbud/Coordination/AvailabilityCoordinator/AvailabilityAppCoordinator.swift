@@ -62,6 +62,12 @@ struct AvailabilityAppCoordinator: View {
         }
         .onAppear {
             coordinator.authDelegate = authDelegate
+            // UI test deep-link: pass UI_TESTING_EVENT_ID in launchEnvironment
+            // to navigate directly to an event detail screen, bypassing the need
+            // to tap through the map/list UI.
+            if let eventId = ProcessInfo.processInfo.environment["UI_TESTING_EVENT_ID"] {
+                coordinator.showMoreInfo(eventId: eventId)
+            }
         }
     }
 
@@ -89,6 +95,9 @@ struct AvailabilityAppCoordinator: View {
 
         case .chat(let user, let eventId, let eventTitle):
             ChatView(user: user, eventId: eventId, eventTitle: eventTitle)
+
+        case .searchEvents(let region, let filterResults):
+            ViewSearchEvents(viewModel: ViewModelSearchEvents(region: region, filterResults: filterResults))
         }
     }
 
