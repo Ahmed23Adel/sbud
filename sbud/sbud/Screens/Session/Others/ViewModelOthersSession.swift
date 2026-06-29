@@ -157,7 +157,6 @@ class ViewModelOthersSession {
                 logger.fault("Failed to check creator end status: \(error)")
                 await MainActor.run {
                     isLoading = false
-                    // Can't determine status — fall back to simple confirm
                     isShowSimpleConfirm = true
                 }
             }
@@ -177,8 +176,10 @@ class ViewModelOthersSession {
             do {
                 try await metricsCollector?.endSession(event: eventDetails)
                 deleteLocalSession()
-                await MainActor.run { isLoading = false }
-                mainCoordinator?.goToHome()
+                await MainActor.run {
+                    isLoading = false
+                    mainCoordinator?.goToSessionSummary(eventDetails: eventDetails)
+                }
             } catch {
                 logger.fault("Error ending participant session: \(error)")
                 await MainActor.run {
