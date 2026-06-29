@@ -5,7 +5,6 @@
 //  Created by ahmed on 17/05/2026.
 //
 
-
 import Foundation
 import CoreLocation
 import Combine
@@ -39,7 +38,9 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
     var isTracking = false
 
     // MARK: - Private
-    private let locationManager = LocationManager.shared
+    private let locationManager: SessionLocationManaging
+    private let healthKit: HealthKitServing
+    private let userIdProvider: () -> String?
     private var lastLocation: CLLocation?
     private var startDate: Date?
     private var timer: Timer?
@@ -54,10 +55,19 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
     private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorHiking")
 
-    init(isCreator: Bool, numSessions: Int) {
+    init(
+        isCreator: Bool,
+        numSessions: Int,
+        locationManager: SessionLocationManaging = LocationManager.shared,
+        healthKit: HealthKitServing = HealthKitService.shared,
+        userIdProvider: @escaping () -> String? = { ProfileManager.shared.getLocalProfile()?.id }
+    ) {
         self.isCreator = isCreator
         self.numSessions = numSessions
-        locationManager.$lastLocation
+        self.locationManager = locationManager
+        self.healthKit = healthKit
+        self.userIdProvider = userIdProvider
+        locationManager.lastLocationPublisher
             .compactMap { $0 }
             .sink { [weak self] location in
                 self?.handleNewLocation(location)
@@ -68,7 +78,7 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
     // MARK: - Control
 
     func startSession(eventId: String) {
-        Task { await HealthKitService.shared.requestAuthorization() }
+        Task { await healthKit.requestAuthorization() }
         currentEventId = eventId
 
         if restoreCheckpoint(eventId: eventId) {
@@ -108,7 +118,9 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
         checkpointTimer = nil
         isTracking = false
 
-        let userId = ProfileManager.shared.getLocalProfile()!.id
+        guard let userId = userIdProvider() else {
+            throw MetricsError.profileNotAvailable
+        }
 
         if isCreator {
             try await creatorEndsSession(eventId: event.id, userId: userId)
@@ -139,7 +151,11 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
             trackPoints: trackedLocations.toTrackPoints()
         )
 
-        guard let data = try? JSONEncoder().encode(snapshot) else {
+        let encoder = JSONEncoder()
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(
+            positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan"
+        )
+        guard let data = try? encoder.encode(snapshot) else {
             logger.error("Failed to encode HikingSessionSnapshot")
             return
         }
@@ -149,8 +165,12 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
     }
 
     func restoreCheckpoint(eventId: String) -> Bool {
+        let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(
+            positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan"
+        )
         guard let data = UserDefaults.standard.data(forKey: checkpointKey(eventId: eventId)),
-              let snapshot = try? JSONDecoder().decode(HikingSessionSnapshot.self, from: data)
+              let snapshot = try? decoder.decode(HikingSessionSnapshot.self, from: data)
         else { return false }
 
         startDate = snapshot.startDate
@@ -201,7 +221,7 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveGPSWorkout(
+        try? await healthKit.saveGPSWorkout(
             activityType: .hiking,
             start: startDateTime,
             end: endDateTime,
@@ -245,7 +265,7 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
                 numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
-            try? await HealthKitService.shared.saveGPSWorkout(
+            try? await healthKit.saveGPSWorkout(
                 activityType: .hiking,
                 start: startDateTime,
                 end: endNow,
@@ -277,7 +297,7 @@ class MetricsCollectorHiking: MetricsCollector, MetricsCollectorTimeable, Metric
             numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveGPSWorkout(
+        try? await healthKit.saveGPSWorkout(
             activityType: .hiking,
             start: startDateTime,
             end: finalEndDateTime,
