@@ -135,7 +135,7 @@ class ViewModelOwnerSession{
     
     
     
-    func endSession(){
+    func endSession() {
         isLoading = true
         Task {
             do {
@@ -143,18 +143,17 @@ class ViewModelOwnerSession{
                 let repo = OnGoingSessionRepository()
                 try await repo.deleteByEventId(eventDetails.id)
                 deleteLocalSession()
-                await MainActor.run{
+                await MainActor.run {
                     isLoading = false
+                    mainCoordinator?.goToSessionSummary(eventDetails: eventDetails)
                 }
-                logger.info("navigating to home ")
-                print("main coord", mainCoordinator)
-                mainCoordinator?.goToHome()
-               
             } catch {
-                logger.fault("Error with ending session: \(error)")
-                showError("Error with ending the session, please try again")
+                logger.fault("Error ending session: \(error)")
+                await MainActor.run {
+                    isLoading = false
+                    showError("Error with ending the session, please try again")
+                }
             }
-            
         }
     }
     

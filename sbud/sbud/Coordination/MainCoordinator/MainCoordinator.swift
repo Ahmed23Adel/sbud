@@ -91,6 +91,10 @@ final class MainCoordinator: ObservableObject {
         currentRoute = .othersSession(eventDetails: eventDetails, isSessionCreated: isSessionCreated)
     }
 
+    func goToSessionSummary(eventDetails: EventFullDetails) {
+        currentRoute = .sessionSummary(eventDetails: eventDetails)
+    }
+
     // MARK: - Private Route Resolution
 
     private func determineRoute() async -> MainRoute {
