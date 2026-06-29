@@ -5,7 +5,6 @@
 //  Created by ahmed on 17/05/2026.
 //
 
-
 import Foundation
 import HealthKit
 import OSLog
@@ -21,21 +20,30 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
     var isTracking = false
 
     // MARK: - Private
+    private let healthKit: HealthKitServing
+    private let userIdProvider: () -> String?
     private var startDate: Date?
     private var timer: Timer?
     let isCreator: Bool
     private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorSwimming")
 
-    init(isCreator: Bool, numSessions: Int) {
+    init(
+        isCreator: Bool,
+        numSessions: Int,
+        healthKit: HealthKitServing = HealthKitService.shared,
+        userIdProvider: @escaping () -> String? = { ProfileManager.shared.getLocalProfile()?.id }
+    ) {
         self.numSessions = numSessions
         self.isCreator = isCreator
+        self.healthKit = healthKit
+        self.userIdProvider = userIdProvider
     }
 
     // MARK: - Control
 
     func startSession(eventId: String) {
-        Task { await HealthKitService.shared.requestAuthorization() }
+        Task { await healthKit.requestAuthorization() }
         logger.info("Starting swimming session")
         reset()
         startDate = Date()
@@ -56,7 +64,9 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
         timer = nil
         isTracking = false
 
-        let userId = ProfileManager.shared.getLocalProfile()!.id
+        guard let userId = userIdProvider() else {
+            throw MetricsError.profileNotAvailable
+        }
 
         if isCreator {
             try await creatorEndsSession(eventId: event.id, userId: userId)
@@ -70,7 +80,7 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
     private func creatorEndsSession(eventId: String, userId: String) async throws {
         let endDateTime = Date()
 
-        let metrics = MetricsCollectedGym(
+        let metrics = MetricsCollectedSwimming(
             startDateTime: startDateTime,
             endDateTime: endDateTime,
             metricsCreatorType: .creator,
@@ -78,7 +88,7 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveTimeBasedWorkout(
+        try? await healthKit.saveTimeBasedWorkout(
             activityType: .swimming,
             start: startDateTime,
             end: endDateTime
@@ -106,14 +116,14 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
             .readFinalEndDateTime(eventId: eventId) else {
             logger.info("Swimming participant ended before creator — storing data only")
             let endNow = Date()
-            try await MetricsCollectedGym(
+            try await MetricsCollectedSwimming(
                 startDateTime: startDateTime,
                 endDateTime: endNow,
                 metricsCreatorType: .normalParticipant,
                 endedBeforeCreator: true,
                 numSession: numSessions
             ).upload(eventId: eventId, userId: userId)
-            try? await HealthKitService.shared.saveTimeBasedWorkout(
+            try? await healthKit.saveTimeBasedWorkout(
                 activityType: .swimming,
                 start: startDateTime,
                 end: endNow
@@ -121,14 +131,14 @@ class MetricsCollectorSwimming: MetricsCollector, MetricsCollectorTimeable {
             return
         }
 
-        try await MetricsCollectedGym(
+        try await MetricsCollectedSwimming(
             startDateTime: startDateTime,
             endDateTime: finalEndDateTime,
             metricsCreatorType: .normalParticipant,
             endedBeforeCreator: false,
             numSession: numSessions
         ).upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveTimeBasedWorkout(
+        try? await healthKit.saveTimeBasedWorkout(
             activityType: .swimming,
             start: startDateTime,
             end: finalEndDateTime

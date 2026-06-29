@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  MetricsCollectorGym.swift
 //  sbud
 //
 //  Created by ahmed on 16/05/2026.
@@ -20,21 +20,30 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
     var isTracking = false
 
     // MARK: - Private
+    private let healthKit: HealthKitServing
+    private let userIdProvider: () -> String?
     private var startDate: Date?
     private var timer: Timer?
     let isCreator: Bool
     private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorGym")
 
-    init(isCreator: Bool, numSessions: Int) {
+    init(
+        isCreator: Bool,
+        numSessions: Int,
+        healthKit: HealthKitServing = HealthKitService.shared,
+        userIdProvider: @escaping () -> String? = { ProfileManager.shared.getLocalProfile()?.id }
+    ) {
         self.isCreator = isCreator
         self.numSessions = numSessions
+        self.healthKit = healthKit
+        self.userIdProvider = userIdProvider
     }
 
     // MARK: - Control
 
     func startSession(eventId: String) {
-        Task { await HealthKitService.shared.requestAuthorization() }
+        Task { await healthKit.requestAuthorization() }
         logger.info("Starting gym session")
         reset()
         startDate = Date()
@@ -55,7 +64,9 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
         timer = nil
         isTracking = false
 
-        let userId = ProfileManager.shared.getLocalProfile()!.id
+        guard let userId = userIdProvider() else {
+            throw MetricsError.profileNotAvailable
+        }
 
         if isCreator {
             try await creatorEndsSession(eventId: event.id, userId: userId)
@@ -77,7 +88,7 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveTimeBasedWorkout(
+        try? await healthKit.saveTimeBasedWorkout(
             activityType: .traditionalStrengthTraining,
             start: startDateTime,
             end: endDateTime
@@ -97,6 +108,7 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
             "sessionHistory": FieldValue.arrayUnion([sessionEntry])
         ])
     }
+
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
@@ -111,7 +123,7 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
                 endedBeforeCreator: true,
                 numSession: numSessions
             ).upload(eventId: eventId, userId: userId)
-            try? await HealthKitService.shared.saveTimeBasedWorkout(
+            try? await healthKit.saveTimeBasedWorkout(
                 activityType: .traditionalStrengthTraining,
                 start: startDateTime,
                 end: endNow
@@ -126,7 +138,7 @@ class MetricsCollectorGym: MetricsCollector, MetricsCollectorTimeable {
             endedBeforeCreator: false,
             numSession: numSessions
         ).upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveTimeBasedWorkout(
+        try? await healthKit.saveTimeBasedWorkout(
             activityType: .traditionalStrengthTraining,
             start: startDateTime,
             end: finalEndDateTime

@@ -5,40 +5,6 @@
 //  Created by ahmed on 16/05/2026.
 //
 
-// creator is the one who ends it
-// i link locations and distance by time,
-// when calculating final metrics, i stop at the time of creator
-
-// what are the final metrics per person?
-// 0. time
-// 1. track
-// 2. total distance
-// 3. average pace for each split
-
-// what final metrics for the whole team
-// 1. each one has their own track
-// 2. average pace
-// max, min pace
-
-// 1. creator ends the session
-// 2. creator saves data for time, track, total distance, averaage pace for each split
-// 3. other participants will end too, they add their data, and update the average values
-// 4. participants are queued, no parallel here
-// 5. participants add data till the final date time set by the creator
-
-// if participant ends the event before creator? their data is stored, but not included in the average
-// if participant ends the event after creator? take data till final datetime set by creator
-//
-//  MetricsCollectorRun.swift
-//  sbud
-//
-//
-//  MetricsCollectorRun.swift
-//  sbud
-//
-//  Created by ahmed on 16/05/2026.
-//
-
 import Foundation
 import CoreLocation
 import Combine
@@ -74,7 +40,9 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
     var maxPace = -Double.infinity
 
     // MARK: - Private
-    private let locationManager = LocationManager.shared
+    private let locationManager: SessionLocationManaging
+    private let healthKit: HealthKitServing
+    private let userIdProvider: () -> String?
     private var lastLocation: CLLocation?
     private var startDate: Date?
     private var timer: Timer?
@@ -89,10 +57,19 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
     private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorRun")
 
-    init(isCreator: Bool, numSessions: Int) {
+    init(
+        isCreator: Bool,
+        numSessions: Int,
+        locationManager: SessionLocationManaging = LocationManager.shared,
+        healthKit: HealthKitServing = HealthKitService.shared,
+        userIdProvider: @escaping () -> String? = { ProfileManager.shared.getLocalProfile()?.id }
+    ) {
         self.numSessions = numSessions
         self.isCreator = isCreator
-        locationManager.$lastLocation
+        self.locationManager = locationManager
+        self.healthKit = healthKit
+        self.userIdProvider = userIdProvider
+        locationManager.lastLocationPublisher
             .compactMap { $0 }
             .sink { [weak self] location in
                 self?.handleNewLocation(location)
@@ -103,7 +80,7 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
     // MARK: - Control
 
     func startSession(eventId: String) {
-        Task { await HealthKitService.shared.requestAuthorization() }
+        Task { await healthKit.requestAuthorization() }
         currentEventId = eventId
 
         if restoreCheckpoint(eventId: eventId) {
@@ -143,7 +120,9 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
         checkpointTimer = nil
         isTracking = false
 
-        let userId = ProfileManager.shared.getLocalProfile()!.id
+        guard let userId = userIdProvider() else {
+            throw MetricsError.profileNotAvailable
+        }
 
         if isCreator {
             try await creatorEndsSession(eventId: event.id, userId: userId)
@@ -172,7 +151,11 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
             trackPoints: trackedLocations.toTrackPoints()
         )
 
-        guard let data = try? JSONEncoder().encode(snapshot) else {
+        let encoder = JSONEncoder()
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(
+            positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan"
+        )
+        guard let data = try? encoder.encode(snapshot) else {
             logger.error("Failed to encode RunSessionSnapshot")
             return
         }
@@ -182,8 +165,12 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
     }
 
     func restoreCheckpoint(eventId: String) -> Bool {
+        let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(
+            positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan"
+        )
         guard let data = UserDefaults.standard.data(forKey: checkpointKey(eventId: eventId)),
-              let snapshot = try? JSONDecoder().decode(RunSessionSnapshot.self, from: data)
+              let snapshot = try? decoder.decode(RunSessionSnapshot.self, from: data)
         else { return false }
 
         startDate = snapshot.startDate
@@ -229,7 +216,7 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveGPSWorkout(
+        try? await healthKit.saveGPSWorkout(
             activityType: .running,
             start: startDateTime,
             end: endDateTime,
@@ -269,7 +256,7 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
                 numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
-            try? await HealthKitService.shared.saveGPSWorkout(
+            try? await healthKit.saveGPSWorkout(
                 activityType: .running,
                 start: startDateTime,
                 end: endNow,
@@ -294,7 +281,7 @@ class MetricsCollectorRun: MetricsCollector, MetricsCollectorTimeable, MetricsCo
             numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveGPSWorkout(
+        try? await healthKit.saveGPSWorkout(
             activityType: .running,
             start: startDateTime,
             end: finalEndDateTime,

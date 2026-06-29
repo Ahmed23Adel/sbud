@@ -20,21 +20,30 @@ class MetricsCollectorTennis: MetricsCollector, MetricsCollectorTimeable {
     var isTracking = false
 
     // MARK: - Private
+    private let healthKit: HealthKitServing
+    private let userIdProvider: () -> String?
     private var startDate: Date?
     private var timer: Timer?
     let isCreator: Bool
     private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorTennis")
 
-    init(isCreator: Bool, numSessions: Int) {
+    init(
+        isCreator: Bool,
+        numSessions: Int,
+        healthKit: HealthKitServing = HealthKitService.shared,
+        userIdProvider: @escaping () -> String? = { ProfileManager.shared.getLocalProfile()?.id }
+    ) {
         self.isCreator = isCreator
         self.numSessions = numSessions
+        self.healthKit = healthKit
+        self.userIdProvider = userIdProvider
     }
 
     // MARK: - Control
 
     func startSession(eventId: String) {
-        Task { await HealthKitService.shared.requestAuthorization() }
+        Task { await healthKit.requestAuthorization() }
         logger.info("Starting Tennis session")
         reset()
         startDate = Date()
@@ -55,7 +64,9 @@ class MetricsCollectorTennis: MetricsCollector, MetricsCollectorTimeable {
         timer = nil
         isTracking = false
 
-        let userId = ProfileManager.shared.getLocalProfile()!.id
+        guard let userId = userIdProvider() else {
+            throw MetricsError.profileNotAvailable
+        }
 
         if isCreator {
             try await creatorEndsSession(eventId: event.id, userId: userId)
@@ -69,7 +80,7 @@ class MetricsCollectorTennis: MetricsCollector, MetricsCollectorTimeable {
     private func creatorEndsSession(eventId: String, userId: String) async throws {
         let endDateTime = Date()
 
-        let metrics = MetricsCollectedGym(
+        let metrics = MetricsCollectedTennis(
             startDateTime: startDateTime,
             endDateTime: endDateTime,
             metricsCreatorType: .creator,
@@ -77,7 +88,7 @@ class MetricsCollectorTennis: MetricsCollector, MetricsCollectorTimeable {
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveTimeBasedWorkout(
+        try? await healthKit.saveTimeBasedWorkout(
             activityType: .tennis,
             start: startDateTime,
             end: endDateTime
@@ -105,14 +116,14 @@ class MetricsCollectorTennis: MetricsCollector, MetricsCollectorTimeable {
             .readFinalEndDateTime(eventId: eventId) else {
             logger.info("Tennis participant ended before creator — storing data only")
             let endNow = Date()
-            try await MetricsCollectedGym(
+            try await MetricsCollectedTennis(
                 startDateTime: startDateTime,
                 endDateTime: endNow,
                 metricsCreatorType: .normalParticipant,
                 endedBeforeCreator: true,
                 numSession: numSessions
             ).upload(eventId: eventId, userId: userId)
-            try? await HealthKitService.shared.saveTimeBasedWorkout(
+            try? await healthKit.saveTimeBasedWorkout(
                 activityType: .tennis,
                 start: startDateTime,
                 end: endNow
@@ -120,14 +131,14 @@ class MetricsCollectorTennis: MetricsCollector, MetricsCollectorTimeable {
             return
         }
 
-        try await MetricsCollectedGym(
+        try await MetricsCollectedTennis(
             startDateTime: startDateTime,
             endDateTime: finalEndDateTime,
             metricsCreatorType: .normalParticipant,
             endedBeforeCreator: false,
             numSession: numSessions
         ).upload(eventId: eventId, userId: userId)
-        try? await HealthKitService.shared.saveTimeBasedWorkout(
+        try? await healthKit.saveTimeBasedWorkout(
             activityType: .tennis,
             start: startDateTime,
             end: finalEndDateTime
