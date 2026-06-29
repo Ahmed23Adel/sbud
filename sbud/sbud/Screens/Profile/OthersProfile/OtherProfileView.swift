@@ -44,12 +44,10 @@ struct OtherProfileView: View {
                             }
                             
                             AthleteFeedbackSection(
-                                isOwnProfile: false,
+                                isOwnProfile: true, // Adesso è bloccato anche sul profilo degli altri!
                                 currentUserId: Auth.auth().currentUser?.uid ?? "",
                                 feedbackVoters: vm.profile?.feedbackVoters ?? [:]
-                            ) { selectedTag in
-                                Task { await vm.voteForFeedback(tag: selectedTag) }
-                            }
+                            ) { _ in }
                             
                             ProfileMyEventsButton(userId: vm.userId, title: "EVENTS") {
                                 print("goToOthersEvents")
