@@ -37,6 +37,7 @@ final class HealthKitService {
         locations: [CLLocation]
     ) async throws {
         guard HKHealthStore.isHealthDataAvailable() else { return }
+        guard store.authorizationStatus(for: HKWorkoutType.workoutType()) == .sharingAuthorized else { return }
 
         let config = HKWorkoutConfiguration()
         config.activityType = activityType
@@ -77,6 +78,7 @@ final class HealthKitService {
         end: Date
     ) async throws {
         guard HKHealthStore.isHealthDataAvailable() else { return }
+        guard store.authorizationStatus(for: HKWorkoutType.workoutType()) == .sharingAuthorized else { return }
 
         let config = HKWorkoutConfiguration()
         config.activityType = activityType
