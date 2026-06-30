@@ -14,6 +14,7 @@ struct EventActionButtons: View {
     let role: EventUserRole?
     let queueResponse: JoinQueueResponse?
     let onConfirmTap: () -> Void
+    let onMessagesTap: () -> Void
     let onHostsTap: () -> Void
     let onQueueTap: () -> Void
 

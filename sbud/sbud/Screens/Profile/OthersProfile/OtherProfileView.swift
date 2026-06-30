@@ -44,10 +44,9 @@ struct OtherProfileView: View {
                             }
                             
                             AthleteFeedbackSection(
-                                isOwnProfile: true, // Adesso è bloccato anche sul profilo degli altri!
-                                currentUserId: Auth.auth().currentUser?.uid ?? "",
-                                feedbackVoters: vm.profile?.feedbackVoters ?? [:]
-                            ) { _ in }
+                                isOwnProfile: true, // Sempre true per bloccare i tap sul profilo
+                                topFeedbacks: vm.profile?.top10Feedbacks ?? []
+                            )
                             
                             ProfileMyEventsButton(userId: vm.userId, title: "EVENTS") {
                                 print("goToOthersEvents")

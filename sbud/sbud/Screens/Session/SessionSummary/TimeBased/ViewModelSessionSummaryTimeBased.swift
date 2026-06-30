@@ -9,6 +9,7 @@ import Foundation
 import Observation
 import SwiftUI
 import FirebaseAnalytics
+import FirebaseAuth
 
 /// Generic ViewModel for time-only activities: Gym, Swimming, Tennis, Yoga.
 /// No GPS or split data — only duration metrics.
@@ -57,8 +58,37 @@ class ViewModelSessionSummaryTimeBased<M: SessionMetricsBase>: SessionSummaryVie
                 metricsCreatorType: m.metricsCreatorType,
                 endedBeforeCreator: m.endedBeforeCreator,
                 userName: name,
-                profileImageUrl: profile?.profileImageUrl
+                profileImageUrl: profile?.profileImageUrl,
+                receivedFeedbacks: profile?.receivedFeedbacks
             )
+        }
+    }
+    
+    func voteForFeedback(targetUserId: String, tag: String) async {
+        guard let myUserId = FirebaseAuth.Auth.auth().currentUser?.uid else { return }
+        guard var targetProfile = profiles[targetUserId] else { return }
+        
+        
+        var currentFeedbacks = targetProfile.receivedFeedbacks ?? [:]
+        
+        
+        if currentFeedbacks[myUserId] == tag { return }
+        
+       
+        currentFeedbacks[myUserId] = tag
+        targetProfile.receivedFeedbacks = currentFeedbacks
+        
+        self.profiles[targetUserId] = targetProfile
+        
+        // Forza l'aggiornamento della UI
+        let updatedProfiles = self.profiles
+        self.profiles = updatedProfiles
+        
+        //
+        do {
+            try await userRepo.giveFeedback(to: targetUserId, tag: tag, voterId: myUserId)
+        } catch {
+            print("Errore invio feedback: \(error)")
         }
     }
 }

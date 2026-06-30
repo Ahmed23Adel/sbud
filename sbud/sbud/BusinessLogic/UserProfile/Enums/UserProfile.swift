@@ -34,7 +34,25 @@ struct UserProfile: Codable, Identifiable, CustomStringConvertible {
     // MARK: - Social
     var friendsCount: Int = 0
     var trustScore: Double = 0.00
-    var feedbackVoters: [String: [String]]? = [:]
+    var receivedFeedbacks: [String: String]? = [:]
+
+    // QUESTA FUNZIONE CALCOLA LA TOP 10 IN AUTOMATICO
+    var top10Feedbacks: [(tag: String, count: Int)] {
+        guard let feedbacks = receivedFeedbacks else { return [] }
+        
+        var counts: [String: Int] = [:]
+        // Conta quante volte compare ogni aggettivo
+        for adjective in feedbacks.values {
+            counts[adjective, default: 0] += 1
+        }
+        
+        // Ordina dal più votato al meno votato e prende i primi 10
+        let sorted = counts
+            .map { (tag: $0.key, count: $0.value) }
+            .sorted { $0.count > $1.count }
+        
+        return Array(sorted.prefix(10))
+    }
 
     // MARK: - Performance
     var totalSessions: Int = 0

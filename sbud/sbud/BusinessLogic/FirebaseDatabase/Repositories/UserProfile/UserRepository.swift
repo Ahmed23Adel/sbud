@@ -71,10 +71,10 @@ class UserRepository: IFirebaesRepository{
     }
     
     
-    func addFeedback(for targetUserId: String, tag: String, voterId: String) async throws {
+    func giveFeedback(to targetUserId: String, tag: String, voterId: String) async throws {
+        
         try await db.collection(collectionPath).document(targetUserId).updateData([
-            // arrayUnion aggiunge l'elemento SOLO se non è già presente
-            "feedbackVoters.\(tag)": FieldValue.arrayUnion([voterId])
+            "receivedFeedbacks.\(voterId)": tag
         ])
     }
     

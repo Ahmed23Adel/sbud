@@ -46,12 +46,9 @@ struct OwnProfileView: View {
 
                             AthleteFeedbackSection(
                                 isOwnProfile: true,
-                                currentUserId: vm.userId,
-                                feedbackVoters: vm.profile?.feedbackVoters ?? [:]
-                            ) { _ in
-                                // Questa closure rimane vuota perché un utente
-                                // non può cliccare o votare sul proprio profilo
-                            }
+                                topFeedbacks: vm.profile?.top10Feedbacks ?? []
+                            )
+                            
                             ProfileMyEventsButton(userId: vm.userId, title: "MY EVENTS") {
                                 coordinator.goToMyEvents()
                             }
