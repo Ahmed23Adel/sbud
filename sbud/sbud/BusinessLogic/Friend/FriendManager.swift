@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseAuth
 
 // MARK: - Friend Status
 enum FriendStatus: Equatable {
@@ -20,11 +19,19 @@ enum FriendStatus: Equatable {
 class FriendManager {
 
     static let shared = FriendManager()
-    private let repository = FriendRepository()
-    private init() {}
+    private let repository: IFriendRepository
+    private let currentUserProvider: CurrentUserProviding
+
+    init(
+        repository: IFriendRepository = FriendRepository(),
+        currentUserProvider: CurrentUserProviding = FirebaseCurrentUserProvider()
+    ) {
+        self.repository = repository
+        self.currentUserProvider = currentUserProvider
+    }
 
     private var currentUserId: String? {
-        Auth.auth().currentUser?.uid
+        currentUserProvider.currentUserId
     }
 
     func addFriend(targetUserId: String, isTargetPrivate: Bool) async throws {
@@ -95,3 +102,4 @@ enum FriendError: LocalizedError {
         }
     }
 }
+

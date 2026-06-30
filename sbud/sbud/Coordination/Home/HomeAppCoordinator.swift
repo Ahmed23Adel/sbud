@@ -5,13 +5,6 @@
 //  Created by ahmed on 21/05/2026.
 //
 
-//
-//  HomeAppCoordinator.swift
-//  sbud
-//
-//  Created by ahmed on 21/05/2026.
-//
-
 import SwiftUI
 import Combine
 
@@ -45,6 +38,20 @@ struct HomeAppCoordinator: View {
         }
         .onAppear {
             coordinator.authDelegate = authDelegate
+            // UI test deep-link: pass UI_TESTING_POPUP_MSG (and optionally
+            // UI_TESTING_POPUP_TYPE) in launchEnvironment to trigger a CentralPopup
+            // deterministically, without depending on a network call succeeding.
+            // Mirrors AvailabilityAppCoordinator's UI_TESTING_EVENT_ID hook.
+            if let msg = ProcessInfo.processInfo.environment["UI_TESTING_POPUP_MSG"] {
+                let type: centralPopupType
+                switch ProcessInfo.processInfo.environment["UI_TESTING_POPUP_TYPE"] {
+                case "warning": type = .warning
+                case "error": type = .error
+                case "information": type = .information
+                default: type = .notification
+                }
+                PopUpGenerator.shared.show(msg: msg, type: type)
+            }
         }
         .overlay {
             if viewModel.isLoading && viewModel.upcomingEvents.isEmpty {
