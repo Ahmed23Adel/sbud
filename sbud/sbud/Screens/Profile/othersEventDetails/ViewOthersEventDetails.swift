@@ -11,7 +11,9 @@ struct ViewOthersEventDetails: View {
     @State var viewModel: ViewModelOthersEventDetails
     @EnvironmentObject private var coordinator: ProfileCoordinator
     @EnvironmentObject private var mainCoordinator: MainCoordinator
+    @Environment(\.dismiss) private var dismiss
     @State var isPulsing = false
+    @State private var showLeaveConfirm = false
     
     init(eventId: String){
         _viewModel = State(initialValue: ViewModelOthersEventDetails(eventId: eventId))
@@ -115,6 +117,15 @@ struct ViewOthersEventDetails: View {
                             )
                             .padding(.horizontal)
                         }
+
+                        // Leave button — only for participants (not creator/host).
+                        if viewModel.role == .regularUser {
+                            Button("Leave Event") {
+                                showLeaveConfirm = true
+                            }
+                            .buttonStyle(DestructiveButton())
+                            .padding(.top, 24)
+                        }
                     }
                 }
                 .padding(.horizontal)
@@ -122,6 +133,16 @@ struct ViewOthersEventDetails: View {
                 .padding(.bottom, 100)
             }
             .refreshable { await viewModel.refresh() }
+            .alert("Leave Event", isPresented: $showLeaveConfirm) {
+                Button("Cancel", role: .cancel) {}
+                Button("Leave", role: .destructive) {
+                    Task {
+                        if await viewModel.leave() { dismiss() }
+                    }
+                }
+            } message: {
+                Text("You will be removed from this event. You can re-join anytime.")
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
