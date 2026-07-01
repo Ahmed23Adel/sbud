@@ -42,5 +42,8 @@ struct ParticipatedEventsView: View {
                 Text(viewModel.alertMsg)
             }
         }
+        .onAppear {
+            viewModel.reloadEvents()
+        }
     }
 }
