@@ -31,6 +31,10 @@ class ParticipatedEventsViewModel {
         fetchParticipatedEvents()
     }
 
+    func reloadEvents() {
+        fetchParticipatedEvents()
+    }
+
     private func fetchParticipatedEvents() {
         let repo = JoinedEventsRepository()
         var query = repo.initQueryBuilderObject()

@@ -80,6 +80,22 @@ class ViewModelOthersEventDetails {
         }
     }
 
+    /// Leaves a joined event. Only meaningful for participants (`.regularUser`).
+    /// Returns `true` on success so the view can pop back.
+    func leave() async -> Bool {
+        do {
+            _ = try await joinRequester.leave(eventId: eventId)
+            await EventReminderScheduler.shared.cancelReminderOnLeave(eventId: eventId)
+            await MainActor.run {
+                PopUpGenerator.shared.show(msg: "You have left the event", type: .information)
+            }
+            return true
+        } catch {
+            PopUpGenerator.shared.show(msg: "Error: \(error.localizedDescription)", type: .error)
+            return false
+        }
+    }
+
     func respondToRequest(requesterId: String, accept: Bool) async {
         do {
             _ = try await joinRequester.respondToRequest(
