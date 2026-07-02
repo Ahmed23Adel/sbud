@@ -8,12 +8,12 @@
 import XCTest
 @testable import sbud
 
-// MARK: - FakeFriendRepository (stateful, mirrors FriendRepository's real semantics)
+// MARK: - FakeFriendRepository
 
 final class FakeFriendRepository: IFriendRepository {
 
-    private var friends: Set<String> = []          // "userA|userB" pairs, order-independent
-    private var pendingRequests: [String: Set<String>] = [:] // toUserId -> set of fromUserIds
+    private var friends: Set<String> = []
+    private var pendingRequests: [String: Set<String>] = [:]
 
     private func pairKey(_ a: String, _ b: String) -> String {
         [a, b].sorted().joined(separator: "|")
@@ -75,13 +75,12 @@ final class FakeFriendRepository: IFriendRepository {
         Array(pendingRequests[userId] ?? [])
     }
 
-    func fetchPendingHostsRequests(userId: String) async throws -> [String] {
-        [] // not modeled — FriendManager only forwards this call untouched
-    }
+    func fetchPendingHostsRequests(userId: String) async throws -> [String] { [] }
 }
 
 // MARK: - FriendManagerIntegrationTests
 
+@MainActor
 final class FriendManagerIntegrationTests: XCTestCase {
 
     private var repository: FakeFriendRepository!
@@ -102,11 +101,11 @@ final class FriendManagerIntegrationTests: XCTestCase {
         return FriendManager(repository: repository, currentUserProvider: provider)
     }
 
-    // MARK: - 1. Open Account: addFriend Is Immediate and Bidirectional
+    // MARK: - 1. Open account: addFriend is immediate and bidirectional
 
     func test_openAccount_addFriend_isImmediatelyMutualFromBothSides() async throws {
         let alice = makeManager(currentUserId: "alice")
-        let bob = makeManager(currentUserId: "bob")
+        let bob   = makeManager(currentUserId: "bob")
 
         try await alice.addFriend(targetUserId: "bob", isTargetPrivate: false)
 
@@ -114,29 +113,28 @@ final class FriendManagerIntegrationTests: XCTestCase {
         let bobSeesAlice = try await bob.isFriend(targetUserId: "alice")
 
         XCTAssertTrue(aliceSeesBob)
-        XCTAssertTrue(bobSeesAlice, "Friendship should be symmetric, mirroring FriendRepository's batched bidirectional write")
+        XCTAssertTrue(bobSeesAlice)
     }
 
-    // MARK: - 2. Private Account: Full Request -> Accept Lifecycle
+    // MARK: - 2. Private account: full request → accept lifecycle
 
-    func test_privateAccount_fullLifecycle_sendThenAcceptResultsInFriendship() async throws {
+    func test_privateAccount_sendThenAccept_resultInFriendship() async throws {
         let alice = makeManager(currentUserId: "alice")
-        let bob = makeManager(currentUserId: "bob")
+        let bob   = makeManager(currentUserId: "bob")
 
-        // 1. Alice sends a request (bob's account is private).
         try await alice.addFriend(targetUserId: "bob", isTargetPrivate: true)
-        var aliceStatus = try await alice.getFriendStatus(targetUserId: "bob")
-        var bobStatus = try await bob.getFriendStatus(targetUserId: "alice")
-        XCTAssertEqual(aliceStatus, .requestSent)
-        XCTAssertEqual(bobStatus, .requestReceived)
 
-        // 2. Bob accepts.
+        let aliceStatusAfterRequest = try await alice.getFriendStatus(targetUserId: "bob")
+        let bobStatusAfterRequest   = try await bob.getFriendStatus(targetUserId: "alice")
+        XCTAssertEqual(aliceStatusAfterRequest, .requestSent)
+        XCTAssertEqual(bobStatusAfterRequest, .requestReceived)
+
         try await bob.acceptRequest(requesterId: "alice")
 
-        aliceStatus = try await alice.getFriendStatus(targetUserId: "bob")
-        bobStatus = try await bob.getFriendStatus(targetUserId: "alice")
-        XCTAssertEqual(aliceStatus, .friends)
-        XCTAssertEqual(bobStatus, .friends)
+        let aliceStatusAfterAccept = try await alice.getFriendStatus(targetUserId: "bob")
+        let bobStatusAfterAccept   = try await bob.getFriendStatus(targetUserId: "alice")
+        XCTAssertEqual(aliceStatusAfterAccept, .friends)
+        XCTAssertEqual(bobStatusAfterAccept, .friends)
 
         let aliceFriends = try await alice.fetchFriends(userId: "alice")
         XCTAssertEqual(aliceFriends, ["bob"])
@@ -144,13 +142,13 @@ final class FriendManagerIntegrationTests: XCTestCase {
 
     func test_privateAccount_declinedRequest_leavesBothAsNotFriends() async throws {
         let alice = makeManager(currentUserId: "alice")
-        let bob = makeManager(currentUserId: "bob")
+        let bob   = makeManager(currentUserId: "bob")
 
         try await alice.addFriend(targetUserId: "bob", isTargetPrivate: true)
         try await bob.declineRequest(requesterId: "alice")
 
         let aliceStatus = try await alice.getFriendStatus(targetUserId: "bob")
-        let bobStatus = try await bob.getFriendStatus(targetUserId: "alice")
+        let bobStatus   = try await bob.getFriendStatus(targetUserId: "alice")
         XCTAssertEqual(aliceStatus, .notFriend)
         XCTAssertEqual(bobStatus, .notFriend)
     }
@@ -159,32 +157,38 @@ final class FriendManagerIntegrationTests: XCTestCase {
         let alice = makeManager(currentUserId: "alice")
 
         try await alice.addFriend(targetUserId: "bob", isTargetPrivate: true)
-        XCTAssertEqual(try await alice.getFriendStatus(targetUserId: "bob"), .requestSent)
+        let statusAfterRequest = try await alice.getFriendStatus(targetUserId: "bob")
+        XCTAssertEqual(statusAfterRequest, .requestSent)
 
         try await alice.cancelRequest(targetUserId: "bob")
-        XCTAssertEqual(try await alice.getFriendStatus(targetUserId: "bob"), .notFriend)
+        let statusAfterCancel = try await alice.getFriendStatus(targetUserId: "bob")
+        XCTAssertEqual(statusAfterCancel, .notFriend)
     }
 
-    // MARK: - 3. removeFriend Breaks the Relationship Symmetrically
+    // MARK: - 3. removeFriend breaks relationship symmetrically
 
     func test_removeFriend_breaksRelationshipForBothSides() async throws {
         let alice = makeManager(currentUserId: "alice")
-        let bob = makeManager(currentUserId: "bob")
+        let bob   = makeManager(currentUserId: "bob")
 
         try await alice.addFriend(targetUserId: "bob", isTargetPrivate: false)
-        XCTAssertTrue(try await alice.isFriend(targetUserId: "bob"))
+
+        let isFriendBefore = try await alice.isFriend(targetUserId: "bob")
+        XCTAssertTrue(isFriendBefore)
 
         try await alice.removeFriend(targetUserId: "bob")
 
-        XCTAssertFalse(try await alice.isFriend(targetUserId: "bob"))
-        XCTAssertFalse(try await bob.isFriend(targetUserId: "alice"))
+        let aliceStillFriend = try await alice.isFriend(targetUserId: "bob")
+        let bobStillFriend   = try await bob.isFriend(targetUserId: "alice")
+        XCTAssertFalse(aliceStillFriend)
+        XCTAssertFalse(bobStillFriend)
     }
 
-    // MARK: - 4. fetchFriendsPendingRequests / fetchHostsPendingRequests (used by OwnProfileVM badges)
+    // MARK: - 4. Pending requests (badge counts)
 
     func test_fetchFriendsPendingRequests_reflectsIncomingRequests() async throws {
         let alice = makeManager(currentUserId: "alice")
-        let bob = makeManager(currentUserId: "bob")
+        let bob   = makeManager(currentUserId: "bob")
         let carol = makeManager(currentUserId: "carol")
 
         try await alice.addFriend(targetUserId: "carol", isTargetPrivate: true)
@@ -194,13 +198,13 @@ final class FriendManagerIntegrationTests: XCTestCase {
         XCTAssertEqual(Set(carolPending), Set(["alice", "bob"]))
     }
 
-    func test_fetchHostsPendingRequests_delegatesThroughUnaffectedByFriendGraph() async throws {
+    func test_fetchHostsPendingRequests_returnsEmpty() async throws {
         let alice = makeManager(currentUserId: "alice")
         let result = try await alice.fetchHostsPendingRequests(userId: "alice")
         XCTAssertTrue(result.isEmpty)
     }
 
-    // MARK: - 5. Auth Guard Holds Across a Realistic Session Boundary (e.g. user signs out mid-flow)
+    // MARK: - 5. Auth guard holds after sign-out
 
     func test_userSignsOutBetweenCalls_subsequentMutationsAreBlocked() async throws {
         let provider = MockCurrentUserProvider()
@@ -208,9 +212,9 @@ final class FriendManagerIntegrationTests: XCTestCase {
         let sut = FriendManager(repository: repository, currentUserProvider: provider)
 
         try await sut.addFriend(targetUserId: "bob", isTargetPrivate: false)
-        XCTAssertTrue(try await sut.isFriend(targetUserId: "bob"))
+        let isFriendBeforeSignOut = try await sut.isFriend(targetUserId: "bob")
+        XCTAssertTrue(isFriendBeforeSignOut)
 
-        // Simulate sign-out.
         provider.currentUserId = nil
 
         do {
@@ -220,25 +224,24 @@ final class FriendManagerIntegrationTests: XCTestCase {
             XCTAssertEqual(error.errorDescription, FriendError.notAuthenticated.errorDescription)
         }
 
-        // The friendship itself is untouched since the mutation never reached the repository.
         provider.currentUserId = "alice"
-        XCTAssertTrue(try await sut.isFriend(targetUserId: "bob"))
+        let isFriendAfterSignOut = try await sut.isFriend(targetUserId: "bob")
+        XCTAssertTrue(isFriendAfterSignOut)
     }
 
-    // MARK: - 6. Cannot Add Self, Even With a Fully Wired Repository
+    // MARK: - 6. Cannot add self
 
-    func test_cannotAddSelf_repositoryNeverInvoked() async {
+    func test_cannotAddSelf_repositoryNeverInvoked() async throws {
         let alice = makeManager(currentUserId: "alice")
+
         do {
             try await alice.addFriend(targetUserId: "alice", isTargetPrivate: false)
             XCTFail("Expected cannotAddSelf")
         } catch let error as FriendError {
             XCTAssertEqual(error.errorDescription, FriendError.cannotAddSelf.errorDescription)
-        } catch {
-            XCTFail("Unexpected error: \(error)")
         }
 
-        let aliceFriends = try? await alice.fetchFriends(userId: "alice")
-        XCTAssertEqual(aliceFriends, [], "Repository state should be completely unaffected")
+        let aliceFriends = try await alice.fetchFriends(userId: "alice")
+        XCTAssertTrue(aliceFriends.isEmpty)
     }
 }

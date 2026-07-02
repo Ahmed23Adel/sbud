@@ -11,9 +11,7 @@ import FirebaseFirestore
 import FirebaseAnalytics
 
 enum MyEventDetailsSheet: Identifiable {
-    case confirmation
-    case startSessionConfirmation
-
+    case confirmation, startSessionConfirmation
     var id: Self { self }
 }
 
@@ -24,227 +22,160 @@ class ViewModelMyEventDetails {
     var myEventDertails: EventFullDetails? = nil
     var isLoading: Bool = false
     var eventId: String
-    var role: EventUserRole? = nil  
-
+    var role: EventUserRole? = nil
     var queueResponse: JoinQueueResponse? = nil
     var isLoadingQueue: Bool = false
     var showQueue: Bool = false
-
-    private let joinRequester = JoinEventRequester()
-    private let deleteRequester = DeleteEventRequester()
-
-    private var mainCoordinator: MainCoordinator?
     var activeSheet: MyEventDetailsSheet?
-
     var isSessionCreated = false
     var showDeleteConfirmation = false
     var isDeletingEvent = false
     var eventDeleted = false
     var showEditEvent = false
-    
-    init(eventId: String) {
-        logger.info("eventId: \(eventId)")
+
+    private let eventFetcher: EventFetching
+    private let joinRequester: JoinEventRequesting
+    private let deleteRequester: EventDeleting
+    private var mainCoordinator: MainCoordinator?
+
+    init(
+        eventId: String,
+        eventFetcher: EventFetching = EventByIdRequester(),
+        joinRequester: JoinEventRequesting = JoinEventRequester(),
+        deleteRequester: EventDeleting = DeleteEventRequester(),
+        autoStart: Bool = true
+    ) {
         self.eventId = eventId
+        self.eventFetcher = eventFetcher
+        self.joinRequester = joinRequester
+        self.deleteRequester = deleteRequester
+        logger.info("eventId: \(eventId)")
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [
-            AnalyticsParameterScreenName: "MyEventDetails",
-            "event_id": eventId
+            AnalyticsParameterScreenName: "MyEventDetails", "event_id": eventId
         ])
+        guard autoStart else { return }
         Task { await loadDetails() }
         Task {
-            do {
-                isSessionCreated = try await isSessionCreated()
-                logger.info("isSessionCreated \(self.isSessionCreated)")
-            } catch {
+            do { isSessionCreated = try await checkIsSessionCreated() } catch {
                 logger.fault("Error calling isSessionCreated \(error)")
             }
         }
     }
 
-    func setMainCoordinator(mainCoordinator: MainCoordinator){
-        self.mainCoordinator = mainCoordinator
-    }
-    // MARK: - Refresh
+    func setMainCoordinator(mainCoordinator: MainCoordinator) { self.mainCoordinator = mainCoordinator }
 
-    /// Re-fetches event details, the join queue, and the session-created flag in one shot.
-    /// Called by pull-to-refresh in the view.
     func refresh() async {
         await loadDetails()
-        do {
-            isSessionCreated = try await isSessionCreated()
-        } catch {
+        do { isSessionCreated = try await checkIsSessionCreated() } catch {
             logger.fault("Error refreshing session status: \(error)")
         }
     }
 
-    private func loadDetails() async {
-        await MainActor.run { isLoading = true }
+    func loadDetails() async {
+        isLoading = true
         do {
-            async let detailsTask = EventByIdRequester().fetchEvent(eventId: eventId)
-            async let roleTask = EventRoleService.getRole(eventId: eventId)
-
+            async let detailsTask = eventFetcher.fetchEvent(eventId: eventId)
+            async let roleTask    = EventRoleService.getRole(eventId: eventId)
             let (details, resolvedRole) = try await (detailsTask, roleTask)
-
-            await MainActor.run {
-                myEventDertails = details
-                role = resolvedRole
-                isLoading = false
-            }
+            myEventDertails = details
+            role = resolvedRole
+            isLoading = false
             await loadQueue()
-            logger.log("Full event loaded \(self.eventId), role: \(String(describing: resolvedRole))")
         } catch {
             logger.error("Error: \(error)")
-            await MainActor.run { isLoading = false }
+            isLoading = false
             PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
         }
     }
 
     func loadQueue() async {
-        await MainActor.run { isLoadingQueue = true }
-        do {
-            let q = try await joinRequester.getPendingQueue(eventId: eventId)
-            await MainActor.run {
-                queueResponse = q
-                isLoadingQueue = false
-            }
-        } catch {
-            await MainActor.run { isLoadingQueue = false }
-        }
+        isLoadingQueue = true
+        do { queueResponse = try await joinRequester.getPendingQueue(eventId: eventId) } catch {}
+        isLoadingQueue = false
     }
 
     func respondToRequest(requesterId: String, accept: Bool) async {
         do {
-            _ = try await joinRequester.respondToRequest(
-                eventId: eventId,
-                requesterId: requesterId,
-                accept: accept
-            )
-            await MainActor.run {
-                if var q = queueResponse {
-                    q.pendingUsers.removeAll { $0.userId == requesterId }
-                    if accept { q.confirmedCount += 1 }
-                    else { q.pendingCount = max(0, q.pendingCount - 1) }
-                    q.isCapacityFull = (q.capacity != nil && q.confirmedCount >= q.capacity!)
-                    queueResponse = q
-                }
-                let msg = accept ? "Confirmed" : "Rejected."
-                PopUpGenerator.shared.show(msg: msg, type: accept ? .notification : .information)
+            _ = try await joinRequester.respondToRequest(eventId: eventId, requesterId: requesterId, accept: accept)
+            if var q = queueResponse {
+                q.pendingUsers.removeAll { $0.userId == requesterId }
+                if accept { q.confirmedCount += 1 } else { q.pendingCount = max(0, q.pendingCount - 1) }
+                q.isCapacityFull = (q.capacity != nil && q.confirmedCount >= q.capacity!)
+                queueResponse = q
             }
+            PopUpGenerator.shared.show(msg: accept ? "Confirmed" : "Rejected.", type: accept ? .notification : .information)
             await loadQueue()
         } catch {
             let msg = error.localizedDescription
-            if msg.contains("full") {
-                PopUpGenerator.shared.show(msg: "Capacity reached.", type: .warning)
-            } else {
-                PopUpGenerator.shared.show(msg: "Error: \(msg)", type: .error)
-            }
+            PopUpGenerator.shared.show(msg: msg.contains("full") ? "Capacity reached." : "Error: \(msg)",
+                                       type: msg.contains("full") ? .warning : .error)
             await loadQueue()
         }
     }
 
     func confirmEventFinalChoice(selectedDateEntry: DateLocationEntry, selectedLocation: LocationPoint, finalStartDate: Date, finalEndDate: Date) async {
-        await MainActor.run { isLoading = true }
+        isLoading = true
         let db = Firestore.firestore()
         let batch = db.batch()
         let eventRef = db.collection("Events").document(eventId)
-
         let finalizedDateLocation: [[String: Any]] = [[
             "id": selectedDateEntry.id,
             "startDateTime": Timestamp(date: finalStartDate),
             "endDateTime": Timestamp(date: finalEndDate),
-            "locations": [[
-                "latitude": selectedLocation.latitude,
-                "longitude": selectedLocation.longitude,
-                "geohash": selectedLocation.geohash
-            ]]
+            "locations": [["latitude": selectedLocation.latitude, "longitude": selectedLocation.longitude, "geohash": selectedLocation.geohash]]
         ]]
-
-        batch.updateData([
-            "isDateConfirmed": true,
-            "isLocationConfirmed": true,
-            "status": UsersEventStatus.confirmed.rawValue,
-            "dateLocations": finalizedDateLocation
-        ], forDocument: eventRef)
-
+        batch.updateData(["isDateConfirmed": true, "isLocationConfirmed": true,
+                          "status": UsersEventStatus.confirmed.rawValue, "dateLocations": finalizedDateLocation], forDocument: eventRef)
         do {
-            let flattenedSnapshot = try await db.collection("flattenedEvents")
-                .whereField("eventId", isEqualTo: eventId)
-                .getDocuments()
-
-            for doc in flattenedSnapshot.documents {
+            let snap = try await db.collection("flattenedEvents").whereField("eventId", isEqualTo: eventId).getDocuments()
+            for doc in snap.documents {
                 let data = doc.data()
                 let docDateLocationId = data["dateLocationId"] as? String ?? ""
-                var isChosenLocation = false
-
+                var isChosen = false
                 if let geoPoint = data["geoPoint"] as? GeoPoint {
-                    let latDiff = abs(geoPoint.latitude - selectedLocation.latitude)
-                    let lonDiff = abs(geoPoint.longitude - selectedLocation.longitude)
-                    isChosenLocation = (latDiff < 0.00001 && lonDiff < 0.00001)
+                    isChosen = abs(geoPoint.latitude - selectedLocation.latitude) < 0.00001 && abs(geoPoint.longitude - selectedLocation.longitude) < 0.00001
                 } else if let g = data["g"] as? [String: Any], let geohash = g["geohash"] as? String {
-                    isChosenLocation = (geohash == selectedLocation.geohash)
+                    isChosen = geohash == selectedLocation.geohash
                 }
-
-                if docDateLocationId == selectedDateEntry.id && isChosenLocation {
-                    batch.updateData([
-                        "startDateTime": Timestamp(date: finalStartDate),
-                        "endDateTime": Timestamp(date: finalEndDate),
-                        "isDateConfirmed": true,
-                        "isLocationConfirmed": true
-                    ], forDocument: doc.reference)
-                } else {
-                    batch.deleteDocument(doc.reference)
-                }
+                if docDateLocationId == selectedDateEntry.id && isChosen {
+                    batch.updateData(["startDateTime": Timestamp(date: finalStartDate), "endDateTime": Timestamp(date: finalEndDate), "isDateConfirmed": true, "isLocationConfirmed": true], forDocument: doc.reference)
+                } else { batch.deleteDocument(doc.reference) }
             }
-
             try await batch.commit()
             await loadDetails()
-            await MainActor.run { isLoading = false }
+            isLoading = false
         } catch {
             logger.error("Error confirming event: \(error.localizedDescription)")
-            await MainActor.run { isLoading = false }
+            isLoading = false
             PopUpGenerator.shared.show(msg: "Error confirming event", type: .error)
         }
     }
-    
-    
+
     func navigateToConfirmationForSessionOrNavigateToSessionDetails() {
-        // TODO: Cache the results
         Task {
-            if !isSessionCreated {
-                activeSheet = .startSessionConfirmation
-            } else {
-                if let mainCoordinator {
-                    mainCoordinator.navigateTo(.creatorSession(eventDetails: myEventDertails!, isSessionCreated: true))
-                }
-            }
-            
+            if !isSessionCreated { activeSheet = .startSessionConfirmation }
+            else if let mainCoordinator { mainCoordinator.navigateTo(.creatorSession(eventDetails: myEventDertails!, isSessionCreated: true)) }
         }
-        
     }
-    
-    private func isSessionCreated() async throws -> Bool{
+
+    func checkIsSessionCreated() async throws -> Bool {
         let repo = OnGoingSessionRepository()
         var queryRef = repo.initQueryBuilderObject()
         queryRef = queryRef.appendFilter(Filter(field: repo.constants.eventId, operation: .isEqualTo, value: eventId))
         let sessions = try await repo.fetch(query: queryRef)
-        logger.info("sessions count: \(sessions.count), \(sessions.count != 0)")
         return sessions.count != 0
-
     }
 
-    // MARK: - Delete Event
-
     func deleteEvent() async {
-        await MainActor.run { isDeletingEvent = true }
+        isDeletingEvent = true
         do {
             try await deleteRequester.deleteEvent(eventId: eventId)
-            await MainActor.run {
-                isDeletingEvent = false
-                eventDeleted = true
-            }
+            isDeletingEvent = false
+            eventDeleted = true
             PopUpGenerator.shared.show(msg: "Event deleted successfully", type: .notification)
         } catch {
             logger.error("Error deleting event: \(error.localizedDescription)")
-            await MainActor.run { isDeletingEvent = false }
+            isDeletingEvent = false
             PopUpGenerator.shared.show(msg: "Error deleting event", type: .error)
         }
     }

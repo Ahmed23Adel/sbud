@@ -9,10 +9,7 @@ import Foundation
 import OSLog
 import FirebaseAnalytics
 
-enum MyEventsTab {
-    case created
-    case hosting
-}
+enum MyEventsTab { case created, hosting }
 
 @Observable
 class ViewModelMyEvents {
@@ -43,42 +40,40 @@ class ViewModelMyEvents {
         }
     }
 
-    init(userId: String) {
-        logger.info("userId: \(userId)")
+    private let createdEventsFetcher: UsersEventFetching
+    private let hostingEventsFetcher: HostingEventsFetching
+
+    init(
+        userId: String,
+        createdEventsFetcher: UsersEventFetching = DefaultUsersEventFetcher(),
+        hostingEventsFetcher: HostingEventsFetching = HostingEventsRequester(),
+        autoStart: Bool = true
+    ) {
         self.userId = userId
+        self.createdEventsFetcher = createdEventsFetcher
+        self.hostingEventsFetcher = hostingEventsFetcher
+        logger.info("userId: \(userId)")
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "MyCreatedEvents"])
-        loadUsersEvents()
+        guard autoStart else { return }
+        Task { await loadCreatedEvents() }
         Task { await loadHostingEvents() }
     }
 
-    private func loadUsersEvents() {
-        let repo = UsersEventRepository()
-        var query = repo.initQueryBuilderObject()
-        query = query.appendFilter(Filter(field: repo.constants.creatorId, operation: .isEqualTo, value: userId))
-
-        Task {
-            do {
-                usersEvents = try await repo.fetch(query: query)
-                logger.info("usersEvents count \(self.usersEvents.count)")
-            } catch {
-                alertMsg = "Error with loading events, please try again"
-                isShowAlert = true
-                logger.fault("Error with loading my events")
-            }
+    func loadCreatedEvents() async {
+        do {
+            usersEvents = try await createdEventsFetcher.fetchCreatedEvents(userId: userId)
+        } catch {
+            alertMsg = "Error with loading events, please try again"
+            isShowAlert = true
         }
     }
 
     func loadHostingEvents() async {
-        await MainActor.run { isLoadingHosting = true }
+        isLoadingHosting = true
+        defer { isLoadingHosting = false }
         do {
-            let events = try await HostingEventsRequester().fetchHostingEvents()
-            await MainActor.run {
-                hostingEvents = events
-                isLoadingHosting = false
-            }
-            logger.info("hostingEvents count \(events.count)")
+            hostingEvents = try await hostingEventsFetcher.fetchHostingEvents()
         } catch {
-            await MainActor.run { isLoadingHosting = false }
             logger.error("Error loading hosting events: \(error)")
         }
     }
