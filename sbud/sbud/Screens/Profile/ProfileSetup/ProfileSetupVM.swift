@@ -132,7 +132,7 @@ final class ProfileSetupVM: ObservableObject {
             }
         } catch {
             DispatchQueue.main.async {
-                self.errorMessage = "Codice errato o scaduto."
+                self.errorMessage = "Incorrect or expired code."
                 self.isVerifyingOTP = false
             }
         }
