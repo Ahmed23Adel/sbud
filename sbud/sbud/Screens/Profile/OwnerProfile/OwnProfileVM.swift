@@ -17,25 +17,44 @@ final class OwnProfileVM: BaseProfileVM {
 
     private let friendManager: FriendManager
     private let currentUserProvider: CurrentUserProviding
+    private let statsRequester: UserStatsRequester
 
     init(
         userId: String,
         userRepository: UserProfileFetching = UserRepository(),
         friendManager: FriendManager = FriendManager.shared,
-        currentUserProvider: CurrentUserProviding = FirebaseCurrentUserProvider()
+        currentUserProvider: CurrentUserProviding = FirebaseCurrentUserProvider(),
+        statsRequester: UserStatsRequester = UserStatsRequester()
     ) {
         self.friendManager = friendManager
         self.currentUserProvider = currentUserProvider
+        self.statsRequester = statsRequester
         super.init(userId: userId, userRepository: userRepository)
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "OwnProfile"])
     }
 
     func load() async {
-        await loadProfile()
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.loadProfile() }
+            group.addTask { await self.loadStats() }
+            group.addTask { await self.loadPendingFriendsRequests() }
+            group.addTask { await self.loadPendingHostRequests() }
+        }
         if let profile { profileManager.saveProfileToLocale(profile: profile) }
-        await loadPendingFriendsRequests()
-        await loadPendingHostRequests()
     }
+
+    // MARK: - Stats
+
+    private func loadStats() async {
+        do {
+            let stats = try await statsRequester.fetchStats(userId: userId)
+            profile?.applyStats(stats)
+        } catch {
+            // Stats yüklenemese bile profil gösterilmeye devam eder
+        }
+    }
+
+    // MARK: - Pending counts
 
     private func loadPendingFriendsRequests() async {
         guard let uid = currentUserProvider.currentUserId else { return }
