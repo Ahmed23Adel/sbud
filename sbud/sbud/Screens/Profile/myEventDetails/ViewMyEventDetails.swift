@@ -213,6 +213,12 @@ struct ViewMyEventDetails: View {
                 onConfirmTap: {
                     viewModel.activeSheet = .confirmation
                 },
+                onMessagesTap: {
+                    coordinator.goToEventConversations(
+                        eventId: viewModel.eventId,
+                        eventTitle: details.title
+                    )
+                },
                 onHostsTap: {
                     coordinator.showHostsSheet(eventId: viewModel.eventId)
                 },
