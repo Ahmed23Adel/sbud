@@ -46,7 +46,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E24825B62EE2DCA400330DC2"
+               BlueprintIdentifier = "66EFCA042FF7A40200241493"
                BuildableName = "sbudUITests.xctest"
                BlueprintName = "sbudUITests"
                ReferencedContainer = "container:sbud.xcodeproj">
