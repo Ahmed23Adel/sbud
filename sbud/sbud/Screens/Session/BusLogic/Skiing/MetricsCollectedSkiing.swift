@@ -10,6 +10,7 @@ import Foundation
 import FirebaseFirestore
 
 struct MetricsCollectedSkiing: Codable {
+    var userId = ProfileManager.shared.getLocalProfile()?.id
     var startDateTime: Date
     var endDateTime: Date
     var metricsCreatorType: MetricsCreatorType
@@ -20,14 +21,15 @@ struct MetricsCollectedSkiing: Codable {
     var numberOfRuns: Int
     var splits: [SplitForSkiing]
     var endedBeforeCreator: Bool = false
-
+    var numSession: Int
+    
     func upload(eventId: String, userId: String) async throws {
         let db = Firestore.firestore()
-        try db
+        let data = try Firestore.Encoder().encode(self)
+        try await db
             .collection("Events")
             .document(eventId)
             .collection("metrics")
-            .document(userId)
-            .setData(from: self)
+            .addDocument(data: data)
     }
 }

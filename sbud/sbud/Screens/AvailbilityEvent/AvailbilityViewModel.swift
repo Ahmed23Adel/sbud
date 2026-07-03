@@ -22,23 +22,30 @@ final class AvailbilityViewModel: ObservableObject {
     var desiredDataPrecision: GeohashPrecision = .neighbourhood
     @Published var currentRegion: MKCoordinateRegion?
     private var lastFetchedPrecision: GeohashPrecision?
-    let dataFetcher = AvailabilityDataFetcher()
-    let mapsHelper = MapsHelper()
-    var locationManager: LocationManager
+    let dataFetcher: AvailabilityDataFetching
+    let mapsHelper: MapsHelper
+    let locationProvider: LocationProviding
     private var cancellables = Set<AnyCancellable>()
     @Published var availabilityFiltersResults: AvailabilityFiltersResults
     private var selectedActivityIndex: Int = 0
     @Published var listViewRefreshId = UUID()
     private let logger = Logger(subsystem: "sBud", category: "AvailbilityViewModel")
 
-    
     @Published var selectedTab = 0
-    init(locationManager: LocationManager, availabilityFiltersResults: AvailabilityFiltersResults) {
-        self.locationManager = locationManager
-        self.availabilityFiltersResults = availabilityFiltersResults
 
-        locationManager.requestPermission()
-        let coordinate = locationManager.userLocation ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
+    init(
+        locationProvider: LocationProviding,
+        availabilityFiltersResults: AvailabilityFiltersResults,
+        dataFetcher: AvailabilityDataFetching = AvailabilityDataFetcher(),
+        mapsHelper: MapsHelper = MapsHelper()
+    ) {
+        self.locationProvider = locationProvider
+        self.availabilityFiltersResults = availabilityFiltersResults
+        self.dataFetcher = dataFetcher
+        self.mapsHelper = mapsHelper
+
+        locationProvider.requestPermission()
+        let coordinate = locationProvider.userLocation ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
         self.cameraPosition = .region(
             MKCoordinateRegion(
                 center: coordinate,
@@ -53,20 +60,19 @@ final class AvailbilityViewModel: ObservableObject {
     }
 
     private func fetchNewData() {
-
         if currentCameraPrecision == .individuals {
-            Task {
+            Task { [weak self] in
+                guard let self else { return }
                 do {
                     shouldShowIndividuals = true
-                    anchorAvailabilityEvents =  try await dataFetcher.fetchIndividuals(
+                    anchorAvailabilityEvents = try await dataFetcher.fetchIndividuals(
                         in: currentRegion!,
                         selectedStartDateTime: availabilityFiltersResults.startDateTime,
                         selectedEndDateTime: availabilityFiltersResults.endDateTime,
                         selectedActivityType: ActivityType(rawValue:
-                                                            AvailabilityConfig.activityNames[selectedActivityIndex])
-                        ?? .running,
+                            AvailabilityConfig.activityNames[selectedActivityIndex])
+                            ?? .running,
                         extraFilters: availabilityFiltersResults.buildExtraQueryParams()
-
                     )
                     logger.debug("Fetching individuals: \(self.anchorsClusters.count)")
                     anchorsClusters.removeAll()
@@ -76,33 +82,32 @@ final class AvailbilityViewModel: ObservableObject {
                 }
             }
         } else {
-            Task {
+            Task { [weak self] in
+                guard let self else { return }
                 do {
-
                     shouldShowIndividuals = false
-                    anchorsClusters =  try await dataFetcher.fetchClusters(
+                    anchorsClusters = try await dataFetcher.fetchClusters(
                         selectedStartTime: availabilityFiltersResults.startDateTime,
                         selectedEndTime: availabilityFiltersResults.endDateTime,
                         topLeft: currentRegion?.topLeft ?? GeoPoint(latitude: 0, longitude: 0),
-                        bottomRight: currentRegion?.bottomRight ?? GeoPoint(latitude: 180, longitude: 180),
+                        bottomRight: currentRegion?.bottomRight ?? GeoPoint(latitude: 90, longitude: 180),
                         selectedActivityType: ActivityType(rawValue: AvailabilityConfig.activityNames[selectedActivityIndex])
-                        ?? .running,
+                            ?? .running,
                         extraFilters: availabilityFiltersResults.buildExtraQueryParams()
-
                     )
                     logger.debug("Fetching clusters")
                     anchorAvailabilityEvents.removeAll()
                 } catch {
-                    print("showErrorMsgForClusters")
                     showErrorMsgForClusters()
                 }
             }
         }
     }
 
-    // MARK: zooming to fit city
+    // MARK: - Camera
+
     func zoomToCity(center: CLLocationCoordinate2D? = nil) {
-        let coordinate = center ?? locationManager.userLocation ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
+        let coordinate = center ?? locationProvider.userLocation ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
         cameraPosition = .region(
             MKCoordinateRegion(
                 center: coordinate,
@@ -114,24 +119,6 @@ final class AvailbilityViewModel: ObservableObject {
         )
     }
 
-    // MARK: error msgs
-    private func showErrorMsgForClusters() {
-        if !showErrorAlert{
-            alertMsg = "Error fetching new clusters, please try again later"
-            showErrorAlert = true
-        }
-        
-    }
-
-    private func showErrorMsgForIndividuals() {
-        if !showErrorAlert{
-            alertMsg = "Error fetching new availability events, please try again later"
-            showErrorAlert = true
-        }
-        
-    }
-
-    // MARK: GUI Camera change handeler
     func handleMapCameraChange(_ region: MKCoordinateRegion) {
         let newPrecision = mapsHelper.determinePrecision(from: region)
         logger.notice("Precision: \(newPrecision.rawValue), Last: \(self.lastFetchedPrecision?.rawValue ?? -1)")
@@ -152,30 +139,28 @@ final class AvailbilityViewModel: ObservableObject {
         } else {
             shouldFetch = !mapsHelper.isNewRegionContained(new: region, old: oldRegion)
         }
+
+        currentRegion = region
+        currentCameraPrecision = newPrecision
+        lastFetchedPrecision = newPrecision
+
         if shouldFetch {
             logger.debug("Fetching new data")
-            currentRegion = region
-            currentCameraPrecision = newPrecision
-            lastFetchedPrecision = newPrecision
             fetchNewData()
-        } else {
-            logger.debug("No fetch needed - region contained or already showing same data")
-            currentRegion = region
-            currentCameraPrecision = newPrecision
-            lastFetchedPrecision = newPrecision
         }
     }
 
-    // MARK: Filters
+    // MARK: - Filters
+
     func changeSelectedActivity(selectedActivityIndex: Int) {
         self.selectedActivityIndex = selectedActivityIndex
         fetchNewData()
     }
-    
-    func updateListId(){
+
+    func updateListId() {
         listViewRefreshId = UUID()
     }
-    
+
     private func setupFilterResultsListener() {
         availabilityFiltersResults.$selectedActivityIndex
             .sink { [weak self] newIndex in
@@ -198,7 +183,6 @@ final class AvailbilityViewModel: ObservableObject {
             .sink { [weak self] _ in self?.fetchNewData() }
             .store(in: &cancellables)
 
-        // Nested filter holders
         subscribeToFilterHolder(availabilityFiltersResults.runningFilter)
         subscribeToFilterHolder(availabilityFiltersResults.cyclingFilter)
         subscribeToFilterHolder(availabilityFiltersResults.gymFilter)
@@ -216,4 +200,19 @@ final class AvailbilityViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    // MARK: - Errors
+
+    private func showErrorMsgForClusters() {
+        if !showErrorAlert {
+            alertMsg = "Error fetching new clusters, please try again later"
+            showErrorAlert = true
+        }
+    }
+
+    private func showErrorMsgForIndividuals() {
+        if !showErrorAlert {
+            alertMsg = "Error fetching new availability events, please try again later"
+            showErrorAlert = true
+        }
+    }
 }

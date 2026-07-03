@@ -17,6 +17,7 @@ enum AvailabilityNavigationDestination: Hashable,Equatable {
         switch (lhs, rhs) {
         case (.moreInfoEvent(let l), .moreInfoEvent(let r)): return l == r
         case (.addNewEvent, .addNewEvent): return true
+        case (.profileView(let l), .profileView(let r)): return l == r
         case (.chat(let u1, let e1, let t1), .chat(let u2, let e2, let t2)):
             return u1.id == u2.id && e1 == e2 && t1 == t2
         default: return false

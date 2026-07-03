@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import FirebaseAnalytics
 
 @MainActor
 final class OtherProfileVM: BaseProfileVM {
@@ -25,6 +26,16 @@ final class OtherProfileVM: BaseProfileVM {
     // MARK: - Dependencies
 
     private let friendManager = FriendManager.shared
+
+    // MARK: - Init
+
+    override init(userId: String) {
+        super.init(userId: userId)
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "OtherProfile",
+            "viewed_user_id": userId
+        ])
+    }
 
     // MARK: - Load
 

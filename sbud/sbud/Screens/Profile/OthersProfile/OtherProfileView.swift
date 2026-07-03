@@ -142,31 +142,53 @@ private extension OtherProfileView {
     }
 
     var followButton: some View {
-        Button {
-            Task { await vm.toggleFriendAction() }
-        } label: {
-            ZStack {
-                if vm.isFriendActionLoading {
-                    ProgressView().tint(friendActionForeground)
-                } else {
-                    HStack(spacing: 6) {
-                        if vm.isRequestSent || vm.isRequestReceived {
-                            Image(systemName: "clock")
-                                .font(.system(size: 12, weight: .bold))
+        HStack(spacing: 10) {
+            Button {
+                Task { await vm.toggleFriendAction() }
+            } label: {
+                ZStack {
+                    if vm.isFriendActionLoading {
+                        ProgressView().tint(friendActionForeground)
+                    } else {
+                        HStack(spacing: 6) {
+                            if vm.isRequestSent || vm.isRequestReceived {
+                                Image(systemName: "clock")
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            Text(friendActionLabel)
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
                         }
-                        Text(friendActionLabel)
-                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(friendActionForeground)
                     }
-                    .foregroundColor(friendActionForeground)
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(friendActionBackground)
+                .clipShape(Rectangle())
+                .cornerRadius(4)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(friendActionBackground)
-            .clipShape(Rectangle())
-            .cornerRadius(4)
+
+            Button {
+                shareProfile(userId: vm.userId)
+            } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 50, height: 50)
+                    .background(Color(white: 0.15))
+                    .cornerRadius(4)
+            }
         }
         .padding(.horizontal, 24)
+    }
+
+    func shareProfile(userId: String) {
+        guard let url = URL(string: "https://sbud-backend.onrender.com/profile/\(userId)") else { return }
+        let av = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.rootViewController?
+            .present(av, animated: true)
     }
 
     private var friendActionLabel: String {

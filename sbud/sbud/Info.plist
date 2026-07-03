@@ -2,36 +2,45 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSCameraUsageDescription</key>
-    <string>Used to scan QR codes to connect with friends.</string>
-
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>com.googleusercontent.apps.863852529120-f082rdgc1ucvss39g2ael0n05nrjvaaq</string>
-            </array>
-        </dict>
-    </array>
-
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>location</string>
-    </array>
-
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-    
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>We need your location to track your activity and show your route on the map.</string>
-    
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>We need your location in the background to seamlessly track your activity and pace even when your screen is locked.</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.sbud.event.remindersync</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.863852529120-hr37cpjvgq3rb56mbi41cd39va19tek2</string>
+				<string>com.googleusercontent.apps.863852529120-f082rdgc1ucvss39g2ael0n05nrjvaaq</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>com.sbud.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>sbud</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>sBud reads your health data to display workout history.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>sBud saves your workouts to Apple Health after each session.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+	</array>
 </dict>
 </plist>

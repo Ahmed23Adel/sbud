@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import FirebaseAnalytics
+
 @Observable
 class ViewModelCoordinatorAddNewEvent {
     var currentStep = AddNewEventSteps.step1
@@ -13,17 +15,27 @@ class ViewModelCoordinatorAddNewEvent {
     var isDismissed = false
     var isLoading = false
 
+    private let eventService: CreateEventRequesting
+
+    init(eventService: CreateEventRequesting = CreateNewEventRequester()) {
+        self.eventService = eventService
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "CreateEvent"])
+    }
+
     func createEvent() {
-        if !newEventBuilder.areFieldsValid() {
+        guard newEventBuilder.areFieldsValid() else {
             newEventBuilder.generateErrorMsg()
             return
         }
         Task {
-            isLoading = true
-            if await newEventBuilder.sendRequest() {
-                isDismissed = true
+            await MainActor.run { isLoading = true }
+            do {
+                _ = try await eventService.createNewEvent(requestParams: newEventBuilder.buildRequest())
+                await MainActor.run { isDismissed = true }
+            } catch {
+                PopUpGenerator.shared.show(msg: "Error, please try again", type: .error)
             }
-            isLoading = false
+            await MainActor.run { isLoading = false }
         }
     }
 

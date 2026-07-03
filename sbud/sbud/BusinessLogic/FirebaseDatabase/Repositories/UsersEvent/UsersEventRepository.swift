@@ -44,12 +44,14 @@ class UsersEventRepository: IFirebaesRepository{
                   let status = data["status"] as? String else {
                 return nil
             }
+            let isPublic = data["isPublic"] as? Bool ?? true
             return UsersEvent(
                 activityType: ActivityType(rawValue: activityType) ?? .running,
                 title: title,
                 eventImage: eventImage,
                 status: UsersEventStatus(rawValue: status) ?? .proposed,
-                eventId: id)
+                eventId: id,
+                isPublic: isPublic)
         }
         
         return userEvents

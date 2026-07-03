@@ -132,18 +132,14 @@ struct SignUpView: View {
             .toolbar {                                    // ← Single toolbar here
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("✓") {
-                        // UIKIT organizes the views
-                        // first responder is the one that has focus now
-                        // to dismiss, whoever the first responder is, resign
-                        // UIApplication.shared: running instance of app
-                        // #selector(UIResponder.resignFirstResponder) — the action to perform.
-                        // to: nil — the target. nil means "don't send it to a specific object" — instead, walk the responder chain and let whoever can handle it respond
-                        // from: nil — the sender. Who is triggering this action. nil means anonymous/unspecified
+                    Button {
                         UIApplication.shared.sendAction(
-                                #selector(UIResponder.resignFirstResponder),
-                                to: nil, from: nil, for: nil
-                            )
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil, from: nil, for: nil
+                        )
+                    } label: {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                            .foregroundStyle(Color.mainColor)
                     }
                 }
             }

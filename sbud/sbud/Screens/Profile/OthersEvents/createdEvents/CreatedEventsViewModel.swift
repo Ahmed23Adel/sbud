@@ -35,7 +35,7 @@ class CreatedEventsViewModel{
         let repo = UsersEventRepository()
         var query = repo.initQueryBuilderObject()
         query = query.appendFilter(Filter(field: repo.constants.creatorId, operation: .isEqualTo, value: userId))
-        
+
         Task {
             do {
                 usersEvents = try await repo.fetch(query: query)
@@ -47,5 +47,9 @@ class CreatedEventsViewModel{
             }
         }
     }
-    
+
+    func reloadEvents() {
+        fetchCreatedEvents()
+    }
+
 }

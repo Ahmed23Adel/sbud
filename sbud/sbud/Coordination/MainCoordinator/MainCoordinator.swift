@@ -23,6 +23,10 @@ final class MainCoordinator: ObservableObject {
     // MARK: - Published State
 
     @Published private(set) var currentRoute: MainRoute = .loading
+    @Published var deepLinkProfileUserId: String? = nil
+    @Published var deepLinkEventId: String? = nil
+    private var pendingProfileUserId: String? = nil
+    private var pendingEventId: String? = nil
 
     // MARK: - Private Dependencies
 
@@ -44,6 +48,16 @@ final class MainCoordinator: ObservableObject {
 
     /// Called once on launch from the root view. Determines where the user lands.
     func resolveInitialRoute() {
+        // Skip Firebase auth entirely when running under UI tests.
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING") {
+            // HomeTabsView guards on getLocalProfile() != nil, so seed a stub.
+            var stub = UserProfile(id: "ui-test-user")
+            stub.name = "Test"
+            stub.surName = "User"
+            ProfileManager.shared.saveProfileToLocale(profile: stub)
+            currentRoute = .home
+            return
+        }
         Task {
             currentRoute = await determineRoute()
         }
@@ -57,6 +71,8 @@ final class MainCoordinator: ObservableObject {
 
     func goToHome() {
         currentRoute = .home
+        openPendingProfileIfNeeded()
+        openPendingEventIfNeeded()
     }
 
     func goToSignUp() {
@@ -73,6 +89,10 @@ final class MainCoordinator: ObservableObject {
 
     func startOthersSession(eventDetails: EventFullDetails, isSessionCreated: Bool) {
         currentRoute = .othersSession(eventDetails: eventDetails, isSessionCreated: isSessionCreated)
+    }
+
+    func goToSessionSummary(eventDetails: EventFullDetails) {
+        currentRoute = .sessionSummary(eventDetails: eventDetails)
     }
 
     // MARK: - Private Route Resolution
@@ -125,6 +145,58 @@ extension MainCoordinator: AuthCoordinatorDelegate {
 
     func coordinatorDidCompleteProfileSetup() {
         currentRoute = .home
+    }
+}
+
+// MARK: - Deep Link / URL Handling
+
+extension MainCoordinator {
+    /// Handles both custom scheme (sbud://profile/<id>)
+    /// and universal links (https://sbud-backend.onrender.com/profile/<id>).
+    func handle(universalLink url: URL) {
+        guard let scheme = url.scheme else { return }
+
+        if scheme == "sbud" {
+            let host = url.host
+            let id = url.pathComponents.filter { $0 != "/" }.first
+
+            if host == "profile", let userId = id {
+                pendingProfileUserId = userId
+            } else if host == "event", let eventId = id {
+                pendingEventId = eventId
+            } else {
+                return
+            }
+        } else if url.host == "sbud-backend.onrender.com" {
+            let parts = url.pathComponents.filter { $0 != "/" }
+            guard parts.count >= 2 else { return }
+            if parts[0] == "profile" {
+                pendingProfileUserId = parts[1]
+            } else if parts[0] == "event" {
+                pendingEventId = parts[1]
+            } else {
+                return
+            }
+        } else {
+            return
+        }
+
+        if currentRoute == .home {
+            openPendingProfileIfNeeded()
+            openPendingEventIfNeeded()
+        }
+    }
+
+    func openPendingProfileIfNeeded() {
+        guard let userId = pendingProfileUserId else { return }
+        pendingProfileUserId = nil
+        deepLinkProfileUserId = userId
+    }
+
+    func openPendingEventIfNeeded() {
+        guard let eventId = pendingEventId else { return }
+        pendingEventId = nil
+        deepLinkEventId = eventId
     }
 }
 

@@ -11,7 +11,7 @@ internal import FirebaseFirestoreInternal
 
 struct AvailbilityView: View {
     @StateObject var viewModel = AvailbilityViewModel(
-        locationManager: LocationManager.shared,
+        locationProvider: LocationManager.shared,
         availabilityFiltersResults: AvailabilityFiltersResults())
     @EnvironmentObject private var coordinator: AvailabilityCoordinator
 
@@ -48,6 +48,7 @@ struct AvailbilityView: View {
                 }
                 .pickerStyle(.segmented)
                 .padding()
+                .accessibilityIdentifier("availability.tabPicker")
                 .onChange(of: viewModel.selectedTab) {
                     viewModel.updateListId()
                 }
@@ -63,10 +64,12 @@ struct AvailbilityView: View {
                     GlassFloatingButton(systemName: "plus") {
                         coordinator.showAddNewEvent()
                     }
+                    .accessibilityIdentifier("availability.addEventButton")
                     Spacer()
                     GlassFloatingButton(systemName: "line.3.horizontal.decrease") {
                         coordinator.showFilterSheet(availFilters: $viewModel.availabilityFiltersResults)
                     }
+                    .accessibilityIdentifier("availability.filterButton")
                 }
                 .padding(.bottom, 100)
                 .padding(.trailing, 16)
@@ -83,6 +86,6 @@ struct AvailbilityView: View {
 }
 #Preview {
     AvailbilityView(viewModel: AvailbilityViewModel(
-        locationManager: LocationManager.shared,
+        locationProvider: LocationManager.shared,
         availabilityFiltersResults: AvailabilityFiltersResults()))
 }

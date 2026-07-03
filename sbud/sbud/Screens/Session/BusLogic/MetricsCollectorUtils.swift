@@ -153,4 +153,5 @@ extension Collection where Element == (Date, CLLocation) {
 
 enum MetricsError: Error {
     case eventNotFound
+    case profileNotAvailable
 }
