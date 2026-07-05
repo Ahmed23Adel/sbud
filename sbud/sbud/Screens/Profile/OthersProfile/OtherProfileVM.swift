@@ -38,8 +38,11 @@ final class OtherProfileVM: BaseProfileVM {
     }
 
     func load() async {
+        // 1. Önce profili yükle — profile nil olmamalı stats apply edilmeden önce
+        await loadProfile()
+
+        // 2. Sonra paralel: stats + friend status
         await withTaskGroup(of: Void.self) { group in
-            group.addTask { await self.loadProfile() }
             group.addTask { await self.loadStats() }
             group.addTask { await self.refreshFriendStatus() }
         }

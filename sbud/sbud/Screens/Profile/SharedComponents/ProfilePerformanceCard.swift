@@ -12,40 +12,48 @@ struct ProfilePerformanceCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            header
-            Divider().background(Color(white: 0.12)).padding(.vertical, 16)
-            topMetricsRow
-            Divider().background(Color(white: 0.12)).padding(.vertical, 16)
-            bottomMetricsRow
-            if let activityStats = profile.activityStats, !activityStats.isEmpty {
-                Divider().background(Color(white: 0.12)).padding(.vertical, 16)
-                activityBreakdown(activityStats)
+
+            fixedHeader
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+
+            Divider().background(Color(white: 0.12))
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+
+            overallContent
+                .padding(.bottom, 4)
+
+            Divider().background(Color(white: 0.12))
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+
+            TimelineView(.periodic(from: .now, by: 60)) { _ in
+                lastActivityRow(now: Date())
             }
-            Divider().background(Color(white: 0.12)).padding(.vertical, 12)
-            lastActivityRow
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
         }
-        .padding(20)
         .background(Color(white: 0.07))
-        .clipShape(Rectangle())
+        .clipShape(RoundedRectangle(cornerRadius: 4))
         .padding(.horizontal, 16)
-        .cornerRadius(4)
     }
 
     // MARK: - Header
 
-    private var header: some View {
+    private var fixedHeader: some View {
         HStack {
             Text("PERFORMANCE METRICS")
-                .font(.system(size: 15, weight: .black))
+                .font(.system(size: 13, weight: .black))
                 .foregroundColor(.white)
-                .kerning(1.5)
+                .kerning(1.2)
             Spacer()
-            if let streak = profile.currentStreakDays, streak > 0 {
+            if let streak = profile.currentStreakDays, streak > 1 {
                 HStack(spacing: 4) {
                     Image(systemName: "flame.fill")
                         .foregroundColor(.orange)
-                        .font(.system(size: 12))
-                    Text("\(streak)d streak")
+                        .font(.system(size: 11))
+                    Text("\(streak)d Streak")
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .foregroundColor(.orange)
                 }
@@ -57,136 +65,66 @@ struct ProfilePerformanceCard: View {
         }
     }
 
-    // MARK: - Top row: sessions, distance, duration
+    // MARK: - Overall Content
 
-    private var topMetricsRow: some View {
-        HStack(alignment: .top) {
-            ProfileMetricItem(
-                label: "SESSIONS",
-                value: "\(profile.totalSessions)",
-                color: Color("turquoise")
-            )
-            Spacer()
-            ProfileMetricItem(
-                label: "DISTANCE (KM)",
-                value: ProfileUtils.formatDistance(profile.totalDistanceKm),
-                color: .white
-            )
-            Spacer()
-            if let hours = profile.totalDurationHours {
-                ProfileMetricItem(
-                    label: "HOURS",
-                    value: String(format: "%.1f", hours),
-                    color: .white
-                )
+    private var overallContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top) {
+                ProfileMetricItem(label: "SESSIONS",
+                                  value: "\(profile.totalSessions)",
+                                  color: Color("turquoise"))
+                Spacer()
+                ProfileMetricItem(label: "DISTANCE (KM)",
+                                  value: ProfileUtils.formatDistance(profile.totalDistanceKm),
+                                  color: .white)
+                Spacer()
+                ProfileMetricItem(label: "HOURS",
+                                  value: String(format: "%.1f", profile.totalDurationHours ?? 0),
+                                  color: .white)
             }
+            .padding(.horizontal, 20)
+
+            HStack(alignment: .top) {
+                ProfileMetricItem(label: "AVG. INTENSITY",
+                                  value: "\(profile.avgIntensity) %",
+                                  color: .white)
+                Spacer()
+                ProfileMetricItem(label: "THIS MONTH",
+                                  value: "\(profile.monthlySessionCount ?? 0)",
+                                  color: Color("palelime"))
+                Spacer()
+                Color.clear.frame(width: 80)
+            }
+            .padding(.horizontal, 20)
         }
     }
 
-    // MARK: - Bottom row: intensity, monthly sessions, favorite activity
+    // MARK: - Last Activity
 
-    private var bottomMetricsRow: some View {
-        HStack(alignment: .top) {
-            ProfileMetricItem(
-                label: "AVG. INTENSITY",
-                value: "\(profile.avgIntensity) %",
-                color: .white
-            )
-            Spacer()
-            if let monthly = profile.monthlySessionCount {
-                ProfileMetricItem(
-                    label: "THIS MONTH",
-                    value: "\(monthly)",
-                    color: Color("palelime")
-                )
-            }
-            Spacer()
-            if let fav = profile.favoriteActivity {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("FAVOURITE")
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .foregroundColor(.gray)
-                        .kerning(1)
-                    HStack(spacing: 6) {
-                        Image(systemName: activityIcon(fav))
-                            .foregroundColor(Color("palelime"))
-                            .font(.system(size: 18, weight: .bold))
-                        Text(fav.uppercased())
-                            .font(.system(size: 12, weight: .black, design: .monospaced))
-                            .foregroundColor(Color("palelime"))
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: - Activity breakdown
-
-    private func activityBreakdown(_ stats: [String: ActivityStat]) -> some View {
-        let sorted = stats.sorted { $0.value.sessionCount > $1.value.sessionCount }
-        return VStack(alignment: .leading, spacing: 10) {
-            Text("BY ACTIVITY")
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundColor(.gray)
-                .kerning(1)
-            ForEach(sorted, id: \.key) { activity, stat in
-                HStack {
-                    Image(systemName: activityIcon(activity))
-                        .foregroundColor(Color("turquoise"))
-                        .font(.system(size: 13))
-                        .frame(width: 20)
-                    Text(activity.uppercased())
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
-                    Spacer()
-                    Text("\(stat.sessionCount) sessions")
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(.gray)
-                    Text("·")
-                        .foregroundColor(.gray)
-                    Text(String(format: "%.1f km", stat.totalDistanceKm))
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
-                    if let pb = stat.personalBestDistanceKm, pb > 0 {
-                        Text("· PB \(String(format: "%.1f", pb))km")
-                            .font(.system(size: 9, design: .monospaced))
-                            .foregroundColor(Color("palelime"))
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: - Last activity row
-
-    private var lastActivityRow: some View {
+    private func lastActivityRow(now: Date) -> some View {
         HStack {
-            Text(ProfileUtils.lastActivityText(
-                date: profile.lastActivityDate,
-                name: profile.lastActivityName
-            ))
-            .font(.system(size: 10, design: .monospaced))
-            .foregroundColor(.gray)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("LAST ACTIVITY")
+                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                    .foregroundColor(.gray)
+                    .kerning(1)
+                Text(lastActivityText(now: now))
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(profile.lastActivityDate == nil ? .gray : .white)
+            }
             Spacer()
             Image(systemName: "chart.line.uptrend.xyaxis")
                 .foregroundColor(Color("palelime"))
-                .font(.system(size: 14))
+                .font(.system(size: 13))
         }
     }
 
-    // MARK: - Helpers
-
-    private func activityIcon(_ activity: String) -> String {
-        switch activity.lowercased() {
-        case "running":  return "figure.run"
-        case "cycling":  return "figure.outdoor.cycle"
-        case "hiking":   return "figure.hiking"
-        case "swimming": return "figure.pool.swim"
-        case "skiing":   return "figure.skiing.downhill"
-        case "gym":      return "dumbbell"
-        case "yoga":     return "figure.yoga"
-        case "tennis":   return "figure.tennis"
-        default:         return "figure.mixed.cardio"
-        }
+    private func lastActivityText(now: Date) -> String {
+        guard let name = profile.lastActivityName,
+              let date = profile.lastActivityDate else { return "No recent activity" }
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return "\(name) · \(f.localizedString(for: date, relativeTo: now))"
     }
 }
+

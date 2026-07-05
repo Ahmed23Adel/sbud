@@ -176,6 +176,7 @@ class ViewModelOthersSession {
             do {
                 try await metricsCollector?.endSession(event: eventDetails)
                 deleteLocalSession()
+                Task { try? await UserStatsRequester().recalculate() }
                 await MainActor.run {
                     isLoading = false
                     mainCoordinator?.goToSessionSummary(eventDetails: eventDetails)

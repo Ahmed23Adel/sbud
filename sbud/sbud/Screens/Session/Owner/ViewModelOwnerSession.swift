@@ -37,7 +37,7 @@ class ViewModelOwnerSession{
             do {
                 if !isSessionCreated {
                     try await createSession()
-                } 
+                }
                 
             } catch {
                 showError("Error occured while starting the session, pleaes try again")
@@ -143,6 +143,7 @@ class ViewModelOwnerSession{
                 let repo = OnGoingSessionRepository()
                 try await repo.deleteByEventId(eventDetails.id)
                 deleteLocalSession()
+                Task { try? await UserStatsRequester().recalculate() }
                 await MainActor.run {
                     isLoading = false
                     mainCoordinator?.goToSessionSummary(eventDetails: eventDetails)
