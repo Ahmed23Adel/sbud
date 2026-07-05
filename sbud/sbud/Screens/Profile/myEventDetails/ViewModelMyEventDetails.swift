@@ -59,9 +59,9 @@ class ViewModelMyEventDetails {
             let requester = EventByIdRequester()
             var details = try await requester.fetchEvent(eventId: eventId)
             
-            // MARK: - 🛡️ SCUDO ANTI-DUPLICATI
+            
             if details.isDateConfirmed && details.isLocationConfirmed {
-                // Se è confermato, DEVE esserci una sola location. Prendiamo la prima e ignoriamo i "fantasmi" del server.
+                // Se è confermato, DEVE esserci una sola location. 
                 if let firstLocation = details.dateLocations.first {
                     details.dateLocations = [firstLocation]
                 }
