@@ -59,6 +59,12 @@ struct FriendListView: View {
                 }
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                PageSectionTitle(title: "FRIENDS")
+            }
+        }
         .task { await vm.load() }
     }
 }
@@ -122,4 +128,3 @@ private struct UserRowCell: View {
         .contentShape(Rectangle())
     }
 }
-

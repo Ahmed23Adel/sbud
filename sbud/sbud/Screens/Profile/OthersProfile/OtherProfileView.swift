@@ -41,7 +41,6 @@ struct OtherProfileView: View {
                             if let profile = vm.profile {
                                 ProfilePerformanceCard(profile: profile)
                             }
-                            ProfileArchiveSection()
                             ProfileMyEventsButton(userId: vm.userId, title: "EVENTS") {
                                 print("goToOthersEvents")
                                 coordinator.goToOthersEvents()

@@ -112,24 +112,8 @@ struct ViewMoreInfoEvent: View {
                             .padding(.horizontal)
                         }
 
-                        Button {
+                        ViewHostsButton {
                             showHostsList = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "person.2.fill")
-                                    .foregroundColor(Color("palelime"))
-                                Text("View Hosts")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
-                                    .font(.system(size: 12))
-                            }
-                            .padding()
-                            .background(Color.backgroundColor)
-                            .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
-                            .padding(.horizontal)
                         }
 
                         LocationMapCard(dateLocations: details.dateLocations).padding()

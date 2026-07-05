@@ -15,10 +15,7 @@ struct ProfileMyEventsButton: View {
 
     var body: some View {
         HStack {
-            Text(title)
-                .font(.system(size: 15, weight: .black))
-                .foregroundColor(.white)
-                .kerning(1.5)
+            PageSectionTitle(title: title)
             Spacer()
             Button(action: onViewAll) {
                 Text("VIEW ALL")

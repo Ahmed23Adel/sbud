@@ -29,9 +29,7 @@ struct FriendsActivitySection: View {
         VStack(alignment: .leading, spacing: 14) {
 
             HStack {
-                Text("BUDDY MOVES")
-                    .font(.system(size: 15, weight: .black))
-                    .foregroundColor(.white)
+                PageSectionTitle(title: "BUDDY MOVES")
                 Spacer()
             }
 
