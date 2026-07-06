@@ -11,19 +11,20 @@ import FirebaseFirestore
 
 final class HostsRepositoryTests: XCTestCase {
     
+    private var savedProfile: UserProfile?
+
     override func setUp() {
         super.setUp()
-        
-        // Configura una struttura minima per evitare il crash di getLocalProfile()!
-        // Se il tuo ProfileManager o UserProfile richiede campi obbligatori diversi,
-        // Xcode ti avviserà e li correggeremo insieme.
-        let dummyProfile = UserProfile(id: "test_user_id")
-        ProfileManager.shared.saveProfileToLocale(profile: dummyProfile)
+        savedProfile = ProfileManager.shared.getLocalProfile()
+        ProfileManager.shared.saveProfileToLocale(profile: UserProfile(id: "test_user_id"))
     }
-    
+
     override func tearDown() {
-        // Pulizia dopo il test
-        ProfileManager.shared.deleteProfileFromLocale()
+        if let savedProfile {
+            ProfileManager.shared.saveProfileToLocale(profile: savedProfile)
+        } else {
+            ProfileManager.shared.deleteProfileFromLocale()
+        }
         super.tearDown()
     }
     
@@ -53,14 +54,4 @@ final class HostsRepositoryTests: XCTestCase {
         XCTAssertEqual(repository.userId, "test_user_id", "Il repository deve recuperare correttamente l'ID dell'utente dal profilo locale")
     }
     
-    func test_initQueryBuilderObject_returnsQueryCollectionBuilderWithCorrectPath() {
-        // Arrange
-        let repository = HostsRepository(eventId: "test_event")
-        
-        // Act
-        let queryBuilder = repository.initQueryBuilderObject()
-        
-        // Assert
-        XCTAssertNotNil(queryBuilder, "Il costruttore di query non deve essere nil")
-    }
 }

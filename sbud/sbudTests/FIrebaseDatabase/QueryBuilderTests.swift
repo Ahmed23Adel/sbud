@@ -25,33 +25,29 @@ final class QueryBuilderTests: XCTestCase {
         firebaseClient = nil
         super.tearDown()
     }
-    
-    // MARK: - Tests QueryCollectionBuilder
-    
-    func test_queryCollectionBuilder_buildsQueryWithCorrectPath() {
-        // Arrange
-        let path = "Events"
-        let builder = QueryCollectionBuilder(collectionPath: path, firebaseClient: firebaseClient)
-        
-        // Act
-        let query = builder.build()
-        
-        // Assert
-        XCTAssertNotNil(query, "La query generata non deve essere nil")
-    }
-    
-    func test_queryCollectionBuilder_appendingFilters_returnsBuilderWithFilters() {
-        // Arrange
+    //
+    func test_queryCollectionBuilder_appliesFilterCorrectly() {
         var builder = QueryCollectionBuilder(collectionPath: "users", firebaseClient: firebaseClient)
         let filter = Filter(field: "status", operation: .isEqualTo, value: "pending")
-        
-        // Act
-        // Verifichiamo che il metodo con 'mutating' funzioni correttamente a catena
-        let updatedBuilder = builder.appendFilter(filter)
-        let query = updatedBuilder.build()
-        
-        // Assert
-        XCTAssertNotNil(query)
+
+        let query = builder.appendFilter(filter).build()
+
+        let expected = Firestore.firestore()
+            .collection("users")
+            .whereField("status", isEqualTo: "pending")
+        XCTAssertEqual(query, expected)
+    }
+    //
+    func test_queryCollectionGroupBuilder_appliesLimitCorrectly() {
+        var builder = QueryCollectionGroupBuilder(collectionGroupId: "hostInvitations", firebaseClient: firebaseClient)
+        builder = builder.setLimit(10)
+
+        let query = builder.build()
+
+        let expected = Firestore.firestore()
+            .collectionGroup("hostInvitations")
+            .limit(to: 10)
+        XCTAssertEqual(query, expected)
     }
     
     // MARK: - Tests QueryCollectionGroupBuilder
@@ -69,13 +65,4 @@ final class QueryBuilderTests: XCTestCase {
         XCTAssertNotNil(query)
     }
     
-    func test_filterOperation_enum_hasAllCases() {
-        // Un piccolo test di controllo per verificare che le operazioni supportate siano stabili
-        let operations: [FilterOperation] = [
-            .isEqualTo, .isGreaterThan, .isLessThan,
-            .isGreaterThanOrEqualTo, .isLessThanOrEqualTo,
-            .arrayContains, .whereIn
-        ]
-        XCTAssertEqual(operations.count, 7)
-    }
 }
