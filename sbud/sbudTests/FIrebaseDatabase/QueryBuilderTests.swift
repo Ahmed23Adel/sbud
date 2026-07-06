@@ -16,8 +16,7 @@ final class QueryBuilderTests: XCTestCase {
     override func setUp() {
         super.setUp()
         // Inizializziamo il client.
-        // Nota: Se Firebase non è inizializzato nel target dei test, Firestore.firestore() potrebbe sollevare un'eccezione.
-        // Se dovesse succedere, ti mostrerò come inserire un piccolo finto client o configurare Firebase nei test.
+
         firebaseClient = FirebaseClient()
     }
     

@@ -31,7 +31,7 @@ final class DatabaseOperationsTests: XCTestCase {
     }
     
     func test_hostInvitationStatus_enum_rawValues() {
-        // Verifica che le stringhe dell'enum siano mappate esattamente come si aspetta il backend Firebase
+        
         XCTAssertEqual(HostInvitationStatus.pending.rawValue, "pending")
         XCTAssertEqual(HostInvitationStatus.accepted.rawValue, "accepted")
         XCTAssertEqual(HostInvitationStatus.rejected.rawValue, "rejected")
@@ -39,7 +39,7 @@ final class DatabaseOperationsTests: XCTestCase {
     }
     
     func test_usersEventStatus_colorAndIconMapping() {
-        // Testiamo la logica di business dentro l'enum UsersEventStatus (Colori e Icone delle View)
+    
         let proposedStatus = UsersEventStatus.proposed
         let confirmedStatus = UsersEventStatus.confirmed
         let completedStatus = UsersEventStatus.completed

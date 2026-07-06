@@ -89,8 +89,6 @@ final class SettingsVMTests: XCTestCase {
     // MARK: - savePrivacySettings (guard di uscita)
 
     func test_savePrivacySettings_withoutLoggedUser_doesNotCrash_andIsSavingStaysFalse() async {
-        // Nei test non c'è un utente Firebase loggato, quindi il guard deve
-        // far uscire subito senza toccare isSaving
         seedLocalProfile()
         sut.isPrivate = true
 

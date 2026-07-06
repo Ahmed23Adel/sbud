@@ -59,8 +59,6 @@ final class SettingsUITests: XCTestCase {
         XCTAssertTrue(logout.waitForExistence(timeout: 5))
         logout.tap()
 
-        // Verifica che siamo tornati alla schermata di signup.
-        // Adatta "SignUp" a un testo/elemento che esiste davvero in SignUpView
-        XCTAssertTrue(app.staticTexts["Sign Up"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Sign up"].waitForExistence(timeout: 5))
     }
 }
