@@ -143,7 +143,6 @@ class ViewModelOwnerSession{
                 let repo = OnGoingSessionRepository()
                 try await repo.deleteByEventId(eventDetails.id)
                 deleteLocalSession()
-                Task { try? await UserStatsRequester().recalculate() }
                 await MainActor.run {
                     isLoading = false
                     mainCoordinator?.goToSessionSummary(eventDetails: eventDetails)

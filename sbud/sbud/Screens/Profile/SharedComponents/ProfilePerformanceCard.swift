@@ -68,32 +68,30 @@ struct ProfilePerformanceCard: View {
     // MARK: - Overall Content
 
     private var overallContent: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
+            // Row 1
             HStack(alignment: .top) {
                 ProfileMetricItem(label: "SESSIONS",
                                   value: "\(profile.totalSessions)",
                                   color: Color("turquoise"))
                 Spacer()
-                ProfileMetricItem(label: "DISTANCE (KM)",
-                                  value: ProfileUtils.formatDistance(profile.totalDistanceKm),
-                                  color: .white)
-                Spacer()
-                ProfileMetricItem(label: "HOURS",
-                                  value: String(format: "%.1f", profile.totalDurationHours ?? 0),
-                                  color: .white)
+                ProfileMetricItem(label: "DISTANCE",
+                                  value: ProfileUtils.distanceNumber(profile.totalDistanceKm),
+                                  color: .white,
+                                  unit: ProfileUtils.distanceUnit(profile.totalDistanceKm))
             }
             .padding(.horizontal, 20)
 
+            // Row 2
             HStack(alignment: .top) {
-                ProfileMetricItem(label: "AVG. INTENSITY",
-                                  value: "\(profile.avgIntensity) %",
-                                  color: .white)
+                ProfileMetricItem(label: "TIME",
+                                  value: ProfileUtils.durationNumber(profile.totalDurationHours ?? 0),
+                                  color: .white,
+                                  unit: ProfileUtils.durationUnit(profile.totalDurationHours ?? 0))
                 Spacer()
                 ProfileMetricItem(label: "THIS MONTH",
                                   value: "\(profile.monthlySessionCount ?? 0)",
                                   color: Color("palelime"))
-                Spacer()
-                Color.clear.frame(width: 80)
             }
             .padding(.horizontal, 20)
         }
