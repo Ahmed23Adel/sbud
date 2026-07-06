@@ -105,6 +105,12 @@ struct SbudApp: App {
                 await FirebaseTokenExtractor().getIDToken()
             }
         )
+    
+        Task {
+            if let token = try? await Auth.auth().currentUser?.getIDToken() {
+                print("🔑 TOKEN: \(token)")
+            }
+        }
     }
 
     var body: some Scene {

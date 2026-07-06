@@ -12,36 +12,51 @@ import FirebaseAnalytics
 @MainActor
 final class OtherProfileVM: BaseProfileVM {
 
-    // MARK: - Other-profile-only state
-
     @Published var friendStatus: FriendStatus = .notFriend
     @Published var isFriendActionLoading = false
 
-    // MARK: - Convenience
-
-    var isFriend: Bool          { friendStatus == .friends         }
-    var isRequestSent: Bool     { friendStatus == .requestSent     }
+    var isFriend: Bool          { friendStatus == .friends }
+    var isRequestSent: Bool     { friendStatus == .requestSent }
     var isRequestReceived: Bool { friendStatus == .requestReceived }
 
-    // MARK: - Dependencies
+    private let friendManager: FriendManager
+    private let statsRequester: UserStatsRequester
 
-    private let friendManager = FriendManager.shared
-
-    // MARK: - Init
-
-    override init(userId: String) {
-        super.init(userId: userId)
+    init(
+        userId: String,
+        userRepository: UserProfileFetching = UserRepository(),
+        friendManager: FriendManager = FriendManager.shared,
+        statsRequester: UserStatsRequester = UserStatsRequester()
+    ) {
+        self.friendManager = friendManager
+        self.statsRequester = statsRequester
+        super.init(userId: userId, userRepository: userRepository)
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [
             AnalyticsParameterScreenName: "OtherProfile",
             "viewed_user_id": userId
         ])
     }
 
-    // MARK: - Load
-
     func load() async {
+        // 1. Önce profili yükle — profile nil olmamalı stats apply edilmeden önce
         await loadProfile()
-        await refreshFriendStatus()
+
+        // 2. Sonra paralel: stats + friend status
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.loadStats() }
+            group.addTask { await self.refreshFriendStatus() }
+        }
+    }
+
+    // MARK: - Stats
+
+    private func loadStats() async {
+        do {
+            let stats = try await statsRequester.fetchStats(userId: userId)
+            profile?.applyStats(stats)
+        } catch {
+            // Stats yüklenemese bile profil gösterilmeye devam eder
+        }
     }
 
     // MARK: - Friend status
@@ -60,7 +75,6 @@ final class OtherProfileVM: BaseProfileVM {
         guard !isFriendActionLoading else { return }
         isFriendActionLoading = true
         defer { isFriendActionLoading = false }
-
         do {
             switch friendStatus {
             case .notFriend:
@@ -70,16 +84,13 @@ final class OtherProfileVM: BaseProfileVM {
                 if friendStatus == .friends {
                     profile?.friendsCount = (profile?.friendsCount ?? 0) + 1
                 }
-
             case .requestSent:
                 try await friendManager.cancelRequest(targetUserId: userId)
                 friendStatus = .notFriend
-
             case .requestReceived:
                 try await friendManager.acceptRequest(requesterId: userId)
                 friendStatus = .friends
                 profile?.friendsCount = (profile?.friendsCount ?? 0) + 1
-
             case .friends:
                 try await friendManager.removeFriend(targetUserId: userId)
                 friendStatus = .notFriend
@@ -90,3 +101,4 @@ final class OtherProfileVM: BaseProfileVM {
         }
     }
 }
+

@@ -24,8 +24,20 @@ class HomeViewModel: NSObject, CLLocationManagerDelegate {
     private let cache = RecommendedEventsCache.shared
     let logger = Logger(subsystem: "sbud", category: "HomeViewModel")
 
-    override init() {
+    // MARK: - Dependencies (test seams)
+
+    private let homeDataFetcher: HomeDataFetching
+    private let joinRequester: JoinEventRequesting
+
+    init(
+        homeDataFetcher: HomeDataFetching = HomeRequester(),
+        joinRequester: JoinEventRequesting = JoinEventRequester(),
+        autoStart: Bool = true
+    ) {
+        self.homeDataFetcher = homeDataFetcher
+        self.joinRequester = joinRequester
         super.init()
+        guard autoStart else { return }
         isLoading = true
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
@@ -40,7 +52,7 @@ class HomeViewModel: NSObject, CLLocationManagerDelegate {
         do {
             let lat = userLocation?.coordinate.latitude
             let lon = userLocation?.coordinate.longitude
-            let response = try await HomeRequester().fetchHome(lat: lat, lon: lon)
+            let response = try await homeDataFetcher.fetchHome(lat: lat, lon: lon)
             await MainActor.run {
                 withAnimation(.easeInOut(duration: 0.4)) {
                     upcomingEvents = response.upcoming
@@ -64,7 +76,7 @@ class HomeViewModel: NSObject, CLLocationManagerDelegate {
 
     func joinEvent(eventId: String) async {
         do {
-            let resp = try await JoinEventRequester().joinEvent(eventId: eventId)
+            let resp = try await joinRequester.joinEvent(eventId: eventId)
             await MainActor.run {
                 switch resp.status {
                 case "confirmed": PopUpGenerator.shared.show(msg: "You have joined the event!", type: .notification)
