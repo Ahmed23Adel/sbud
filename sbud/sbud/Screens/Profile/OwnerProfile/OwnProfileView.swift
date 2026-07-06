@@ -116,7 +116,7 @@ private extension OwnProfileView {
                     Image(systemName: "gearshape")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.white)
-                }
+                }.accessibilityIdentifier("settings_button")
             }
         }
         .padding(.horizontal, 20)

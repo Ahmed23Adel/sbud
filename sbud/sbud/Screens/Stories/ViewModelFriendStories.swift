@@ -17,10 +17,13 @@ final class ViewModelFriendStories {
     /// Called whenever stories change so the home grid can stay in sync.
     var onStoriesChanged: (([Story]) -> Void)?
 
-    private let storiesRepo = StoriesRepository()
+    private let storiesRepo: any IStoriesRepository
 
-    init(stories: [Story], onStoriesChanged: (([Story]) -> Void)? = nil) {
+    init(stories: [Story],
+         storiesRepo: any IStoriesRepository = StoriesRepository(),
+         onStoriesChanged: (([Story]) -> Void)? = nil) {
         self.stories = stories
+        self.storiesRepo = storiesRepo
         self.onStoriesChanged = onStoriesChanged
     }
 

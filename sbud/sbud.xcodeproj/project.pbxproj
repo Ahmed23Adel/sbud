@@ -559,8 +559,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used to scan QR codes to connect with friends.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "sBud reads your health data to display activity history.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "sBud saves your workouts to Apple Health.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "sBud reads your health data to display workout history.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "sBud saves your workouts to Apple Health after each session.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in the background to seamlessly track your activity and pace even when your screen is locked.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to track your activity and show your route on the map.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -575,7 +575,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sbud.app;
+				PRODUCT_BUNDLE_IDENTIFIER = test1234.sbud.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -599,8 +599,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used to scan QR codes to connect with friends.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "sBud reads your health data to display activity history.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "sBud saves your workouts to Apple Health.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "sBud reads your health data to display workout history.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "sBud saves your workouts to Apple Health after each session.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in the background to seamlessly track your activity and pace even when your screen is locked.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to track your activity and show your route on the map.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -615,7 +615,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sbud.app;
+				PRODUCT_BUNDLE_IDENTIFIER = test1234.sbud.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;

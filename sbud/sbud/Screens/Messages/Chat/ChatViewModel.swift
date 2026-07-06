@@ -26,6 +26,10 @@ class ChatViewModel: ObservableObject {
     let eventId: String
     @Published var messages = [Message]()
     
+    static func chatRoomId(partnerId: String, eventId: String) -> String {
+        "\(partnerId)_\(eventId)"
+    }
+    
     init(user: UserProfile, eventId: String) {
         self.user = user
         self.eventId = eventId
@@ -39,7 +43,7 @@ class ChatViewModel: ObservableObject {
     func fetchMessages() {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         
-        let chatRoomId = "\(user.id)_\(eventId)"
+        let chatRoomId = Self.chatRoomId(partnerId: user.id, eventId: eventId)
         
         let query = Firestore.firestore().collection("messages")
             .document(currentUid)
@@ -65,7 +69,7 @@ class ChatViewModel: ObservableObject {
     func markMessagesAsRead() {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         
-        let chatRoomIdForCurrent = "\(user.id)_\(eventId)"
+        let chatRoomIdForCurrent = Self.chatRoomId(partnerId: user.id, eventId: eventId)
         
         let currentRecentRef = Firestore.firestore()
             .collection("messages")
@@ -86,8 +90,8 @@ class ChatViewModel: ObservableObject {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
         let uid = user.id
         
-        let chatRoomIdForCurrent = "\(uid)_\(eventId)"
-        let chatRoomIdForRecipient = "\(currentUid)_\(eventId)"
+        let chatRoomIdForCurrent = Self.chatRoomId(partnerId: uid, eventId: eventId)
+        let chatRoomIdForRecipient = Self.chatRoomId(partnerId: currentUid, eventId: eventId)
         
         let currentUserRef = Firestore.firestore().collection("messages").document(currentUid).collection(chatRoomIdForCurrent).document()
         let receivingUserRef = Firestore.firestore().collection("messages").document(uid).collection(chatRoomIdForRecipient)

@@ -19,8 +19,12 @@ import FirebaseAuth
 struct MessageViewModel {
     let message: Message
     
-    var currentUid: String { return Auth.auth().currentUser?.uid ?? "" }
-    
+    let currentUid: String
+
+    init(message: Message, currentUid: String = Auth.auth().currentUser?.uid ?? "") {
+        self.message = message
+        self.currentUid = currentUid
+    }
+
     var isFromCurrentUser: Bool { return message.fromId == currentUid }
-    
 }

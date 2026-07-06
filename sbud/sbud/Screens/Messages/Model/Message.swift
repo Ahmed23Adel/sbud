@@ -29,7 +29,11 @@ struct Message: Identifiable, Hashable, Decodable {
     var user: UserProfile?
     var isRead: Bool? //to notifications
     
-    var chatPartnerId: String { return fromId == Auth.auth().currentUser?.uid ? toId : fromId }
+    var chatPartnerId: String { chatPartnerId(currentUid: Auth.auth().currentUser?.uid ?? "") }
+
+    func chatPartnerId(currentUid: String) -> String {
+        return fromId == currentUid ? toId : fromId
+    }
 
     // Equatable & Hashable Conformance
     

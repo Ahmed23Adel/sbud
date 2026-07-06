@@ -74,7 +74,7 @@ struct SettingsView: View {
                             }
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)
-                        }
+                        }.accessibilityIdentifier("logout_button")
                     }
                     .padding(.top, 8)
                 }
@@ -132,6 +132,7 @@ struct SettingsView: View {
             Toggle("", isOn: isOn)
                 .labelsHidden()
                 .tint(Color("palelime"))
+                .accessibilityIdentifier("toggle_\(title.replacingOccurrences(of: " ", with: ""))")
                 .onChange(of: isOn.wrappedValue) { _, _ in
                     Task { await vm.savePrivacySettings() }
                 }
