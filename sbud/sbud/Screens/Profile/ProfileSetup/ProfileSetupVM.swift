@@ -23,6 +23,8 @@ final class ProfileSetupVM: ObservableObject {
     @Published var phoneNumber: String = ""
     @Published var errorMessage: String?
     @Published var isSaving = false
+    @Published var previewImage: UIImage?
+    @Published var isUploadingPhoto: Bool = false
 
     // MARK: - Child services (injected for testability)
 
@@ -163,8 +165,15 @@ final class ProfileSetupVM: ObservableObject {
     
     func handlePhotoSelection() async {
         guard let item = selectedPhotoItem else { return }
-        photo.selectedItem = item          // hand off to the service
+        isUploadingPhoto = true
+        // Hemen önizleme — loadTransferable tamamlanır tamamlanmaz göster
+        if let data = try? await item.loadTransferable(type: Data.self),
+           let image = UIImage(data: data) {
+            previewImage = image
+        }
+        photo.selectedItem = item
         await photo.handleSelection()
+        isUploadingPhoto = false
     }
 }
 

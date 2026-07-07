@@ -42,17 +42,20 @@ final class PhotoService: ObservableObject {
                 error = "Selected image could not be loaded."
                 return
             }
-            guard let image = UIImage(data: data) else {
-                error = "Selected file is not a valid image."
-                return
-            }
-            guard let compressed = image.jpegData(compressionQuality: 0.7) else {
+            // Önizlemeyi hemen göster — compress/upload beklemeden
+            selectedImage = UIImage(data: data)
+
+            // Resize + compress background thread'de — MainActor'ı bloklamaz
+            let compressed: Data? = await Task.detached(priority: .userInitiated) {
+                guard let image = UIImage(data: data) else { return nil }
+                let resized = image.resizedToFit(maxDimension: 400)
+                return resized.jpegData(compressionQuality: 0.5)
+            }.value
+            guard let compressed else {
                 error = "Image compression failed."
                 return
             }
-
             let url = try await profileManager.uploadProfileImage(data: compressed)
-            selectedImage = image
             uploadedURL = url
         } catch {
             self.error = "Photo upload failed: \(error.localizedDescription)"
