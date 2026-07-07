@@ -22,17 +22,6 @@ struct FriendListView: View {
 
             VStack(spacing: 0) {
 
-                // Title at top
-                Text("FRIENDS")
-                    .font(.system(size: 14, weight: .black, design: .monospaced))
-                    .foregroundColor(.white)
-                    .kerning(1.5)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color(red: 0.05, green: 0.05, blue: 0.05))
-
-                Divider().background(Color(white: 0.12))
-
                 if vm.isLoading {
                     Spacer()
                     ProgressView().tint(Color("palelime"))
@@ -128,3 +117,4 @@ private struct UserRowCell: View {
         .contentShape(Rectangle())
     }
 }
+

@@ -56,6 +56,7 @@ enum RunMetricsUploader {
         ])
 
         logger.info("Creator run upload complete for event \(snapshot.eventId)")
+        Task { try? await UserStatsRequester().recalculate() }
     }
 
     // MARK: - Participant
@@ -121,6 +122,7 @@ enum RunMetricsUploader {
 
         try await metrics.upload(eventId: snapshot.eventId, userId: userId)
         logger.info("Participant run upload complete for event \(snapshot.eventId)")
+        Task { try? await UserStatsRequester().recalculate() }
     }
 
     // MARK: - Participant fallback (24 h timeout)
@@ -150,5 +152,6 @@ enum RunMetricsUploader {
 
         try await metrics.upload(eventId: snapshot.eventId, userId: userId)
         logger.info("Participant fallback upload complete for event \(snapshot.eventId)")
+        Task { try? await UserStatsRequester().recalculate() }
     }
 }

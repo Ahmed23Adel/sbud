@@ -37,7 +37,7 @@ class ViewModelOwnerSession{
             do {
                 if !isSessionCreated {
                     try await createSession()
-                } 
+                }
                 
             } catch {
                 showError("Error occured while starting the session, pleaes try again")

@@ -22,7 +22,6 @@ struct ProfilePerformanceCard: View {
                 .padding(.vertical, 14)
 
             overallContent
-                .padding(.bottom, 4)
 
             Divider().background(Color(white: 0.12))
                 .padding(.horizontal, 20)
@@ -62,38 +61,44 @@ struct ProfilePerformanceCard: View {
         }
     }
 
-    // MARK: - Overall Content
+    // MARK: - Overall Content (2x2 sabit sütun grid)
 
     private var overallContent: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top) {
-                ProfileMetricItem(
-                    label: "TOTAL SESSIONS",
-                    value: "\(profile.totalSessions ?? 0)",
-                    color: Color("turquoise")
-                )
-                Spacer()
-                ProfileMetricItem(
-                    label: "DISTANCE (KM)",
-                    value: ProfileUtils.formatDistance(profile.totalDistanceKm ?? 0),
-                    color: .white
-                )
+        // Her sütun eşit genişlikte → hizalar her satırda aynı
+        HStack(alignment: .top, spacing: 0) {
+            // Sol sütun: SESSIONS üstte, TIME altta
+            VStack(alignment: .leading, spacing: 20) {
+                ProfileMetricItem(label: "SESSIONS",
+                                  value: "\(profile.totalSessions)",
+                                  color: Color("turquoise"))
+                ProfileMetricItem(label: "TIME",
+                                  value: ProfileUtils.durationNumber(profile.totalDurationHours ?? 0),
+                                  color: .white,
+                                  unit: ProfileUtils.durationUnit(profile.totalDurationHours ?? 0))
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            ProfileMetricItem(
-                label: "AVG. INTENSITY",
-                value: "\(profile.avgIntensity ?? 0) %",
-                color: .white
-            )
+            // Sağ sütun: DISTANCE üstte, THIS MONTH altta
+            VStack(alignment: .leading, spacing: 20) {
+                ProfileMetricItem(label: "DISTANCE",
+                                  value: ProfileUtils.distanceNumber(profile.totalDistanceKm),
+                                  color: .white,
+                                  unit: ProfileUtils.distanceUnit(profile.totalDistanceKm))
+                ProfileMetricItem(label: "THIS MONTH",
+                                  value: "\(profile.monthlySessionCount ?? 0)",
+                                  color: Color("palelime"))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 20)
+        .padding(.bottom, 4)
     }
 
     // MARK: - Last Activity
 
     private func lastActivityRow(now: Date) -> some View {
         HStack {
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text("LAST ACTIVITY")
                     .font(.system(size: 9, weight: .bold, design: .monospaced))
                     .foregroundColor(.gray)
@@ -107,7 +112,6 @@ struct ProfilePerformanceCard: View {
                 .foregroundColor(Color("palelime"))
                 .font(.system(size: 13))
         }
-        .padding(.horizontal, 20)
     }
 
     private func lastActivityText(now: Date) -> String {
