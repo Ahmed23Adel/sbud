@@ -102,8 +102,7 @@ final class MessagesTests: XCTestCase {
     }
 
     func test_chatRoomIds_forSenderAndRecipient_areMirrored() {
-        // Verifica la simmetria: la room del mittente usa l'id del destinatario e viceversa.
-        // Se questa logica si rompe, i due utenti scrivono in chat diverse e non si vedono.
+       
         let myUid = "me", friendUid = "friend", event = "ev1"
 
         let roomWhereIWrite = ChatViewModel.chatRoomId(partnerId: friendUid, eventId: event)

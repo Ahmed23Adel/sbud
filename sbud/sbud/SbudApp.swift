@@ -23,6 +23,18 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         FirebaseApp.configure()
+        let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        let wantsEmulator = ProcessInfo.processInfo.arguments.contains("USE_FIREBASE_EMULATOR")
+        if isRunningTests || wantsEmulator {
+            Auth.auth().useEmulator(withHost: "localhost", port: 9099)
+            let settings = Firestore.firestore().settings
+            settings.host = "localhost:8080"
+            settings.isSSLEnabled = false
+            settings.cacheSettings = MemoryCacheSettings()
+            Firestore.firestore().settings = settings
+            print("🧪 Firebase collegato all'EMULATORE")
+        }
+        
         Analytics.setUserID(Auth.auth().currentUser?.uid)
         if let countryCode = Locale.current.region?.identifier {
             Analytics.setUserProperty(countryCode, forName: "country")
