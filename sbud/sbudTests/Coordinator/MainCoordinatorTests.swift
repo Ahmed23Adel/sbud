@@ -80,7 +80,7 @@ final class MainCoordinatorTests: XCTestCase {
     }
     
     func test_resolveInitialRoute_whenAuthenticatedAndProfileIncomplete_syncSucceeds_navigatesToHome() async throws {
-        /
+        
         mockAuthManager.authStatusReturnValue = true
         mockProfileManager.isProfileSetupCompleteReturnValue = false
         
