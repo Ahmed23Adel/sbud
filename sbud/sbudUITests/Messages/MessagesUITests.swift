@@ -12,11 +12,9 @@ final class MessagesUITests: XCTestCase {
     var app: XCUIApplication!
 
     override func setUpWithError() throws {
-        // Interrompe il test se si verifica un fallimento
         continueAfterFailure = false
-        
-        // Avvia l'applicazione
         app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING"]
         app.launch()
     }
 
@@ -24,52 +22,30 @@ final class MessagesUITests: XCTestCase {
         app = nil
     }
 
-    // MARK: - Test della schermata ChatView
-    
-    func test_chatView_typeAndSendMessage() throws {
-        /*
-         ATTENZIONE: Affinché questo test passi completamente, l'app sul simulatore
-         deve trovarsi all'interno della ChatView. Se l'app parte dalla schermata di Login,
-         dovresti aggiungere qui i comandi (es. app.buttons["Login"].tap()) per arrivare alla chat.
-         */
-        
-        // 1. Cerchiamo il campo di testo usando l'esatto placeholder che hai nel codice
-        let messageInput = app.textFields["Message..."]
-        
-        // Aspettiamo fino a 5 secondi che il campo appaia sullo schermo
-        if messageInput.waitForExistence(timeout: 5.0) {
-            
-            // 2. Tocchiamo il campo e scriviamo un messaggio finto
-            messageInput.tap()
-            messageInput.typeText("Ciao, questo è un test UI automatico!")
-            
-            // 3. Cerchiamo il bottone "Send" della tua CustomInputView
-            let sendButton = app.buttons["Send"]
-            XCTAssertTrue(sendButton.exists, "Il bottone 'Send' deve essere presente sullo schermo")
-            
-            // 4. Premiamo Invia
-            sendButton.tap()
-            
-            // 5. Verifichiamo che la "ChatBubble" con il testo inviato sia comparsa nella ScrollView
-            let sentMessageBubble = app.staticTexts["Ciao, questo è un test UI automatico!"]
-            XCTAssertTrue(sentMessageBubble.waitForExistence(timeout: 2.0), "Il messaggio appena inviato deve apparire nella lista delle chat")
-            
-        } else {
-            // Se non trova il campo di testo, il test viene skippato ma senza fare un brutto crash rosso
-            print("⚠️ ChatView non trovata. Il simulatore non è arrivato alla schermata della Chat.")
-        }
+    func test_profile_showsMyEventsSection() {
+        let profileTab = app.buttons["Profile"]
+        XCTAssertTrue(profileTab.waitForExistence(timeout: 5))
+        profileTab.tap()
+
+        // La sezione eventi (porta d'ingresso alle chat) deve esistere
+        app.swipeUp() // MY EVENTS è in fondo alla pagina
+        XCTAssertTrue(app.staticTexts["MY EVENTS"].waitForExistence(timeout: 5))
     }
 
-    // MARK: - Test della schermata EventConversationsView
-    
-    func test_eventConversationsView_showsEmptyState() throws {
-        // Cerchiamo esattamente il testo che hai impostato per lo stato "vuoto"
-        let emptyStateText = app.staticTexts["No messages for this event yet."]
-        
-        if emptyStateText.waitForExistence(timeout: 3.0) {
-            XCTAssertTrue(emptyStateText.exists, "Il testo di stato vuoto dovrebbe essere mostrato se non ci sono recentMessages")
-        } else {
-            print("⚠️ EventConversationsView non trovata o lista chat non vuota.")
-        }
+    func test_myEvents_viewAll_opensEventsList() {
+        app.buttons["Profile"].tap()
+        app.swipeUp()
+
+        // Ci sono due VIEW ALL (Archive History e My Events): prendiamo il secondo
+        let viewAllButtons = app.buttons.matching(identifier: "VIEW ALL")
+        XCTAssertTrue(viewAllButtons.firstMatch.waitForExistence(timeout: 5))
+        let myEventsViewAll = viewAllButtons.count > 1
+            ? viewAllButtons.element(boundBy: 1)
+            : viewAllButtons.firstMatch
+        myEventsViewAll.tap()
+
+        // La lista eventi ha i tre segmenti Created/Hosted/Participated
+        XCTAssertTrue(app.staticTexts["Created"].waitForExistence(timeout: 5)
+                      || app.buttons["Created"].waitForExistence(timeout: 2))
     }
 }

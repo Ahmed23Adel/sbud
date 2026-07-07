@@ -1,0 +1,52 @@
+{
+  "configurations" : [
+    {
+      "id" : "325A3E52-9504-40A1-A370-4565FF80A2E6",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:sbud.xcodeproj",
+          "identifier" : "E248259F2EE2DCA200330DC2",
+          "name" : "sbud"
+        }
+      ]
+    },
+    "commandLineArgumentEntries" : [
+      {
+        "argument" : "-FIRDebugEnabled"
+      }
+    ],
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:sbud.xcodeproj",
+      "identifier" : "E248259F2EE2DCA200330DC2",
+      "name" : "sbud"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:sbud.xcodeproj",
+        "identifier" : "E24825AC2EE2DCA400330DC2",
+        "name" : "sbudTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:sbud.xcodeproj",
+        "identifier" : "66EFCA042FF7A40200241493",
+        "name" : "sbudUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

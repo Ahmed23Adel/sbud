@@ -60,6 +60,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		66AEBED52FFDA96C006778F7 /* sbud_.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = sbud_.xctestplan; sourceTree = "<group>"; };
 		66EFCA052FF7A40200241493 /* sbudUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = sbudUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E24825A02EE2DCA200330DC2 /* sbud.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = sbud.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E24825AD2EE2DCA400330DC2 /* sbudTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = sbudTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,6 +145,7 @@
 		E24825972EE2DCA200330DC2 = {
 			isa = PBXGroup;
 			children = (
+				66AEBED52FFDA96C006778F7 /* sbud_.xctestplan */,
 				E24825A22EE2DCA200330DC2 /* sbud */,
 				E24825B02EE2DCA400330DC2 /* sbudTests */,
 				66EFCA062FF7A40200241493 /* sbudUITests */,
