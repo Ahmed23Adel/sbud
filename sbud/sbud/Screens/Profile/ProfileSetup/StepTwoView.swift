@@ -23,6 +23,7 @@ struct StepTwoView: View {
     @State private var showGenderPicker = false
     @State private var showCalendar = false
     @State private var calendarSelection = Date()
+    @FocusState private var isOtpFocused: Bool
 
     private let cardBG = Color(white: 0.12)
     private let genders = ["Male", "Female"]
@@ -131,8 +132,15 @@ struct StepTwoView: View {
                     HStack {
                         TextField("ENTER 6-DIGIT CODE", text: $vm.otpCode)
                             .keyboardType(.numberPad)
-                            .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                            .focused($isOtpFocused)
                             .foregroundColor(.white)
+                            .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    Spacer()
+                                    Button("Done") { isOtpFocused = false }
+                                        .foregroundColor(Color("palelime"))
+                                }
+                            }
                         
                         Button {
                             Task { await vm.verifyOTP() }

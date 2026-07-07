@@ -34,7 +34,7 @@ struct PhoneNumberView: UIViewRepresentable {
             for: .editingChanged
         )
         
-        let toolbar = UIToolbar()
+        let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 44))
         toolbar.sizeToFit()
         toolbar.barStyle = .black
         toolbar.isTranslucent = true
