@@ -32,7 +32,7 @@ struct ViewCombinedEvents: View {
                     .tag(EventsTab.created)
                     
 
-                HostedEventsView(userId: userId, onEventTap: onParticipatedEventTap)
+                HostedEventsView(userId: userId, onEventTap: onCreatedEventTap)
                     .tag(EventsTab.hostedEvents)
 
                 ParticipatedEventsView(userId: userId, onEventTap: onParticipatedEventTap)

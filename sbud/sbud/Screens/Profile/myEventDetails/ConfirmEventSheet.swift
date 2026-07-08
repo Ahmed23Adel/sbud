@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MapKit
+import EventKit
 
 struct MapSelectableItem: Identifiable, Equatable {
     let id = UUID()
@@ -21,6 +22,7 @@ struct MapSelectableItem: Identifiable, Equatable {
 }
 
 struct ConfirmEventSheet: View {
+    var eventTitle: String 
     var dateLocations: [DateLocationEntry]
     var onConfirm: (DateLocationEntry, LocationPoint, Date, Date) -> Void
     
@@ -28,6 +30,7 @@ struct ConfirmEventSheet: View {
     @State private var finalStartDate: Date? = nil
     @State private var finalEndDate: Date? = nil
     @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var showCalendarPrompt = false
 
     private var mapItems: [MapSelectableItem] {
         var items: [MapSelectableItem] = []
@@ -69,12 +72,12 @@ struct ConfirmEventSheet: View {
 
                         Button {
                             guard
-                                let selected = selectedItem,
+                                selectedItem != nil,
                                 let start = finalStartDate,
                                 let end = finalEndDate,
                                 end > start
                             else { return }
-                            onConfirm(selected.dateEntry, selected.location, start, end)
+                            showCalendarPrompt = true
                         } label: {
                             Text("Confirm")
                                 .fontWeight(.bold)
@@ -86,6 +89,22 @@ struct ConfirmEventSheet: View {
                         }
                         .disabled(!isFormValid)
                         .buttonStyle(.plain)
+                        // MARK: Pop-up del Calendario
+                        .alert("Add to Caledar", isPresented: $showCalendarPrompt) {
+                            Button("Yes, Add") {
+                                if let selected = selectedItem, let start = finalStartDate, let end = finalEndDate {
+                                    saveToCalendar(title: eventTitle, start: start, end: end, coord: selected.coordinate)
+                                    onConfirm(selected.dateEntry, selected.location, start, end)
+                                }
+                            }
+                            Button("No, thank you", role: .cancel) {
+                                if let selected = selectedItem, let start = finalStartDate, let end = finalEndDate {
+                                    onConfirm(selected.dateEntry, selected.location, start, end)
+                                }
+                            }
+                        } message: {
+                            Text("Do you want to save this event to your Apple Calendar?")
+                        }
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
@@ -264,5 +283,57 @@ struct ConfirmEventSheet: View {
             longitudeDelta: (lons.max()! - lons.min()!) * 1.8 + 0.01
         )
         cameraPosition = .region(MKCoordinateRegion(center: center, span: span))
+    }
+    
+    
+    private func saveToCalendar(title: String, start: Date, end: Date, coord: CLLocationCoordinate2D) {
+        
+        Task {
+            let store = EKEventStore()
+            
+            do {
+                var granted = false
+                
+                
+                if #available(iOS 17.0, *) {
+                    granted = try await store.requestWriteOnlyAccessToEvents()
+                } else {
+                    granted = try await store.requestAccess(to: .event)
+                }
+                
+                guard granted else {
+                    print("❌ The user has denied permissions for Calendar.")
+                    return
+                }
+                
+                // Creazione Evento calendario
+                let event = EKEvent(eventStore: store)
+                event.title = title
+                event.startDate = start
+                event.endDate = end
+                
+                let location = EKStructuredLocation(title: "Location Event")
+                location.geoLocation = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
+                event.structuredLocation = location
+                
+                // 3. FIX : Controllo validità Calendario
+                if let defaultCalendar = store.defaultCalendarForNewEvents {
+                    event.calendar = defaultCalendar
+                } else if let fallbackCalendar = store.calendars(for: .event).first(where: { $0.allowsContentModifications }) {
+                    
+                    //  fallback lo va a pescare "di forza" dall'array dei calendari modificabili.
+                    event.calendar = fallbackCalendar
+                } else {
+                    print("❌ ERROR: No editable calendars found on the device.")
+                    return
+                }
+                
+                try store.save(event, span: .thisEvent)
+                print("✅Event saved successfully")
+                
+            } catch {
+                print("❌ Error saving to EventKit: \(error.localizedDescription)")
+            }
+        }
     }
 }

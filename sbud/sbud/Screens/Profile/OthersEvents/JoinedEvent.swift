@@ -48,4 +48,12 @@ struct JoinedEvent: Codable, Identifiable {
             status: status,
             eventId: eventId)
     }
+
+    var asUserProfile: UserProfile {
+        var profile = UserProfile(id: userId)
+        profile.name = userFirstName
+        profile.surName = userLastName
+        profile.profileImageUrl = userProfileImageUrl.isEmpty ? nil : userProfileImageUrl
+        return profile
+    }
 }

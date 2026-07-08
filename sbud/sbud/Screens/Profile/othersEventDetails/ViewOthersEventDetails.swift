@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct ViewOthersEventDetails: View {
     @State var viewModel: ViewModelOthersEventDetails
@@ -118,12 +119,22 @@ struct ViewOthersEventDetails: View {
                             .padding(.horizontal)
                         }
 
-                        // Leave button — only for participants (not creator/host).
+                        participantsSection
+                            .padding(.horizontal)
+
+                        // Join/leave state — only for non-creator, non-host viewers.
+                        // `role == .regularUser` just means "not creator/host"; it does NOT
+                        // mean the viewer has joined, so `joinState` (fetched separately)
+                        // is what actually decides join vs. leave here.
                         if viewModel.role == .regularUser {
-                            Button("Leave Event") {
-                                showLeaveConfirm = true
-                            }
-                            .buttonStyle(DestructiveButton())
+                            JoinEventButton(
+                                joinCondition: details.joinCondition,
+                                joinState: viewModel.joinState,
+                                isLoading: viewModel.isJoiningLoading,
+                                onJoin: { Task { await viewModel.joinEvent() } },
+                                onWithdraw: { Task { await viewModel.withdraw() } },
+                                onLeave: { showLeaveConfirm = true }
+                            )
                             .padding(.top, 24)
                         }
                     }
@@ -190,6 +201,64 @@ struct ViewOthersEventDetails: View {
 }
 
 private extension ViewOthersEventDetails {
+    var participantsSection: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text("Participants")
+                    .font(.headline)
+                    .foregroundColor(.white)
+
+                if viewModel.isLoadingParticipants {
+                    ProgressView().tint(.white)
+                        .scaleEffect(0.8)
+                        .padding(.leading, 5)
+                }
+                Spacer()
+            }
+            .padding(.top, 16)
+
+            if !viewModel.confirmedParticipants.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: 16) {
+                        ForEach(viewModel.confirmedParticipants) { user in
+                            VStack {
+                                if let imageUrl = user.profileImageUrl, let url = URL(string: imageUrl) {
+                                    KFImage(url)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 50, height: 50)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                                } else {
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(Color.gray)
+                                }
+
+                                Text(user.name)
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                    .frame(width: 60)
+                            }
+                            .onTapGesture {
+                                coordinator.goToOthersProfile(userId: user.id)
+                            }
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+            } else if !viewModel.isLoadingParticipants {
+                Text("No participants yet.")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .italic()
+                    .padding(.top, 8)
+            }
+        }
+    }
+
     func shareEvent(eventId: String) {
         guard !eventId.isEmpty,
               let url = URL(string: "https://sbud-backend.onrender.com/event/\(eventId)") else { return }

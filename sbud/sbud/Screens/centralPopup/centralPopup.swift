@@ -40,9 +40,11 @@ struct CentralPopup: View {
                                 .font(.system(size: 16, weight: .medium))
                                 .lineLimit(1)
                                 .transition(.opacity.combined(with: .move(edge: .leading)))
+                                .accessibilityIdentifier("centralPopup.message")
                         }
                     }
                 }
+                .accessibilityIdentifier("centralPopup.container")
                 .onTapGesture {
                     reverseAnimation()
                 }
