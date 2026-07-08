@@ -24,7 +24,7 @@ struct HomeView: View {
                         events: viewModel.upcomingEvents,
                         isLoading: viewModel.isLoading && viewModel.upcomingEvents.isEmpty,
                         onTapEvent: { event in
-                            if event.role == .creator {
+                            if event.role == .creator || event.role == .host {
                                 onTapMyEvent(event.eventId)
                             } else {
                                 onTapOthersEvent(event.eventId)
@@ -75,9 +75,11 @@ struct HomeView: View {
                 }
                 .padding(.top, 16)
             }
+            .accessibilityIdentifier("home.scrollView")
         }
         .refreshable { await viewModel.load() }
         .navigationBarHidden(true)
     }
 }
+
 

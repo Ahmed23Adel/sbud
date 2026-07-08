@@ -8,6 +8,7 @@
 
 import Foundation
 import FirebaseFirestore
+import OSLog
 
 class JoinedEventsRepository: IFirebaesRepository {
     typealias T = JoinedEvent
@@ -17,6 +18,7 @@ class JoinedEventsRepository: IFirebaesRepository {
     let firebaseClient = FirebaseClient()
     let constants = JoinedEventsRepositoryConstants()
     let db = Firestore.firestore()
+    let logger = Logger(subsystem: "sBud", category: "JoinedEventsRepository")
 
     func fetch(query: any IQueryBuilder) async throws -> [JoinedEvent] {
         let queryRef = query.build()
@@ -52,5 +54,28 @@ class JoinedEventsRepository: IFirebaesRepository {
 
     func initQueryBuilderObject() -> any IQueryBuilder {
         QueryCollectionBuilder(collectionPath: collectionPath, firebaseClient: firebaseClient)
+    }
+
+    /// Fetches everyone who joined a given event (as a participant, not a host), ready for
+    /// display as `UserProfile`s. Shared by every "who's joined this event" UI (event details,
+    /// my events, others' events) so the query/logging logic lives in exactly one place.
+    ///
+    /// Note: `JoinedEvent.status` is the *event's* own Proposed/Confirmed/Completed lifecycle
+    /// (see `ParticipatedEventsViewModel`/`EventReminderScheduler`), not whether this user's
+    /// join was accepted — a `joinedEvents` doc existing at all means they joined, so it's not
+    /// filtered on here. `participationStatus` is what distinguishes participants from hosts.
+    func fetchParticipants(eventId: String) async -> [UserProfile] {
+        logger.info("fetchParticipants eventId: \(eventId)")
+        do {
+            var query = initQueryBuilderObject()
+            query = query.appendFilter(Filter(field: constants.eventId, operation: .isEqualTo, value: eventId))
+            query = query.appendFilter(Filter(field: constants.participationStatus, operation: .isEqualTo, value: ParticipationStatus.participant.rawValue))
+            let joinedEvents = try await fetch(query: query)
+            logger.info("fetchParticipants eventId: \(eventId) results: \(joinedEvents)")
+            return joinedEvents.map(\.asUserProfile)
+        } catch {
+            logger.error("fetchParticipants error eventId: \(eventId): \(error.localizedDescription)")
+            return []
+        }
     }
 }

@@ -12,6 +12,7 @@ struct ViewSessionSummaryConditional: View {
     var onParticipantTapped: (String) -> Void = { _ in }
 
     var body: some View {
+        Group {
         switch event.activityType {
         case .running:
             ViewSessionSummaryRunning(event: event, onParticipantTapped: onParticipantTapped)
@@ -41,6 +42,10 @@ struct ViewSessionSummaryConditional: View {
                 event: event, activityLabel: "Participants",
                 activityIcon: "figure.mind.and.body",
                 onParticipantTapped: onParticipantTapped)
+        }
+        }
+        .task {
+            try? await UserStatsRequester().recalculate()
         }
     }
 }

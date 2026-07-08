@@ -21,21 +21,21 @@ struct JoinEventButton: View {
             Button(action: onJoin) {
                 HStack(spacing: 8) {
                     if isLoading {
-                        ProgressView().tint(.black)
+                        ProgressView().tint(foregroundColor)
                     } else {
                         Image(systemName: joinState.iconName)
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.system(size: 17, weight: .heavy))
                         Text(joinButtonLabel)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 17, weight: .heavy))
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(buttonColor)
                 .foregroundColor(foregroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
+                .frame(maxWidth: .infinity)
+                .frame(height: 68)
+                .background(Capsule().fill(buttonColor))
                 .animation(.easeInOut(duration: 0.2), value: joinState)
             }
+            .buttonStyle(PrimaryButton())
             .disabled(isLoading || joinState.isDisabled)
 
             if joinState.canWithdraw {

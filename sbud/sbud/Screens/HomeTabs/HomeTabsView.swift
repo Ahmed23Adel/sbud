@@ -43,8 +43,12 @@ struct HomeTabsView: View {
                     Label("Profile", systemImage: "person.fill")
                 }
                 .tag(3)
+                .badge(viewModel.totalNotificationsCount)
             }
             .ignoresSafeArea()
+            .onAppear {
+                viewModel.listenForUnreadMessages()
+            }
             .onChange(of: coordinator.deepLinkProfileUserId) { _, userId in
                 guard let userId else { return }
                 coordinator.deepLinkProfileUserId = nil
