@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct ViewMyEventDetails: View {
     @State var viewModel: ViewModelMyEventDetails
@@ -31,7 +32,7 @@ struct ViewMyEventDetails: View {
                             .padding(.horizontal, 24)
                             .frame(maxWidth: .infinity)
 
-                        
+
                     }
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
@@ -65,7 +66,6 @@ struct ViewMyEventDetails: View {
                             BasicFloatingButton(iconName: "flag.pattern.checkered"){
                                 viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
                             }
-                            .padding(.trailing)
                             .scaleEffect(isPulsing ? 1.4 : 1.0)
                             .animation(
                                 .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
@@ -78,7 +78,6 @@ struct ViewMyEventDetails: View {
                             BasicFloatingButton(iconName: "flag.pattern.checkered"){
                                 viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
                             }
-                            .padding(.trailing)
                         }
                     }
                 }
@@ -95,7 +94,7 @@ struct ViewMyEventDetails: View {
                 StartSessionConfirmation(eventDetails: viewModel.myEventDertails ?? .empty)
                     .environmentObject(coordinator)
             }
-                
+
         }
         .onAppear{
             viewModel.setMainCoordinator(mainCoordinator: mainCoordinator)
@@ -140,7 +139,7 @@ struct ViewMyEventDetails: View {
     private func eventContent(_ details: EventFullDetails) -> some View {
         VStack {
                
-            HStack(alignment: .top) {
+            
                 
                 EventMetaBadgesRow(
                     isDateConfirmed: details.isDateConfirmed,
@@ -150,37 +149,6 @@ struct ViewMyEventDetails: View {
                     maxAllowedToJoin: details.maxAllowedToJoin
                 )
                 
-                Spacer()
-                
-                
-                Button {
-                    coordinator.goToEventConversations(
-                        eventId: viewModel.eventId,
-                        eventTitle: details.title
-                    )
-                } label: {
-                    VStack(spacing: 4) {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "tray.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            
-                            
-                            EventUnreadBadge(eventId: viewModel.eventId)
-                                .scaleEffect(0.75)
-                                .offset(x: 14, y: -10)
-                        }
-                        Text("Inbox")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.black)
-                    }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 14)
-                    .background(Color.mainColor)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-            }
-            .padding(.bottom, 12)
 
             EventInfoSection(
                 title: details.title,
@@ -202,6 +170,8 @@ struct ViewMyEventDetails: View {
                 )
                 .padding(.horizontal)
             }
+
+            participantsSection
 
             EventActionButtons(
                 eventId: viewModel.eventId,
@@ -231,15 +201,73 @@ struct ViewMyEventDetails: View {
             )
 
             deleteButtonSection
-            
+
             Spacer().frame(height: 40)
+        }
+    }
+
+    private var participantsSection: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text("Participants")
+                    .font(.headline)
+                    .foregroundColor(.white)
+
+                if viewModel.isLoadingParticipants {
+                    ProgressView().tint(.white)
+                        .scaleEffect(0.8)
+                        .padding(.leading, 5)
+                }
+                Spacer()
+            }
+            .padding(.top, 16)
+
+            if !viewModel.confirmedParticipants.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: 16) {
+                        ForEach(viewModel.confirmedParticipants) { user in
+                            VStack {
+                                if let imageUrl = user.profileImageUrl, let url = URL(string: imageUrl) {
+                                    KFImage(url)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 50, height: 50)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                                } else {
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(Color.gray)
+                                }
+
+                                Text(user.name)
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                    .frame(width: 60)
+                            }
+                            .onTapGesture {
+                                coordinator.goToOthersProfile(userId: user.id)
+                            }
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+            } else if !viewModel.isLoadingParticipants {
+                Text("No participants yet.")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .italic()
+                    .padding(.top, 8)
+            }
         }
     }
 
     @ViewBuilder
     private var confirmationSheet: some View {
         if let details = viewModel.myEventDertails {
-            ConfirmEventSheet(dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
+            ConfirmEventSheet(eventTitle: details.title, dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
                 viewModel.activeSheet = nil
                 Task {
                     await viewModel.confirmEventFinalChoice(

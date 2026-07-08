@@ -36,20 +36,15 @@ struct TotalUnreadBadge: View {
     private func startListening() {
         guard listener == nil else { return }
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        
-        
-        let query = Firestore.firestore()
-            .collection("messages")
+
+        listener = Firestore.firestore()
+            .collection("users")
             .document(uid)
-            .collection("recent-messages")
-        
-        listener = query.addSnapshotListener { snapshot, _ in
-            let messages = snapshot?.documents.compactMap { try? $0.data(as: Message.self) } ?? []
-            let count = messages.filter { $0.isRead == false }.count
-            
-            DispatchQueue.main.async {
-                self.unreadCount = count
+            .addSnapshotListener { snapshot, _ in
+                let count = snapshot?.data()?["unreadMessagesCount"] as? Int ?? 0
+                DispatchQueue.main.async {
+                    self.unreadCount = count
+                }
             }
-        }
     }
 }

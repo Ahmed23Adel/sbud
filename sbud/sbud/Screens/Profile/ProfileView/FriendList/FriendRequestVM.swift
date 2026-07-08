@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseAuth
 import Combine
 
 @MainActor
@@ -15,14 +14,24 @@ final class FriendRequestsVM: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let friendManager = FriendManager.shared
-    private let userRepository = UserRepository()
+    private let friendManager: FriendManager
+    private let userRepository: UserProfileFetching
+    private let currentUserProvider: CurrentUserProviding
+
+    init(
+        friendManager: FriendManager = FriendManager.shared,
+        userRepository: UserProfileFetching = UserRepository(),
+        currentUserProvider: CurrentUserProviding = FirebaseCurrentUserProvider()
+    ) {
+        self.friendManager = friendManager
+        self.userRepository = userRepository
+        self.currentUserProvider = currentUserProvider
+    }
 
     func load() async {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let uid = currentUserProvider.currentUserId else { return }
         isLoading = true
         defer { isLoading = false }
-
         do {
             let ids = try await friendManager.fetchFriendsPendingRequests(userId: uid)
             var profiles: [UserProfile] = []

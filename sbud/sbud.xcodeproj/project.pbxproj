@@ -517,9 +517,10 @@
 				DEVELOPMENT_TEAM = 2H5L6H625L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "This app needs access to save confirmed events in your calendar";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used to scan QR codes to connect with friends.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "sBud reads your health data to display activity history.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "sBud saves your workouts to Apple Health.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "sBud reads your health data to display workout history.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "sBud saves your workouts to Apple Health after each session.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in the background to seamlessly track your activity and pace even when your screen is locked.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to track your activity and show your route on the map.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -528,6 +529,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -558,9 +560,10 @@
 				DEVELOPMENT_TEAM = 2H5L6H625L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "This app needs access to save confirmed events in your calendar";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used to scan QR codes to connect with friends.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "sBud reads your health data to display activity history.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "sBud saves your workouts to Apple Health.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "sBud reads your health data to display workout history.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "sBud saves your workouts to Apple Health after each session.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in the background to seamlessly track your activity and pace even when your screen is locked.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to track your activity and show your route on the map.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -569,6 +572,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -64,20 +64,29 @@ class ChatViewModel: ObservableObject {
     
     func markMessagesAsRead() {
         guard let currentUid = Auth.auth().currentUser?.uid else { return }
-        
+
         let chatRoomIdForCurrent = "\(user.id)_\(eventId)"
-        
+
         let currentRecentRef = Firestore.firestore()
             .collection("messages")
             .document(currentUid)
             .collection("recent-messages")
             .document(chatRoomIdForCurrent)
-        
-        //merge piu sicuro
-        currentRecentRef.setData(["isRead": true], merge: true) { error in
-            if let error = error {
+
+        Task {
+            do {
+                let snapshot = try await currentRecentRef.getDocument()
+                let unreadCount = snapshot.data()?["unreadCount"] as? Int ?? 0
+                try await currentRecentRef.setData(["isRead": true, "unreadCount": 0], merge: true)
+                if unreadCount > 0 {
+                    do {
+                        try await NotificationsRepository().decrementUnreadMessages(eventId: eventId, userId: currentUid, by: unreadCount)
+                    } catch {
+                        print("❌ Error decrementing unread messages count: \(error.localizedDescription)")
+                    }
+                }
+            } catch {
                 print("❌ Errore aggiornamento lettura: \(error.localizedDescription)")
-                
             }
         }
     }
@@ -112,26 +121,35 @@ class ChatViewModel: ObservableObject {
                                             "eventId": eventId,
                                             "timestamp": Timestamp(date: Date()),
                                             "isRead": false]
-        
-        
+
+        var recipientRecentData = recipientData
+        recipientRecentData["unreadCount"] = FieldValue.increment(Int64(1))
+
         currentUserRef.setData(data) { error in
             if let error = error { print("❌ Error currentUserRef: \(error.localizedDescription)") }
         }
-        
+
         currentRecentRef.document(chatRoomIdForCurrent).setData(data) { error in
             if let error = error { print(" Error currentRecentRef: \(error.localizedDescription)") }
         }
 
-        
+
         receivingUserRef.document(messageID).setData(recipientData) { error in
             if let error = error { print(" Error receivingUserRef: \(error.localizedDescription)") }
         }
-        
-        receivingRecentRef.document(chatRoomIdForRecipient).setData(recipientData) { error in
+
+        receivingRecentRef.document(chatRoomIdForRecipient).setData(recipientRecentData, merge: true) { error in
             if let error = error {
                 print("❌ Error receivingRecentRef: \(error.localizedDescription)")
             } else {
                 print("✅ SUCCESS! ")
+                Task {
+                    do {
+                        try await NotificationsRepository().incrementUnreadMessages(eventId: self.eventId, recipientUserId: uid)
+                    } catch {
+                        print("❌ Error incrementing unread messages count: \(error.localizedDescription)")
+                    }
+                }
             }
         }
     }

@@ -40,6 +40,7 @@ struct OwnProfileView: View {
                                 friendsCount: vm.profile?.friendsCount ?? 0,
                                 onFriendsTap: { coordinator.goToFriendsList() }
                             )
+                            .accessibilityIdentifier("profile.friendsStatsButton")
                             if let profile = vm.profile {
                                 ProfilePerformanceCard(profile: profile)
                             }
@@ -52,6 +53,7 @@ struct OwnProfileView: View {
                             ProfileMyEventsButton(userId: vm.userId, title: "MY EVENTS") {
                                 coordinator.goToMyEvents()
                             }
+                            .accessibilityIdentifier("profile.myEventsButton")
                         }
                         .padding(.bottom, 80)
                     }
@@ -66,6 +68,7 @@ struct OwnProfileView: View {
                     BasicFloatingButton(iconName: "qrcode") {
                         coordinator.showQRCode()
                     }
+                    .accessibilityIdentifier("profile.qrCodeButton")
                 }
             }
 
@@ -100,12 +103,14 @@ private extension OwnProfileView {
                     onTapGestureFunc: coordinator.goToFriendRequests,
                     buttonIcon: "person.badge.clock",
                     pendingRequestCount: $vm.pendingFriendsRequestCount)
+                .accessibilityIdentifier("profile.friendRequestsButton")
 
                 // Host requests button (from main)
                 NumberedButtonNotifications(
                     onTapGestureFunc: coordinator.goToHostRequests,
                     buttonIcon: "person.2.wave.2",
                     pendingRequestCount: $vm.pendingHostsRequestCount)
+                .accessibilityIdentifier("profile.hostRequestsButton")
 
                 Button {
                     shareProfile(userId: vm.userId)
@@ -114,6 +119,7 @@ private extension OwnProfileView {
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.white)
                 }
+                .accessibilityIdentifier("profile.shareButton")
 
                 Button {
                     coordinator.goToSettings()
@@ -122,6 +128,7 @@ private extension OwnProfileView {
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.white)
                 }
+                .accessibilityIdentifier("profile.settingsButton")
             }
         }
         .padding(.horizontal, 20)
@@ -215,6 +222,7 @@ private extension OwnProfileView {
                 .cornerRadius(12)
         }
         .padding(.horizontal, 24)
+        .accessibilityIdentifier("profile.editButton")
     }
 
     var photoPreviewOverlay: some View {

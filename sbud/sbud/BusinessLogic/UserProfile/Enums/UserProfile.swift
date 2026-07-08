@@ -54,12 +54,19 @@ struct UserProfile: Codable, Identifiable, CustomStringConvertible {
         return Array(sorted.prefix(10))
     }
 
-    // MARK: - Performance
+    // MARK: - Performance (temel — Firestore'daki UserProfile doc'undan gelir)
     var totalSessions: Int = 0
     var totalDistanceKm: Double = 0
     var avgIntensity: Int = 0
     var lastActivityDate: Date? = nil
     var lastActivityName: String? = nil
+
+    // MARK: - Performance (genişletilmiş — /users/{id}/stats endpoint'inden gelir)
+    var totalDurationHours: Double? = nil
+    var favoriteActivity: String? = nil
+    var currentStreakDays: Int? = nil
+    var monthlySessionCount: Int? = nil
+    var activityStats: [String: ActivityStat]? = nil
 
     var isPrivate: Bool = false
 
@@ -73,36 +80,46 @@ struct UserProfile: Codable, Identifiable, CustomStringConvertible {
         return Calendar.current.dateComponents([.year], from: birthDate, to: Date()).year
     }
 
-    
     var description: String {
-            """
-            UserProfile(
-                id: \(id),
-                name: \(name) \(surName),
-                email: \(email),
-                age: \(age ?? 0),
-                phone: \(phoneNumber ?? "N/A"),
-                gender: \(gender ?? "N/A"),
-                country: \(country),
-                city: \(city),
-                preferredActivity: \(preferredActivity),
-                bio: \(bio),
-                friendsCount: \(friendsCount),
-                trustScore: \(trustScore),
-                totalSessions: \(totalSessions),
-                totalDistanceKm: \(totalDistanceKm),
-                avgIntensity: \(avgIntensity),
-                isPrivate: \(isPrivate)
-            )
-            """
-        }
-
-    
-    init(id: String) {
-        self.id = id
-        
+        """
+        UserProfile(
+            id: \(id),
+            name: \(name) \(surName),
+            email: \(email),
+            age: \(age ?? 0),
+            totalSessions: \(totalSessions),
+            totalDistanceKm: \(totalDistanceKm),
+            avgIntensity: \(avgIntensity),
+            favoriteActivity: \(favoriteActivity ?? "nil"),
+            currentStreakDays: \(currentStreakDays ?? 0),
+            monthlySessionCount: \(monthlySessionCount ?? 0),
+            isPrivate: \(isPrivate)
+        )
+        """
     }
 
+    init(id: String) {
+        self.id = id
+    }
+
+    // MARK: - Apply stats from API response
+    mutating func applyStats(_ stats: UserStatsResponse) {
+        if let v = stats.totalSessions      { totalSessions = v }
+        if let v = stats.totalDistanceKm    { totalDistanceKm = v }
+        if let v = stats.avgIntensity       { avgIntensity = v }
+        if let v = stats.totalDurationHours { totalDurationHours = v }
+        if let v = stats.favoriteActivity   { favoriteActivity = v }
+        if let v = stats.currentStreakDays  { currentStreakDays = v }
+        if let v = stats.monthlySessionCount { monthlySessionCount = v }
+        if let v = stats.activityStats      { activityStats = v }
+        if let v = stats.lastActivityName   { lastActivityName = v }
+        if let dateStr = stats.lastActivityDate {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            lastActivityDate = formatter.date(from: dateStr)
+                ?? ISO8601DateFormatter().date(from: dateStr)
+        }
+    }
 }
 
 extension UserProfile {
