@@ -81,6 +81,17 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     ) {
         completionHandler([.banner, .sound])
     }
+
+    func application(_ application: UIApplication,
+                     didReceiveRemoteNotification userInfo: [AnyHashable : Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        // Passa la notifica a Firebase Auth
+        if Auth.auth().canHandleNotification(userInfo) {
+            completionHandler(.noData)
+            return
+        }
+        completionHandler(.newData)
+    }
 }
 
 @main
@@ -117,7 +128,12 @@ struct SbudApp: App {
         WindowGroup {
             MainAppCoordinator(coordinator: mainCoordinator)
                 .onOpenURL { url in
-                    GIDSignIn.sharedInstance.handle(url)
+                    if GIDSignIn.sharedInstance.handle(url) {
+                        return
+                    }
+                    if Auth.auth().canHandle(url) {
+                        return
+                    }
                     mainCoordinator.handle(universalLink: url)
                 }
         }
