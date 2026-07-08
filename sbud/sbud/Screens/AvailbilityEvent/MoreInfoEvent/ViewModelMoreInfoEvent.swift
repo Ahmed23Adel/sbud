@@ -8,7 +8,6 @@
 import Foundation
 import OSLog
 import FirebaseAnalytics
-import FirebaseFirestore
 
 enum JoinState: Equatable {
     case idle
@@ -163,43 +162,10 @@ class ViewModelMoreInfoEvent {
 
     private func fetchParticipants() async {
         await MainActor.run { isLoadingParticipants = true }
-
-        do {
-            let db = Firestore.firestore()
-            logger.info("Search participants in joinedEvents by event: \(self.eventId)")
-
-            let snapshot = try await db.collection("joinedEvents")
-                .whereField("eventId", isEqualTo: self.eventId)
-                .whereField("status", in: ["Confirmed", "confirmed"])
-                .getDocuments()
-
-            logger.info("Found \(snapshot.documents.count) partecipants in joinedEvents")
-
-            var profiles: [UserProfile] = []
-
-            for doc in snapshot.documents {
-                let data = doc.data()
-
-                if let userId = data["userId"] as? String {
-                    var profile = UserProfile(id: userId)
-
-                    profile.name = data["userFirstName"] as? String ?? "Utente"
-                    profile.surName = data["userLastName"] as? String ?? ""
-                    profile.profileImageUrl = data["userProfileImageUrl"] as? String
-
-                    profiles.append(profile)
-                    logger.info("Partecipante aggiunto: \(profile.name) \(profile.surName)")
-                }
-            }
-
-            await MainActor.run {
-                self.confirmedParticipants = profiles
-                self.isLoadingParticipants = false
-            }
-
-        } catch {
-            logger.error("CRITICAL ERROR: fetchParticipants (joinedEvents): \(error.localizedDescription)")
-            await MainActor.run { self.isLoadingParticipants = false }
+        let profiles = await JoinedEventsRepository().fetchConfirmedParticipants(eventId: eventId)
+        await MainActor.run {
+            self.confirmedParticipants = profiles
+            self.isLoadingParticipants = false
         }
     }
 
