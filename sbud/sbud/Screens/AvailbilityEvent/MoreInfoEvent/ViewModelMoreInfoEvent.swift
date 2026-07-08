@@ -162,7 +162,7 @@ class ViewModelMoreInfoEvent {
 
     private func fetchParticipants() async {
         await MainActor.run { isLoadingParticipants = true }
-        let profiles = await JoinedEventsRepository().fetchConfirmedParticipants(eventId: eventId)
+        let profiles = await JoinedEventsRepository().fetchParticipants(eventId: eventId)
         await MainActor.run {
             self.confirmedParticipants = profiles
             self.isLoadingParticipants = false

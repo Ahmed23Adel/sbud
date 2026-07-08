@@ -93,7 +93,7 @@ class ViewModelMyEventDetails {
 
     private func fetchParticipants() async {
         isLoadingParticipants = true
-        confirmedParticipants = await JoinedEventsRepository().fetchConfirmedParticipants(eventId: eventId)
+        confirmedParticipants = await JoinedEventsRepository().fetchParticipants(eventId: eventId)
         isLoadingParticipants = false
     }
 
