@@ -113,6 +113,13 @@ class ViewModelMyEventDetails {
                 queueResponse = q
             }
             PopUpGenerator.shared.show(msg: accept ? "Confirmed" : "Rejected.", type: accept ? .notification : .information)
+            if let creatorId = myEventDertails?.creator.id {
+                do {
+                    try await NotificationsRepository().decrementPendingRequests(eventId: eventId, creatorUserId: creatorId)
+                } catch {
+                    logger.error("Error decrementing pending requests count: \(error.localizedDescription)")
+                }
+            }
             await loadQueue()
         } catch {
             let msg = error.localizedDescription

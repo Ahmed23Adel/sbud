@@ -7,15 +7,14 @@
 
 import SwiftUI
 import FirebaseFirestore
-import FirebaseAuth
 
 struct EventUnreadBadge: View {
     let eventId: String
     @State private var unreadCount: Int = 0
     @State private var listener: ListenerRegistration?
-    
+
     var body: some View {
-        
+
         ZStack {
             if unreadCount > 0 {
                 Text("\(unreadCount)")
@@ -33,25 +32,18 @@ struct EventUnreadBadge: View {
             listener = nil
         }
     }
-    
+
     private func startListening() {
         guard listener == nil else { return }
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        
-        let query = Firestore.firestore()
-            .collection("messages")
-            .document(uid)
-            .collection("recent-messages")
-            .whereField("eventId", isEqualTo: eventId)
-        
-        listener = query.addSnapshotListener { snapshot, _ in
-            
-            let messages = snapshot?.documents.compactMap { try? $0.data(as: Message.self) } ?? []
-            let count = messages.filter { $0.isRead == false }.count
-            
-            DispatchQueue.main.async {
-                self.unreadCount = count
+
+        listener = Firestore.firestore()
+            .collection("Events")
+            .document(eventId)
+            .addSnapshotListener { snapshot, _ in
+                let count = snapshot?.data()?["unreadMessagesCount"] as? Int ?? 0
+                DispatchQueue.main.async {
+                    self.unreadCount = count
+                }
             }
-        }
     }
 }

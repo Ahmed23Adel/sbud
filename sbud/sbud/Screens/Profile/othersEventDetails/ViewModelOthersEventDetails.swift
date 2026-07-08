@@ -137,6 +137,19 @@ class ViewModelOthersEventDetails {
                     break
                 }
             }
+            if resp.status == "pending" {
+                if let creatorId = myEventDertails?.creator.id {
+                    do {
+                        try await NotificationsRepository().incrementPendingRequests(eventId: eventId, creatorUserId: creatorId)
+                    } catch {
+                        logger.error("Error incrementing pending requests count: \(error.localizedDescription)")
+                    }
+                } else {
+                    logger.error("Skipped incrementing pending requests count: myEventDertails/creatorId was nil")
+                }
+            } else {
+                logger.info("Skipped incrementing pending requests count: resp.status was \"\(resp.status)\", not \"pending\"")
+            }
         } catch {
             await MainActor.run {
                 isJoiningLoading = false
@@ -198,6 +211,13 @@ class ViewModelOthersEventDetails {
                     queueResponse = q
                 }
                 PopUpGenerator.shared.show(msg: accept ? "Confirmed" : "Rejected.", type: accept ? .notification : .information)
+            }
+            if let creatorId = myEventDertails?.creator.id {
+                do {
+                    try await NotificationsRepository().decrementPendingRequests(eventId: eventId, creatorUserId: creatorId)
+                } catch {
+                    logger.error("Error decrementing pending requests count: \(error.localizedDescription)")
+                }
             }
             await loadQueue()
         } catch {
