@@ -8,6 +8,7 @@
 import Foundation
 import AdelsonAuthManager
 import AdelsonApiCaller
+import FirebaseAuth
 internal import Alamofire
 
 class CreateNewEventRequester {
@@ -20,6 +21,7 @@ class CreateNewEventRequester {
         requestParams: CreateNewEventRequest
     ) async throws -> CreateNewEventResponse {
         let apicaller = createApiCaller()
+        print("🔑 [DEBUG] CreateNewEventRequester.createNewEvent uid=\(Auth.auth().currentUser?.uid ?? "nil")")
         print("AdelsonFirebaseAuthConfig.shared", AdelsonFirebaseAuthConfig.shared.baseUrl)
         return try await apicaller.call(
             url: "events",

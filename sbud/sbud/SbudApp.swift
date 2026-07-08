@@ -107,7 +107,7 @@ struct SbudApp: App {
         )
     
         Task {
-            if let token = try? await Auth.auth().currentUser?.getIDToken() {
+            if let token = try? await FirebaseTokenProvider.shared.getToken() {
                 print("🔑 TOKEN: \(token)")
             }
         }

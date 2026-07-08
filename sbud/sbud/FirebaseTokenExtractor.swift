@@ -14,9 +14,9 @@ class FirebaseTokenExtractor: @unchecked Sendable {
        guard let user = Auth.auth().currentUser else {
            return ""
        }
+        print("🔑 [DEBUG] FirebaseTokenExtractor.getIDToken uid=\(user.uid)")
         do {
-            let idToken = try await user.getIDToken()
-            return idToken
+            return try await FirebaseTokenProvider.shared.getToken() ?? ""
         } catch {
             return ""
         }
