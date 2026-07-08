@@ -23,6 +23,9 @@ class ViewModelOthersEventDetails {
     var showQueue: Bool = false
     var isShowJoinSessionButton = false
 
+    var confirmedParticipants: [UserProfile] = []
+    var isLoadingParticipants = false
+
     private let joinRequester = JoinEventRequester()
 
     init(eventId: String) {
@@ -59,11 +62,44 @@ class ViewModelOthersEventDetails {
             if resolvedRole == .acceptedHost || resolvedRole == .creator {
                 await loadQueue()
             }
+            await fetchParticipants()
             logger.log("Full others event loaded \(self.eventId), role: \(String(describing: resolvedRole))")
         } catch {
             logger.error("Error: \(error)")
             await MainActor.run { isLoading = false }
             PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
+        }
+    }
+
+    private func fetchParticipants() async {
+        await MainActor.run { isLoadingParticipants = true }
+
+        do {
+            let db = Firestore.firestore()
+            let snapshot = try await db.collection("joinedEvents")
+                .whereField("eventId", isEqualTo: self.eventId)
+                .whereField("status", in: ["Confirmed", "confirmed"])
+                .getDocuments()
+
+            var profiles: [UserProfile] = []
+            for doc in snapshot.documents {
+                let data = doc.data()
+                if let userId = data["userId"] as? String {
+                    var profile = UserProfile(id: userId)
+                    profile.name = data["userFirstName"] as? String ?? "Utente"
+                    profile.surName = data["userLastName"] as? String ?? ""
+                    profile.profileImageUrl = data["userProfileImageUrl"] as? String
+                    profiles.append(profile)
+                }
+            }
+
+            await MainActor.run {
+                self.confirmedParticipants = profiles
+                self.isLoadingParticipants = false
+            }
+        } catch {
+            logger.error("fetchParticipants error: \(error.localizedDescription)")
+            await MainActor.run { self.isLoadingParticipants = false }
         }
     }
 

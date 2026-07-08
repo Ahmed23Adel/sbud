@@ -32,6 +32,8 @@ class ViewModelMyEventDetails {
     var isDeletingEvent = false
     var eventDeleted = false
     var showEditEvent = false
+    var confirmedParticipants: [UserProfile] = []
+    var isLoadingParticipants = false
 
     private let eventFetcher: EventFetching
     private let joinRequester: JoinEventRequesting
@@ -81,10 +83,41 @@ class ViewModelMyEventDetails {
             role = resolvedRole
             isLoading = false
             await loadQueue()
+            await fetchParticipants()
         } catch {
             logger.error("Error: \(error)")
             isLoading = false
             PopUpGenerator.shared.show(msg: "Error loading the event", type: .error)
+        }
+    }
+
+    private func fetchParticipants() async {
+        isLoadingParticipants = true
+
+        do {
+            let db = Firestore.firestore()
+            let snapshot = try await db.collection("joinedEvents")
+                .whereField("eventId", isEqualTo: self.eventId)
+                .whereField("status", in: ["Confirmed", "confirmed"])
+                .getDocuments()
+
+            var profiles: [UserProfile] = []
+            for doc in snapshot.documents {
+                let data = doc.data()
+                if let userId = data["userId"] as? String {
+                    var profile = UserProfile(id: userId)
+                    profile.name = data["userFirstName"] as? String ?? "Utente"
+                    profile.surName = data["userLastName"] as? String ?? ""
+                    profile.profileImageUrl = data["userProfileImageUrl"] as? String
+                    profiles.append(profile)
+                }
+            }
+
+            confirmedParticipants = profiles
+            isLoadingParticipants = false
+        } catch {
+            logger.error("fetchParticipants error: \(error.localizedDescription)")
+            isLoadingParticipants = false
         }
     }
 
