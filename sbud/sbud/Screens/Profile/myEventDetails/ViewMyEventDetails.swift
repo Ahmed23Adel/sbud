@@ -31,7 +31,7 @@ struct ViewMyEventDetails: View {
                             .padding(.horizontal, 24)
                             .frame(maxWidth: .infinity)
 
-                        
+
                     }
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
@@ -95,7 +95,7 @@ struct ViewMyEventDetails: View {
                 StartSessionConfirmation(eventDetails: viewModel.myEventDertails ?? .empty)
                     .environmentObject(coordinator)
             }
-                
+
         }
         .onAppear{
             viewModel.setMainCoordinator(mainCoordinator: mainCoordinator)
@@ -197,7 +197,7 @@ struct ViewMyEventDetails: View {
             )
 
             deleteButtonSection
-            
+
             Spacer().frame(height: 40)
         }
     }
@@ -205,7 +205,7 @@ struct ViewMyEventDetails: View {
     @ViewBuilder
     private var confirmationSheet: some View {
         if let details = viewModel.myEventDertails {
-            ConfirmEventSheet(dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
+            ConfirmEventSheet(eventTitle: details.title, dateLocations: details.dateLocations) { selectedDateEntry, selectedLoc, finalStart, finalEnd in
                 viewModel.activeSheet = nil
                 Task {
                     await viewModel.confirmEventFinalChoice(

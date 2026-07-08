@@ -118,28 +118,70 @@ class ViewModelMyEventDetails {
         let db = Firestore.firestore()
         let batch = db.batch()
         let eventRef = db.collection("Events").document(eventId)
-        let finalizedDateLocation: [[String: Any]] = [[
-            "id": selectedDateEntry.id,
+        let finalizedDateLocation: [[String: Any]] = [
+            [
+                "id": selectedDateEntry.id,
+                "startDateTime": Timestamp(date: finalStartDate),
+                "endDateTime": Timestamp(date: finalEndDate),
+                "locations": [
+                    [
+                        "latitude": selectedLocation.latitude,
+                        "longitude": selectedLocation.longitude,
+                        "geohash": selectedLocation.geohash
+                    ]
+                ]
+            ]
+        ]
+
+        // Aggiorniamo sia l'array dateLocations sia le variabili alla root per coprire ogni casistica del backend
+        batch.updateData([
+            "isDateConfirmed": true,
+            "isLocationConfirmed": true,
+            "status": UsersEventStatus.confirmed.rawValue,
+            "dateLocations": finalizedDateLocation,
             "startDateTime": Timestamp(date: finalStartDate),
-            "endDateTime": Timestamp(date: finalEndDate),
-            "locations": [["latitude": selectedLocation.latitude, "longitude": selectedLocation.longitude, "geohash": selectedLocation.geohash]]
-        ]]
-        batch.updateData(["isDateConfirmed": true, "isLocationConfirmed": true,
-                          "status": UsersEventStatus.confirmed.rawValue, "dateLocations": finalizedDateLocation], forDocument: eventRef)
+            "endDateTime": Timestamp(date: finalEndDate)
+        ], forDocument: eventRef)
+
         do {
-            let snap = try await db.collection("flattenedEvents").whereField("eventId", isEqualTo: eventId).getDocuments()
-            for doc in snap.documents {
+            // MARK: - LOGICA FLATTENED EVENTS CORRETTA
+            let flattenedSnapshot = try await db.collection("flattenedEvents")
+                .whereField("eventId", isEqualTo: eventId)
+                .getDocuments()
+
+            for doc in flattenedSnapshot.documents {
                 let data = doc.data()
-                let docDateLocationId = data["dateLocationId"] as? String ?? ""
-                var isChosen = false
+
+                // Controlliamo chiavi multiple nel caso i nomi nel database siano differenti
+                let docDateLocationId = (data["dateLocationId"] as? String) ?? (data["id"] as? String) ?? ""
+
+                let docGeohash = (data["g"] as? [String: Any])?["geohash"] as? String
+                                 ?? data["geohash"] as? String
+                                 ?? ""
+
+                let isChosenEntry = (docDateLocationId == selectedDateEntry.id)
+                let isChosenLocation = (docGeohash == selectedLocation.geohash)
+
+                // Fallback nel caso il geohash manchi ma le coordinate corrispondano
+                var coordinateMatch = false
                 if let geoPoint = data["geoPoint"] as? GeoPoint {
-                    isChosen = abs(geoPoint.latitude - selectedLocation.latitude) < 0.00001 && abs(geoPoint.longitude - selectedLocation.longitude) < 0.00001
-                } else if let g = data["g"] as? [String: Any], let geohash = g["geohash"] as? String {
-                    isChosen = geohash == selectedLocation.geohash
+                    let latDiff = abs(geoPoint.latitude - selectedLocation.latitude)
+                    let lonDiff = abs(geoPoint.longitude - selectedLocation.longitude)
+                    coordinateMatch = (latDiff < 0.0001 && lonDiff < 0.0001)
                 }
-                if docDateLocationId == selectedDateEntry.id && isChosen {
-                    batch.updateData(["startDateTime": Timestamp(date: finalStartDate), "endDateTime": Timestamp(date: finalEndDate), "isDateConfirmed": true, "isLocationConfirmed": true], forDocument: doc.reference)
-                } else { batch.deleteDocument(doc.reference) }
+
+                // Se troviamo quello giusto, lo aggiorniamo sovrascrivendo le date con quelle precise!
+                if isChosenEntry && (isChosenLocation || coordinateMatch) {
+                    batch.updateData([
+                        "startDateTime": Timestamp(date: finalStartDate),
+                        "endDateTime": Timestamp(date: finalEndDate),
+                        "isDateConfirmed": true,
+                        "isLocationConfirmed": true
+                    ], forDocument: doc.reference)
+                } else {
+                    // Quelli scartati vengono definitivamente eliminati
+                    batch.deleteDocument(doc.reference)
+                }
             }
             try await batch.commit()
             await loadDetails()
