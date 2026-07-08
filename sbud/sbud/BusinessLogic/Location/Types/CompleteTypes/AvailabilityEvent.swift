@@ -68,7 +68,6 @@ class AvailabilityEvent: IAvailabilityEvent, CustomStringConvertible {
         eventImage: String,
         creatorName: String
     ) {
-        logger.info("id: \(id)")
         logger.info("eventId: \(eventId)")
         self.id = id
         self.geoPoint = geoPoint

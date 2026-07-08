@@ -8,6 +8,7 @@
 import Foundation
 import AdelsonAuthManager
 import AdelsonApiCaller
+internal import Alamofire
 
 class CreateNewEventRequester {
 

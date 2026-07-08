@@ -14,9 +14,8 @@ struct ViewExtraArgsSwimming: View {
         VStack(spacing: 16) {
             TextOptionSelector(
                 header: "Swimming Stroke",
-                selected: $args.proposedStroke,
+                selected: $args.proposedStroke
             )
-            
             GenericPerformanceTarget(
                 targetHeader: "Target Distance",
                 unitHeader: "M",
@@ -26,6 +25,11 @@ struct ViewExtraArgsSwimming: View {
                 targetHeader: "Target Pace",
                 unitHeader: "MIN/100M",
                 targetValue: $args.proposedPacePer100M
+            )
+            GenericPerformanceTarget(
+                targetHeader: "Duration",
+                unitHeader: "MIN",
+                targetValue: $args.proposedDurationInMin
             )
         }
     }

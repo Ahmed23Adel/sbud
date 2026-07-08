@@ -41,6 +41,7 @@ struct CoordinatorAddNewEvent: View {
                         }
                         .foregroundColor(Color.mainColor)
                         .disabled(viewModel.isLoading)
+                        .accessibilityIdentifier("addEvent.cancelButton")
                     } else if viewModel.currentStep == .step2 {
                         Button("Back") {
                             withAnimation(.easeInOut(duration: 0.3)) {
@@ -50,6 +51,7 @@ struct CoordinatorAddNewEvent: View {
                         .foregroundColor(Color.mainColor)
                         .textCase(.uppercase)
                         .disabled(viewModel.isLoading)
+                        .accessibilityIdentifier("addEvent.backButton")
                     }
                 }
                 .sharedBackgroundVisibility(.hidden)
@@ -62,6 +64,7 @@ struct CoordinatorAddNewEvent: View {
                         }
                         .foregroundColor(Color.mainColor)
                         .disabled(viewModel.isLoading)
+                        .accessibilityIdentifier("addEvent.nextButton")
                     } else if viewModel.currentStep == .step2 {
                         Button("Done") {
                             viewModel.createEvent()
@@ -69,6 +72,7 @@ struct CoordinatorAddNewEvent: View {
                         .foregroundColor(Color.mainColor)
                         .textCase(.uppercase)
                         .disabled(viewModel.isLoading)
+                        .accessibilityIdentifier("addEvent.doneButton")
                     }
                 }
                 .sharedBackgroundVisibility(.hidden)
@@ -80,6 +84,7 @@ struct CoordinatorAddNewEvent: View {
                         }
                         .foregroundColor(Color.mainColor)
                         .disabled(viewModel.isLoading)
+                        .accessibilityIdentifier("addEvent.cancelButton")
                     } else if viewModel.currentStep == .step2 {
                         Button("Back") {
                             withAnimation(.easeInOut(duration: 0.3)) {
@@ -89,6 +94,7 @@ struct CoordinatorAddNewEvent: View {
                         .foregroundColor(Color.mainColor)
                         .textCase(.uppercase)
                         .disabled(viewModel.isLoading)
+                        .accessibilityIdentifier("addEvent.backButton")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -100,6 +106,7 @@ struct CoordinatorAddNewEvent: View {
                         }
                         .foregroundColor(Color.mainColor)
                         .disabled(viewModel.isLoading)
+                        .accessibilityIdentifier("addEvent.nextButton")
                     } else if viewModel.currentStep == .step2 {
                         Button("Done") {
                             viewModel.createEvent()
@@ -107,6 +114,7 @@ struct CoordinatorAddNewEvent: View {
                         .foregroundColor(Color.mainColor)
                         .textCase(.uppercase)
                         .disabled(viewModel.isLoading)
+                        .accessibilityIdentifier("addEvent.doneButton")
                     }
                 }
             }

@@ -11,7 +11,8 @@ import SwiftUI
 struct ViewCombinedEvents: View {
     let userId: String
     @State private var selectedTab: EventsTab = .created
-    let onEventTap: (String) -> Void
+    let onCreatedEventTap: (String) -> Void
+    let onParticipatedEventTap: (String) -> Void
     
     var body: some View {
         VStack(spacing: 0) {
@@ -27,14 +28,14 @@ struct ViewCombinedEvents: View {
 
             // Swipeable TabView
             TabView(selection: $selectedTab) {
-                CreatedEventsView(userId: userId, onEventTap: onEventTap)
+                CreatedEventsView(userId: userId, onEventTap: onCreatedEventTap)
                     .tag(EventsTab.created)
                     
 
-                HostedEventsView(userId: userId, onEventTap: onEventTap)
+                HostedEventsView(userId: userId, onEventTap: onCreatedEventTap)
                     .tag(EventsTab.hostedEvents)
 
-                ParticipatedEventsView(userId: userId, onEventTap: onEventTap)
+                ParticipatedEventsView(userId: userId, onEventTap: onParticipatedEventTap)
                     .tag(EventsTab.participatedEvents)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))

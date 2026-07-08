@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-
 struct ViewExtraArgsFilterYoga: View {
     @ObservedObject var filter: ExtraArgsFilterHolderYoga
 
@@ -19,8 +18,8 @@ struct ViewExtraArgsFilterYoga: View {
             GenericRangeTarget(
                 header: "Duration",
                 unitHeader: "MIN",
-                minValue: $filter.minDuration,
-                maxValue: $filter.maxDuration
+                minValue: $filter.minDurationInMin,
+                maxValue: $filter.maxDurationInMin
             )
             GenericRangeTarget(
                 header: "Intensity",

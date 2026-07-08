@@ -11,6 +11,7 @@ struct GenericMultilineTextInputView: View {
     let placeholder: String
     let iconString: String
     @Binding var text: String
+    var accessibilityId: String? = nil
     
     var body: some View {
         VStack {
@@ -36,6 +37,7 @@ struct GenericMultilineTextInputView: View {
                         .font(.body)
                         .foregroundColor(.white)
                         .scrollContentBackground(.hidden)
+                        .accessibilityIdentifier(accessibilityId ?? fieldName)
 //                        .frame(minHeight: 100, maxHeight: 200)
                         
                 }

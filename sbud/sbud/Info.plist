@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.sbud.event.remindersync</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -9,14 +13,19 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>com.googleusercontent.apps.863852529120-hr37cpjvgq3rb56mbi41cd39va19tek2</string>
 				<string>com.googleusercontent.apps.863852529120-f082rdgc1ucvss39g2ael0n05nrjvaaq</string>
 			</array>
 		</dict>
 		<dict>
 			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>com.sbud.app</string>
 			<key>CFBundleURLSchemes</key>
-			<array/>
+			<array>
+				<string>sbud</string>
+			</array>
 		</dict>
 	</array>
 	<key>NSAppTransportSecurity</key>
@@ -27,6 +36,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
+		<string>fetch</string>
 	</array>
 </dict>
 </plist>

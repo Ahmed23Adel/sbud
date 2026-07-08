@@ -9,7 +9,7 @@ import Foundation
 import CoreLocation
 import Combine
 
-class LocationManager: NSObject, ObservableObject {
+class LocationManager: NSObject, ObservableObject, LocationProviding {
     static let shared = LocationManager()
     private let locationManager = CLLocationManager()
 

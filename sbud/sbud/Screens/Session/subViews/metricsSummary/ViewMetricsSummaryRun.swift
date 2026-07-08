@@ -212,7 +212,7 @@ struct RunRouteMapView: UIViewRepresentable {
             .padding(.vertical, 12)
             .background(Color.black)
 
-            ViewMetricsSummaryRun(collector: MetricsCollectorRun(isCreator: true))
+            ViewMetricsSummaryRun(collector: MetricsCollectorRun(isCreator: true, numSessions: 0))
                 .frame(maxHeight: .infinity)
         }
     }

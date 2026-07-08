@@ -22,6 +22,21 @@ struct ViewExtraArgsHiking: View {
                 unitHeader: "M",
                 targetValue: $args.proposedElevationGainInM
             )
+            GenericPerformanceTarget(
+                targetHeader: "Elevation Loss",
+                unitHeader: "M",
+                targetValue: $args.proposedElevationLossInM
+            )
+            GenericPerformanceTarget(
+                targetHeader: "Max Altitude",
+                unitHeader: "M",
+                targetValue: $args.proposedMaxAltitudeInM
+            )
+            GenericPerformanceTarget(
+                targetHeader: "Duration",
+                unitHeader: "MIN",
+                targetValue: $args.proposedDurationInMin
+            )
         }
     }
 }

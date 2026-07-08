@@ -14,6 +14,7 @@ import Foundation
 
 import Combine
 import SwiftUI
+import MapKit
 
 // MARK: - Push Destinations
 
@@ -22,8 +23,8 @@ enum AvailabilityDestination: Hashable, Equatable {
     case addNewEvent
     case profile(userId: String)
     case chat(user: UserProfile, eventId: String, eventTitle: String)
+    case searchEvents(region: MKCoordinateRegion, filterResults: AvailabilityFiltersResults?)
 
-    // Custom Equatable because UserProfile may not synthesize it
     static func == (lhs: AvailabilityDestination, rhs: AvailabilityDestination) -> Bool {
         switch (lhs, rhs) {
         case (.moreInfoEvent(let l), .moreInfoEvent(let r)):   return l == r
@@ -31,6 +32,7 @@ enum AvailabilityDestination: Hashable, Equatable {
         case (.profile(let l), .profile(let r)):               return l == r
         case (.chat(let u1, let e1, let t1), .chat(let u2, let e2, let t2)):
             return u1.id == u2.id && e1 == e2 && t1 == t2
+        case (.searchEvents, .searchEvents):                   return true
         default: return false
         }
     }
@@ -46,6 +48,8 @@ enum AvailabilityDestination: Hashable, Equatable {
         case .chat(let user, let eventId, let eventTitle):
             hasher.combine(3); hasher.combine(user.id)
             hasher.combine(eventId); hasher.combine(eventTitle)
+        case .searchEvents:
+            hasher.combine(4)
         }
     }
 }

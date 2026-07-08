@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import SwiftData
+import FirebaseAnalytics
 @Observable
 class ViewModelOwnerSession{
     var mainCoordinator: MainCoordinator?
@@ -26,12 +27,17 @@ class ViewModelOwnerSession{
     init(eventDetails: EventFullDetails, isSessionCreated: Bool){
         self.eventDetails = eventDetails
         self.isSessionCreated = isSessionCreated
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "LiveSession_Owner",
+            "activity_type": eventDetails.activityType.rawValue,
+            "event_id": eventDetails.id
+        ])
         initMetricsCollector()
         Task {
             do {
                 if !isSessionCreated {
                     try await createSession()
-                } 
+                }
                 
             } catch {
                 showError("Error occured while starting the session, pleaes try again")
@@ -48,28 +54,28 @@ class ViewModelOwnerSession{
         switch eventDetails.activityType{
             
         case .running:
-            metricsCollector = MetricsCollectorRun(isCreator: true)
+            metricsCollector = MetricsCollectorRun(isCreator: true, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorRun).startSession(eventId: eventDetails.id)
         case .cycling:
-            metricsCollector = MetricsCollectorCycling(isCreator: true)
+            metricsCollector = MetricsCollectorCycling(isCreator: true, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorCycling).startSession(eventId: eventDetails.id)
         case .gym:
-            metricsCollector = MetricsCollectorGym(isCreator: true)
+            metricsCollector = MetricsCollectorGym(isCreator: true, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorGym).startSession(eventId: eventDetails.id)
         case .skiing:
-            metricsCollector = MetricsCollectorSkiing(isCreator: true)
+            metricsCollector = MetricsCollectorSkiing(isCreator: true, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorSkiing).startSession(eventId: eventDetails.id)
         case .swimming:
-            metricsCollector = MetricsCollectorSwimming(isCreator: true)
+            metricsCollector = MetricsCollectorSwimming(isCreator: true, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorSwimming).startSession(eventId: eventDetails.id)
         case .hiking:
-            metricsCollector = MetricsCollectorHiking(isCreator: true)
+            metricsCollector = MetricsCollectorHiking(isCreator: true, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorHiking).startSession(eventId: eventDetails.id)
         case .yoga:
-            metricsCollector = MetricsCollectorYoga(isCreator: true)
+            metricsCollector = MetricsCollectorYoga(isCreator: true, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorYoga).startSession(eventId: eventDetails.id)
         case .tennis:
-            metricsCollector = MetricsCollectorTennis(isCreator: true)
+            metricsCollector = MetricsCollectorTennis(isCreator: true, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorTennis).startSession(eventId: eventDetails.id)
         }
     }
@@ -129,7 +135,7 @@ class ViewModelOwnerSession{
     
     
     
-    func endSession(){
+    func endSession() {
         isLoading = true
         Task {
             do {
@@ -137,18 +143,17 @@ class ViewModelOwnerSession{
                 let repo = OnGoingSessionRepository()
                 try await repo.deleteByEventId(eventDetails.id)
                 deleteLocalSession()
-                await MainActor.run{
+                await MainActor.run {
                     isLoading = false
+                    mainCoordinator?.goToSessionSummary(eventDetails: eventDetails)
                 }
-                logger.info("navigating to home ")
-                print("main coord", mainCoordinator)
-                mainCoordinator?.goToHome()
-               
             } catch {
-                logger.fault("Error with ending session: \(error)")
-                showError("Error with ending the session, please try again")
+                logger.fault("Error ending session: \(error)")
+                await MainActor.run {
+                    isLoading = false
+                    showError("Error with ending the session, please try again")
+                }
             }
-            
         }
     }
     

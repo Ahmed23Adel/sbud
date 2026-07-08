@@ -34,22 +34,50 @@
             endingLineNumber = "59"
             landmarkName = "loadFriends()"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "40D06069-5205-4B2C-B4F6-B362AFB6F713"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "sbud/Screens/Profile/OthersProfile/OtherProfileView.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "54"
-            endingLineNumber = "54"
-            landmarkName = "body"
-            landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "2BBC46BA-9DC6-494F-9D38-D55D85EE6E54 - 429d883073655985"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(5) suspend resume partial function for sbud.ViewModelHosts.loadHostsInvitationsAndFriendAndCombine() async -&gt; ()"
+                  moduleName = "sbud.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ahmed/Documents/Polimi/Mobile/sbud/sbud/sbud/Screens/Profile/MyEvents/Hosts/ViewModelHosts.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "59"
+                  endingLineNumber = "59">
+               </Location>
+               <Location
+                  uuid = "2BBC46BA-9DC6-494F-9D38-D55D85EE6E54 - 52d5e078dd8ff786"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(6) suspend resume partial function for sbud.ViewModelHosts.loadHostsInvitationsAndFriendAndCombine() async -&gt; ()"
+                  moduleName = "sbud.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ahmed/Documents/Polimi/Mobile/sbud/sbud/sbud/Screens/Profile/MyEvents/Hosts/ViewModelHosts.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "59"
+                  endingLineNumber = "59">
+               </Location>
+               <Location
+                  uuid = "2BBC46BA-9DC6-494F-9D38-D55D85EE6E54 - 612d39a124b01587"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(7) suspend resume partial function for sbud.ViewModelHosts.loadHostsInvitationsAndFriendAndCombine() async -&gt; ()"
+                  moduleName = "sbud.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ahmed/Documents/Polimi/Mobile/sbud/sbud/sbud/Screens/Profile/MyEvents/Hosts/ViewModelHosts.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "59"
+                  endingLineNumber = "59">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

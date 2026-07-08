@@ -31,12 +31,15 @@ class ParticipatedEventsViewModel {
         fetchParticipatedEvents()
     }
 
+    func reloadEvents() {
+        fetchParticipatedEvents()
+    }
+
     private func fetchParticipatedEvents() {
         let repo = JoinedEventsRepository()
         var query = repo.initQueryBuilderObject()
         query = query.appendFilter(Filter(field: repo.constants.userId, operation: .isEqualTo, value: userId))
-        query = query.appendFilter(Filter(field: repo.constants.participationStatus, operation: .isEqualTo, value: ParticipationStatus.participant.rawValue))
-
+        query = query.appendFilter(Filter(field: repo.constants.participationStatus, operation: .isEqualTo, value: ParticipationStatus.participant.rawValue ))
         Task {
             do {
                 joinedEvents = try await repo.fetch(query: query)

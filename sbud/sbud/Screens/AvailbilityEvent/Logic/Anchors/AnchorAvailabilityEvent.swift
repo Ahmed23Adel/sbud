@@ -14,7 +14,7 @@ nonisolated class AnchorAvailabilityEvent: IAnchorAvailabilityEvent, CustomStrin
     nonisolated var eventId: String
     var description: String {
             "Id: \(id)"
-        }
+    }
 
     
 
