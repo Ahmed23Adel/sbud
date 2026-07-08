@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Kingfisher
+import FirebaseAuth
 
 struct OtherProfileView: View {
     @StateObject private var vm: OtherProfileVM
@@ -41,7 +42,12 @@ struct OtherProfileView: View {
                             if let profile = vm.profile {
                                 ProfilePerformanceCard(profile: profile)
                             }
-                            ProfileArchiveSection()
+                            
+                            AthleteFeedbackSection(
+                                isOwnProfile: true, // Sempre true per bloccare i tap sul profilo
+                                topFeedbacks: vm.profile?.top10Feedbacks ?? []
+                            )
+                            
                             ProfileMyEventsButton(userId: vm.userId, title: "EVENTS") {
                                 print("goToOthersEvents")
                                 coordinator.goToOthersEvents()

@@ -9,6 +9,7 @@ import Foundation
 import Observation
 import SwiftUI
 import FirebaseAnalytics
+import FirebaseAuth
 
 @Observable
 class ViewModelSessionSummaryCycling: SessionSummaryViewModel {
@@ -63,6 +64,7 @@ class ViewModelSessionSummaryCycling: SessionSummaryViewModel {
                 endedBeforeCreator: m.endedBeforeCreator,
                 userName: name,
                 profileImageUrl: profile?.profileImageUrl,
+                receivedFeedbacks: profile?.receivedFeedbacks,
                 totalDistanceKm: m.totalDistance / 1000,
                 track: m.track,
                 avgSpeedKmH: speed,
@@ -120,5 +122,33 @@ class ViewModelSessionSummaryCycling: SessionSummaryViewModel {
             min: .init(name: lo.0.displayName, profileImageUrl: lo.0.profileImageUrl, value: lo.1, color: lo.0.color),
             max: .init(name: hi.0.displayName, profileImageUrl: hi.0.profileImageUrl, value: hi.1, color: hi.0.color)
         )
+    }
+    
+    func voteForFeedback(targetUserId: String, tag: String) async {
+        guard let myUserId = FirebaseAuth.Auth.auth().currentUser?.uid else { return }
+        guard var targetProfile = profiles[targetUserId] else { return }
+        
+        
+        var currentFeedbacks = targetProfile.receivedFeedbacks ?? [:]
+        
+        
+        if currentFeedbacks[myUserId] == tag { return }
+        
+       
+        currentFeedbacks[myUserId] = tag
+        targetProfile.receivedFeedbacks = currentFeedbacks
+        
+        self.profiles[targetUserId] = targetProfile
+        
+        // Forza l'aggiornamento della UI
+        let updatedProfiles = self.profiles
+        self.profiles = updatedProfiles
+        
+        //
+        do {
+            try await userRepo.giveFeedback(to: targetUserId, tag: tag, voterId: myUserId)
+        } catch {
+            print("Errore invio feedback: \(error)")
+        }
     }
 }

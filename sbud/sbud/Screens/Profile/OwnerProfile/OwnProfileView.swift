@@ -44,7 +44,12 @@ struct OwnProfileView: View {
                             if let profile = vm.profile {
                                 ProfilePerformanceCard(profile: profile)
                             }
-                            ProfileArchiveSection()
+
+                            AthleteFeedbackSection(
+                                isOwnProfile: true,
+                                topFeedbacks: vm.profile?.top10Feedbacks ?? []
+                            )
+                            
                             ProfileMyEventsButton(userId: vm.userId, title: "MY EVENTS") {
                                 coordinator.goToMyEvents()
                             }

@@ -19,6 +19,8 @@ struct ParticipantSummary: Identifiable {
     let endedBeforeCreator: Bool
     let userName: String?
     let profileImageUrl: String?
+    
+    var receivedFeedbacks: [String: String]?
 
     // MARK: - GPS activities (0 / [] for time-based)
     let totalDistanceKm: Double
@@ -79,6 +81,7 @@ struct ParticipantSummary: Identifiable {
         endedBeforeCreator: Bool,
         userName: String?,
         profileImageUrl: String?,
+        receivedFeedbacks: [String: String]? = nil,
         totalDistanceKm: Double = 0,
         track: [TrackPoint] = [],
         avgPaceMinPerKm: Double = 0,
@@ -99,6 +102,7 @@ struct ParticipantSummary: Identifiable {
         self.endedBeforeCreator = endedBeforeCreator
         self.userName = userName
         self.profileImageUrl = profileImageUrl
+        self.receivedFeedbacks = receivedFeedbacks
         self.totalDistanceKm = totalDistanceKm
         self.track = track
         self.avgPaceMinPerKm = avgPaceMinPerKm

@@ -181,7 +181,6 @@ struct ViewMyEventDetails: View {
                 role: viewModel.role,
                 queueResponse: viewModel.queueResponse,
                 onConfirmTap: {
-                    print("onConfirmTap")
                     viewModel.activeSheet = .confirmation
                 },
                 onMessagesTap: {
