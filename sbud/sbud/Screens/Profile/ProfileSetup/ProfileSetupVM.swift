@@ -141,6 +141,7 @@ final class ProfileSetupVM: ObservableObject {
     func validateStepTwo() -> Bool {
         guard isPhoneVerified else {
             errorMessage = "Verify your phone number with the SMS code to continue."
+            PopUpGenerator.shared.show(msg: "Verify phone number first", type: .warning)
             return false
         }
         guard let gender = profile.gender, !gender.trimmed.isEmpty else {
