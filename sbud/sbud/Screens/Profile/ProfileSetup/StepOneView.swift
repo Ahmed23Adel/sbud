@@ -13,6 +13,7 @@ struct StepOneView: View {
 
     @EnvironmentObject private var vm: ProfileSetupVM
     @State private var showSettingsAlert = false
+    @State private var authStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -33,6 +34,10 @@ struct StepOneView: View {
             }
         }
         .onTapGesture { hideKeyboard() }
+        .onAppear { authStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite) }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            authStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        }
     }
 
     // MARK: - Subviews
@@ -71,9 +76,12 @@ struct StepOneView: View {
                     photoPickerLabel
                 }
                 .simultaneousGesture(TapGesture().onEnded {
-                    let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-                    if status == .notDetermined {
-                        PHPhotoLibrary.requestAuthorization(for: .readWrite) { _ in }
+                    if authStatus == .notDetermined {
+                        PHPhotoLibrary.requestAuthorization(for: .readWrite) { newStatus in
+                            DispatchQueue.main.async {
+                                authStatus = newStatus
+                            }
+                        }
                     }
                 })
                 .onChange(of: vm.selectedPhotoItem) { _ in
@@ -85,8 +93,7 @@ struct StepOneView: View {
     }
 
     private var photoAccessDenied: Bool {
-        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        return status == .denied || status == .restricted
+        authStatus == .denied || authStatus == .restricted
     }
     private var photoPickerLabel: some View {
         ZStack {
