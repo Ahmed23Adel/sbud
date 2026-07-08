@@ -138,9 +138,6 @@ struct ViewMyEventDetails: View {
     @ViewBuilder
     private func eventContent(_ details: EventFullDetails) -> some View {
         VStack {
-               
-            
-                
                 EventMetaBadgesRow(
                     isDateConfirmed: details.isDateConfirmed,
                     isLocationConfirmed: details.isLocationConfirmed,
@@ -148,7 +145,6 @@ struct ViewMyEventDetails: View {
                     isPublic: details.isPublic,
                     maxAllowedToJoin: details.maxAllowedToJoin
                 )
-                
 
             EventInfoSection(
                 title: details.title,
