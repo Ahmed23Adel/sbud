@@ -153,6 +153,13 @@ class ViewModelMoreInfoEvent {
                 }
                 PopUpGenerator.shared.show(msg: accept ? "Confirmed" : "Rejected.", type: accept ? .notification : .information)
             }
+            if let creatorId = fullDetails?.creator.id {
+                do {
+                    try await NotificationsRepository().decrementPendingRequests(eventId: eventId, creatorUserId: creatorId)
+                } catch {
+                    logger.error("Error decrementing pending requests count: \(error.localizedDescription)")
+                }
+            }
             await loadQueue()
         } catch {
             PopUpGenerator.shared.show(msg: "Error: \(error.localizedDescription)", type: .error)
@@ -216,6 +223,19 @@ class ViewModelMoreInfoEvent {
                 default:
                     break
                 }
+            }
+            if resp.status == "pending" {
+                if let creatorId = fullDetails?.creator.id {
+                    do {
+                        try await NotificationsRepository().incrementPendingRequests(eventId: eventId, creatorUserId: creatorId)
+                    } catch {
+                        logger.error("Error incrementing pending requests count: \(error.localizedDescription)")
+                    }
+                } else {
+                    logger.error("Skipped incrementing pending requests count: fullDetails/creatorId was nil")
+                }
+            } else {
+                logger.info("Skipped incrementing pending requests count: resp.status was \"\(resp.status)\", not \"pending\"")
             }
         } catch {
             await MainActor.run {

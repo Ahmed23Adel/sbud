@@ -91,6 +91,16 @@ class HomeViewModel: NSObject, CLLocationManagerDelegate {
                 }
                 Task { await self.load() }
             }
+            if resp.status == "pending" {
+                do {
+                    let details = try await EventByIdRequester().fetchEvent(eventId: eventId)
+                    try await NotificationsRepository().incrementPendingRequests(eventId: eventId, creatorUserId: details.creator.id)
+                } catch {
+                    logger.error("Error incrementing pending requests count: \(error.localizedDescription)")
+                }
+            } else {
+                logger.info("Skipped incrementing pending requests count: resp.status was \"\(resp.status)\", not \"pending\"")
+            }
         } catch {
             PopUpGenerator.shared.show(msg: "Error: \(error.localizedDescription)", type: .error)
         }

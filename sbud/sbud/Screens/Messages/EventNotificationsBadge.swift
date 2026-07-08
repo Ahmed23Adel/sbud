@@ -1,23 +1,22 @@
 //
-//  TotalUnreadBadge.swift
+//  EventNotificationsBadge.swift
 //  sbud
 //
-//  Created by Riccardo Maria Cadario on 27/05/2026.
+//  Created by ahmed on 08/07/2026.
 //
-
 
 import SwiftUI
 import FirebaseFirestore
-import FirebaseAuth
 
-struct TotalUnreadBadge: View {
-    @State private var unreadCount: Int = 0
+struct EventNotificationsBadge: View {
+    let eventId: String
+    @State private var count: Int = 0
     @State private var listener: ListenerRegistration?
-    
+
     var body: some View {
         ZStack {
-            if unreadCount > 0 {
-                Text("\(unreadCount)")
+            if count > 0 {
+                Text("\(count)")
                     .font(.system(size: 13, weight: .bold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
@@ -32,18 +31,19 @@ struct TotalUnreadBadge: View {
             listener = nil
         }
     }
-    
+
     private func startListening() {
         guard listener == nil else { return }
-        guard let uid = Auth.auth().currentUser?.uid else { return }
 
         listener = Firestore.firestore()
-            .collection("users")
-            .document(uid)
+            .collection("Events")
+            .document(eventId)
             .addSnapshotListener { snapshot, _ in
-                let count = snapshot?.data()?["unreadMessagesCount"] as? Int ?? 0
+                let data = snapshot?.data() ?? [:]
+                let unreadMessages = data["unreadMessagesCount"] as? Int ?? 0
+                let pendingRequests = data["pendingRequestsCount"] as? Int ?? 0
                 DispatchQueue.main.async {
-                    self.unreadCount = count
+                    self.count = unreadMessages + pendingRequests
                 }
             }
     }
