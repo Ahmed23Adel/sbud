@@ -8,6 +8,7 @@
 import Foundation
 import CoreLocation
 import Combine
+import HealthKit
 import OSLog
 import FirebaseFirestore
 
@@ -37,7 +38,9 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
     var isTracking = false
 
     // MARK: - Private
-    private let locationManager = LocationManager.shared
+    private let locationManager: SessionLocationManaging
+    private let healthKit: HealthKitServing
+    private let userIdProvider: () -> String?
     private var lastLocation: CLLocation?
     private var startDate: Date?
     private var timer: Timer?
@@ -50,11 +53,22 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
     private let splitEveryMeters: Double = 1000
     private let checkpointIntervalSeconds: Double = 30
     let isCreator: Bool
+    private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorSkiing")
 
-    init(isCreator: Bool) {
+    init(
+        isCreator: Bool,
+        numSessions: Int,
+        locationManager: SessionLocationManaging = LocationManager.shared,
+        healthKit: HealthKitServing = HealthKitService.shared,
+        userIdProvider: @escaping () -> String? = { ProfileManager.shared.getLocalProfile()?.id }
+    ) {
         self.isCreator = isCreator
-        locationManager.$lastLocation
+        self.numSessions = numSessions
+        self.locationManager = locationManager
+        self.healthKit = healthKit
+        self.userIdProvider = userIdProvider
+        locationManager.lastLocationPublisher
             .compactMap { $0 }
             .sink { [weak self] location in
                 self?.handleNewLocation(location)
@@ -65,6 +79,7 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
     // MARK: - Control
 
     func startSession(eventId: String) {
+        Task { await healthKit.requestAuthorization() }
         currentEventId = eventId
 
         if restoreCheckpoint(eventId: eventId) {
@@ -104,7 +119,9 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
         checkpointTimer = nil
         isTracking = false
 
-        let userId = ProfileManager.shared.getLocalProfile()!.id
+        guard let userId = userIdProvider() else {
+            throw MetricsError.profileNotAvailable
+        }
 
         if isCreator {
             try await creatorEndsSession(eventId: event.id, userId: userId)
@@ -136,7 +153,11 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
             trackPoints: trackedLocations.toTrackPoints()
         )
 
-        guard let data = try? JSONEncoder().encode(snapshot) else {
+        let encoder = JSONEncoder()
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(
+            positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan"
+        )
+        guard let data = try? encoder.encode(snapshot) else {
             logger.error("Failed to encode SkiingSessionSnapshot")
             return
         }
@@ -146,8 +167,12 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
     }
 
     func restoreCheckpoint(eventId: String) -> Bool {
+        let decoder = JSONDecoder()
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(
+            positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan"
+        )
         guard let data = UserDefaults.standard.data(forKey: checkpointKey(eventId: eventId)),
-              let snapshot = try? JSONDecoder().decode(SkiingSessionSnapshot.self, from: data)
+              let snapshot = try? decoder.decode(SkiingSessionSnapshot.self, from: data)
         else { return false }
 
         startDate = snapshot.startDate
@@ -157,7 +182,7 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
         elevationGainMeters = snapshot.elevationGainMeters
         verticalDropMeters = snapshot.verticalDropMeters
         numberOfRuns = snapshot.numberOfRuns
-        isDescending = snapshot.isDescending  // restore descent state so run count continues correctly
+        isDescending = snapshot.isDescending
         elapsedSeconds = snapshot.elapsedSeconds
         maxSpeedKmH = snapshot.maxSpeedKmH
         splits = snapshot.splits
@@ -194,35 +219,43 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
             verticalDrop: verticalDropMeters,
             elevationGain: elevationGainMeters,
             numberOfRuns: numberOfRuns,
-            splits: splits
+            splits: splits,
+            numSession: numSessions
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
+        try? await healthKit.saveGPSWorkout(
+            activityType: .downhillSkiing,
+            start: startDateTime,
+            end: endDateTime,
+            distanceMeters: totalDistanceMeters,
+            locations: trackedLocations.map { $0.1 }
+        )
+
+        let sessionEntry: [String: Any] = [
+            "startDateTime": startDate as Any,
+            "endDateTime": endDateTime
+        ]
 
         let db = Firestore.firestore()
         try await db.collection("Events").document(eventId).updateData([
             "finalStartDateTime": startDate as Any,
             "finalEndDateTime": endDateTime,
             "status": UsersEventStatus.completed.rawValue,
-            "avgSpeedKmH": averageSpeedKmH,
-            "maxSpeedKmH": maxSpeedKmH == -.infinity ? 0.0 : maxSpeedKmH,
-            "avgVerticalDrop": verticalDropMeters,
-            "avgNumberOfRuns": numberOfRuns,
-            "participantCount": FieldValue.increment(Int64(1))
+            "numSessions": FieldValue.increment(Int64(1)),
+            "sessionHistory": FieldValue.arrayUnion([sessionEntry])
         ])
     }
 
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
-        let db = Firestore.firestore()
-        let eventRef = db.collection("Events").document(eventId)
-
         guard let finalEndDateTime = try await MetricsCollectorUtils.readFinalEndDateTime(eventId: eventId) else {
             logger.info("Skiing participant ended before creator — storing data only")
+            let endNow = Date()
             let metrics = MetricsCollectedSkiing(
                 startDateTime: startDateTime,
-                endDateTime: Date(),
+                endDateTime: endNow,
                 metricsCreatorType: .normalParticipant,
                 track: trackedLocations.toTrackPoints(),
                 totalDistance: totalDistanceMeters,
@@ -230,9 +263,17 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
                 elevationGain: elevationGainMeters,
                 numberOfRuns: numberOfRuns,
                 splits: splits,
-                endedBeforeCreator: true
+                endedBeforeCreator: true,
+                numSession: numSessions
             )
             try await metrics.upload(eventId: eventId, userId: userId)
+            try? await healthKit.saveGPSWorkout(
+                activityType: .downhillSkiing,
+                start: startDateTime,
+                end: endNow,
+                distanceMeters: totalDistanceMeters,
+                locations: trackedLocations.map { $0.1 }
+            )
             return
         }
 
@@ -243,11 +284,6 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
         let trimmedVerticalDrop = MetricsCollectorUtils.computeVerticalDrop(from: trimmedLocations)
         let trimmedElevationGain = MetricsCollectorUtils.computeElevationGain(from: trimmedLocations)
         let trimmedRuns = MetricsCollectorUtils.computeNumberOfRuns(from: trimmedLocations)
-        let trimmedElapsed = MetricsCollectorUtils.trimmedElapsed(from: trimmedTrack, fallback: elapsedSeconds)
-        let trimmedAvgSpeed = trimmedElapsed > 0
-            ? (trimmedDistance / 1000) / (trimmedElapsed / 3600)
-            : 0
-        let trimmedMaxSpeed = trimmedSplits.map(\.speedKmH).max() ?? 0
 
         let metrics = MetricsCollectedSkiing(
             startDateTime: startDateTime,
@@ -259,57 +295,18 @@ class MetricsCollectorSkiing: MetricsCollector, MetricsCollectorTimeable, Metric
             elevationGain: trimmedElevationGain,
             numberOfRuns: trimmedRuns,
             splits: trimmedSplits,
-            endedBeforeCreator: false
+            endedBeforeCreator: false,
+            numSession: numSessions
         )
         try await metrics.upload(eventId: eventId, userId: userId)
-
-        guard trimmedAvgSpeed > 0 else {
-            logger.warning("Participant avg speed is 0, skipping event metrics update")
-            return
-        }
-
-        _ = try await db.runTransaction { transaction, errorPointer in
-            let eventSnap: DocumentSnapshot
-            do {
-                eventSnap = try transaction.getDocument(eventRef)
-            } catch let fetchError as NSError {
-                errorPointer?.pointee = fetchError
-                return nil
-            }
-
-            guard let currentData = eventSnap.data(),
-                  let currentAvgSpeed = currentData["avgSpeedKmH"] as? Double,
-                  let currentMaxSpeed = currentData["maxSpeedKmH"] as? Double,
-                  let currentAvgDrop = currentData["avgVerticalDrop"] as? Double,
-                  let currentAvgRuns = currentData["avgNumberOfRuns"] as? Double,
-                  let currentCount = currentData["participantCount"] as? Int
-            else {
-                errorPointer?.pointee = NSError(
-                    domain: "MetricsCollectorSkiing",
-                    code: 1,
-                    userInfo: [NSLocalizedDescriptionKey: "Missing metrics fields on event doc"]
-                )
-                return nil
-            }
-
-            let newCount = currentCount + 1
-            let newAvgSpeed = (currentAvgSpeed * Double(currentCount) + trimmedAvgSpeed) / Double(newCount)
-            let newMaxSpeed = max(currentMaxSpeed, trimmedMaxSpeed)
-            let newAvgDrop = (currentAvgDrop * Double(currentCount) + trimmedVerticalDrop) / Double(newCount)
-            let newAvgRuns = (currentAvgRuns * Double(currentCount) + Double(trimmedRuns)) / Double(newCount)
-
-            transaction.updateData([
-                "avgSpeedKmH": newAvgSpeed,
-                "maxSpeedKmH": newMaxSpeed,
-                "avgVerticalDrop": newAvgDrop,
-                "avgNumberOfRuns": newAvgRuns,
-                "participantCount": newCount
-            ], forDocument: eventRef)
-
-            return nil
-        }
-
-        logger.info("Skiing participant metrics uploaded and event averages updated")
+        try? await healthKit.saveGPSWorkout(
+            activityType: .downhillSkiing,
+            start: startDateTime,
+            end: finalEndDateTime,
+            distanceMeters: trimmedDistance,
+            locations: trimmedTrack.map { $0.1 }
+        )
+        logger.info("Skiing participant metrics uploaded")
     }
 
     // MARK: - Location config

@@ -5,8 +5,8 @@
 //  Created by ahmed on 17/05/2026.
 //
 
-
 import Foundation
+import HealthKit
 import OSLog
 import FirebaseFirestore
 
@@ -20,21 +20,31 @@ class MetricsCollectorYoga: MetricsCollector, MetricsCollectorTimeable {
     var isTracking = false
 
     // MARK: - Private
+    private let healthKit: HealthKitServing
+    private let userIdProvider: () -> String?
     private var startDate: Date?
     private var timer: Timer?
     let isCreator: Bool
+    private let numSessions: Int
     private let logger = Logger(subsystem: "sbud", category: "MetricsCollectorYoga")
 
-    init(isCreator: Bool) {
+    init(
+        isCreator: Bool,
+        numSessions: Int,
+        healthKit: HealthKitServing = HealthKitService.shared,
+        userIdProvider: @escaping () -> String? = { ProfileManager.shared.getLocalProfile()?.id }
+    ) {
         self.isCreator = isCreator
+        self.numSessions = numSessions
+        self.healthKit = healthKit
+        self.userIdProvider = userIdProvider
     }
 
     // MARK: - Control
 
-    /// eventId unused for time-only collectors — startDate is restored
-    /// from LocalOnGoingSession in the view model, not from a checkpoint.
     func startSession(eventId: String) {
-        logger.info("Starting Tennis session")
+        Task { await healthKit.requestAuthorization() }
+        logger.info("Starting Yoga session")
         reset()
         startDate = Date()
         isTracking = true
@@ -45,9 +55,6 @@ class MetricsCollectorYoga: MetricsCollector, MetricsCollectorTimeable {
         }
     }
 
-    /// Called by the view model after reading LocalOnGoingSession.
-    /// Rewinds elapsedSeconds so the timer view shows the correct
-    /// total time including time before a crash/relaunch.
     func restoreStartDate(_ date: Date) {
         startDate = date
     }
@@ -57,7 +64,9 @@ class MetricsCollectorYoga: MetricsCollector, MetricsCollectorTimeable {
         timer = nil
         isTracking = false
 
-        let userId = ProfileManager.shared.getLocalProfile()!.id
+        guard let userId = userIdProvider() else {
+            throw MetricsError.profileNotAvailable
+        }
 
         if isCreator {
             try await creatorEndsSession(eventId: event.id, userId: userId)
@@ -71,53 +80,74 @@ class MetricsCollectorYoga: MetricsCollector, MetricsCollectorTimeable {
     private func creatorEndsSession(eventId: String, userId: String) async throws {
         let endDateTime = Date()
 
-        let metrics = MetricsCollectedGym(
+        let metrics = MetricsCollectedYoga(
             startDateTime: startDateTime,
             endDateTime: endDateTime,
-            metricsCreatorType: .creator
+            metricsCreatorType: .creator,
+            numSession: numSessions
         )
 
         try await metrics.upload(eventId: eventId, userId: userId)
+        try? await healthKit.saveTimeBasedWorkout(
+            activityType: .yoga,
+            start: startDateTime,
+            end: endDateTime
+        )
+
+        let sessionEntry: [String: Any] = [
+            "startDateTime": startDate as Any,
+            "endDateTime": endDateTime
+        ]
 
         let db = Firestore.firestore()
         try await db.collection("Events").document(eventId).updateData([
             "finalStartDateTime": startDate as Any,
             "finalEndDateTime": endDateTime,
-            "status": UsersEventStatus.completed.rawValue
+            "status": UsersEventStatus.completed.rawValue,
+            "numSessions": FieldValue.increment(Int64(1)),
+            "sessionHistory": FieldValue.arrayUnion([sessionEntry])
         ])
     }
 
     // MARK: - Participant end
 
     private func participantEndsSession(eventId: String, userId: String) async throws {
-        guard let data = try await db.collection("Events").document(eventId)
-            .getDocument().data() else { throw MetricsError.eventNotFound }
-
         guard let finalEndDateTime = try await MetricsCollectorUtils
             .readFinalEndDateTime(eventId: eventId) else {
             logger.info("Yoga participant ended before creator — storing data only")
-            try await MetricsCollectedGym(
+            let endNow = Date()
+            try await MetricsCollectedYoga(
                 startDateTime: startDateTime,
-                endDateTime: Date(),
+                endDateTime: endNow,
                 metricsCreatorType: .normalParticipant,
-                endedBeforeCreator: true
+                endedBeforeCreator: true,
+                numSession: numSessions
             ).upload(eventId: eventId, userId: userId)
+            try? await healthKit.saveTimeBasedWorkout(
+                activityType: .yoga,
+                start: startDateTime,
+                end: endNow
+            )
             return
         }
 
-        try await MetricsCollectedGym(
+        try await MetricsCollectedYoga(
             startDateTime: startDateTime,
             endDateTime: finalEndDateTime,
             metricsCreatorType: .normalParticipant,
-            endedBeforeCreator: false
+            endedBeforeCreator: false,
+            numSession: numSessions
         ).upload(eventId: eventId, userId: userId)
+        try? await healthKit.saveTimeBasedWorkout(
+            activityType: .yoga,
+            start: startDateTime,
+            end: finalEndDateTime
+        )
 
         logger.info("Yoga participant metrics uploaded")
     }
 
     // MARK: - Helpers
-
-    private var db: Firestore { Firestore.firestore() }
 
     private func reset() {
         elapsedSeconds = 0

@@ -67,11 +67,9 @@ class AuthenticationManagerEmailAndPassword: IAuthenticationManager {
     
     func reloadUser() async throws {
         guard let user = Auth.auth().currentUser else { return }
-        
-        
         try await user.reload()
-        
-        self.updateUserState(user: currentUser, methodUsed: .email)
+        // Bug fix: use Auth.auth().currentUser after reload — self.currentUser is stale at this point
+        self.updateUserState(user: Auth.auth().currentUser, methodUsed: .email)
     }
 
     func checkAuthStatus() -> Bool {

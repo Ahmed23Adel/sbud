@@ -27,32 +27,35 @@ enum RunningType: String, Codable, CaseIterable {
 @Observable
 class ExtraArgsHolderRunning: ExtraArgsHolderForSport, Decodable {
     let activityType = ActivityType.running.rawValue
-    var proposedDistance     = 6.0
-    var proposedPace         = 8.30
-    var proposedRunningType  = RunningType.road
+    var proposedDistance        = 6.0
+    var proposedPace            = 8.30
+    var proposedDurationInMin   = 60.0
+    var proposedRunningType     = RunningType.road
 
     enum CodingKeys: String, CodingKey {
-        case activityType, proposedDistance, proposedPace, proposedRunningType
+        case activityType, proposedDistance, proposedPace, proposedDurationInMin, proposedRunningType
     }
 
     init() {}
 
     required init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        proposedDistance    = try c.decodeIfPresent(Double.self,      forKey: .proposedDistance)    ?? 6.0
-        proposedPace        = try c.decodeIfPresent(Double.self,      forKey: .proposedPace)        ?? 8.30
-        proposedRunningType = try c.decodeIfPresent(RunningType.self, forKey: .proposedRunningType) ?? .road
+        proposedDistance      = try c.decodeIfPresent(Double.self,      forKey: .proposedDistance)      ?? 6.0
+        proposedPace          = try c.decodeIfPresent(Double.self,      forKey: .proposedPace)          ?? 8.30
+        proposedDurationInMin = try c.decodeIfPresent(Double.self,      forKey: .proposedDurationInMin) ?? 60.0
+        proposedRunningType   = try c.decodeIfPresent(RunningType.self, forKey: .proposedRunningType)   ?? .road
     }
 
     nonisolated func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(activityType, forKey: .activityType)
-        try c.encode(proposedDistance,     forKey: .proposedDistance)
-        try c.encode(proposedPace,         forKey: .proposedPace)
-        try c.encode(proposedRunningType,  forKey: .proposedRunningType)
+        try c.encode(activityType,        forKey: .activityType)
+        try c.encode(proposedDistance,      forKey: .proposedDistance)
+        try c.encode(proposedPace,          forKey: .proposedPace)
+        try c.encode(proposedDurationInMin, forKey: .proposedDurationInMin)
+        try c.encode(proposedRunningType,   forKey: .proposedRunningType)
     }
 
-    func areFieldsValid() -> Bool { proposedDistance > 0 && proposedPace > 0 }
+    func areFieldsValid() -> Bool { proposedDistance > 0 && proposedPace > 0 && proposedDurationInMin > 0 }
 }
 
 // MARK: - Cycling
@@ -66,90 +69,106 @@ enum CyclingType: String, Codable, CaseIterable {
 
 @Observable
 class ExtraArgsHolderCycling: ExtraArgsHolderForSport, Decodable {
-    let activityType  = ActivityType.cycling.rawValue
+    let activityType          = ActivityType.cycling.rawValue
+    var proposedDistanceInKm  = 30.0
+    var proposedSpeedInKmH    = 25.0
+    var proposedDurationInMin = 60.0
     var proposedCyclingType   = CyclingType.street
-    var proposedPowerInWatt   = 200.0
-    var proposedCadenceInRPM  = 80.0
 
     enum CodingKeys: String, CodingKey {
-        case activityType, proposedCyclingType, proposedPowerInWatt, proposedCadenceInRPM
+        case activityType, proposedDistanceInKm, proposedSpeedInKmH, proposedDurationInMin, proposedCyclingType
     }
 
     init() {}
 
     required init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        proposedCyclingType  = try c.decodeIfPresent(CyclingType.self, forKey: .proposedCyclingType)  ?? .street
-        proposedPowerInWatt  = try c.decodeIfPresent(Double.self,      forKey: .proposedPowerInWatt)  ?? 200.0
-        proposedCadenceInRPM = try c.decodeIfPresent(Double.self,      forKey: .proposedCadenceInRPM) ?? 80.0
+        proposedDistanceInKm  = try c.decodeIfPresent(Double.self,      forKey: .proposedDistanceInKm)  ?? 30.0
+        proposedSpeedInKmH    = try c.decodeIfPresent(Double.self,      forKey: .proposedSpeedInKmH)    ?? 25.0
+        proposedDurationInMin = try c.decodeIfPresent(Double.self,      forKey: .proposedDurationInMin) ?? 60.0
+        proposedCyclingType   = try c.decodeIfPresent(CyclingType.self, forKey: .proposedCyclingType)   ?? .street
     }
 
     nonisolated func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(activityType, forKey: .activityType)
-        try c.encode(proposedCyclingType,  forKey: .proposedCyclingType)
-        try c.encode(proposedPowerInWatt,  forKey: .proposedPowerInWatt)
-        try c.encode(proposedCadenceInRPM, forKey: .proposedCadenceInRPM)
+        try c.encode(activityType,          forKey: .activityType)
+        try c.encode(proposedDistanceInKm,  forKey: .proposedDistanceInKm)
+        try c.encode(proposedSpeedInKmH,    forKey: .proposedSpeedInKmH)
+        try c.encode(proposedDurationInMin, forKey: .proposedDurationInMin)
+        try c.encode(proposedCyclingType,   forKey: .proposedCyclingType)
     }
 
-    func areFieldsValid() -> Bool { proposedPowerInWatt > 0 && proposedCadenceInRPM > 0 }
+    func areFieldsValid() -> Bool {
+        proposedDistanceInKm > 0 && proposedSpeedInKmH > 0 && proposedDurationInMin > 0
+    }
 }
 
 // MARK: - Gym
 
 @Observable
 class ExtraArgsHolderGym: ExtraArgsHolderForSport, Decodable {
-    let activityType = ActivityType.gym.rawValue
-    var proposedDayType      = GymDayType.push
+    let activityType          = ActivityType.gym.rawValue
+    var proposedDayType       = GymDayType.push
+    var proposedDurationInMin = 60.0
 
     enum CodingKeys: String, CodingKey {
-        case activityType, proposedDayType
+        case activityType, proposedDayType, proposedDurationInMin
     }
 
     init() {}
 
     required init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        proposedDayType = try c.decodeIfPresent(GymDayType.self, forKey: .proposedDayType) ?? .push
+        proposedDayType       = try c.decodeIfPresent(GymDayType.self, forKey: .proposedDayType)       ?? .push
+        proposedDurationInMin = try c.decodeIfPresent(Double.self,     forKey: .proposedDurationInMin) ?? 60.0
     }
 
     nonisolated func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(activityType, forKey: .activityType)
-        try c.encode(proposedDayType,      forKey: .proposedDayType)
+        try c.encode(activityType,          forKey: .activityType)
+        try c.encode(proposedDayType,       forKey: .proposedDayType)
+        try c.encode(proposedDurationInMin, forKey: .proposedDurationInMin)
     }
 
-    func areFieldsValid() -> Bool { true }
+    func areFieldsValid() -> Bool { proposedDurationInMin > 0 }
 }
 
 // MARK: - Skiing
-
 @Observable
 class ExtraArgsHolderSkiing: ExtraArgsHolderForSport, Decodable {
-    let activityType     = ActivityType.skiing.rawValue
-    var proposedSpeedInKmH       = 40.0
-    var proposedVerticalDropInM  = 500.0
+    let activityType                = ActivityType.skiing.rawValue
+    var proposedAvgSpeedInKmH       = 40.0
+    var proposedAvgVerticalDropInM  = 500.0
+    var proposedNumberOfRuns        = 5          // Int
+    var proposedDurationInMin       = 180.0
 
     enum CodingKeys: String, CodingKey {
-        case activityType, proposedSpeedInKmH, proposedVerticalDropInM
+        case activityType, proposedAvgSpeedInKmH, proposedAvgVerticalDropInM, proposedNumberOfRuns, proposedDurationInMin
     }
 
     init() {}
 
     required init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        proposedSpeedInKmH      = try c.decodeIfPresent(Double.self, forKey: .proposedSpeedInKmH)      ?? 40.0
-        proposedVerticalDropInM = try c.decodeIfPresent(Double.self, forKey: .proposedVerticalDropInM) ?? 500.0
+        proposedAvgSpeedInKmH      = try c.decodeIfPresent(Double.self, forKey: .proposedAvgSpeedInKmH)      ?? 40.0
+        proposedAvgVerticalDropInM = try c.decodeIfPresent(Double.self, forKey: .proposedAvgVerticalDropInM) ?? 500.0
+        proposedNumberOfRuns       = try c.decodeIfPresent(Int.self,    forKey: .proposedNumberOfRuns)       ?? 5
+        proposedDurationInMin      = try c.decodeIfPresent(Double.self, forKey: .proposedDurationInMin)      ?? 180.0
     }
 
     nonisolated func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(activityType,   forKey: .activityType)
-        try c.encode(proposedSpeedInKmH,     forKey: .proposedSpeedInKmH)
-        try c.encode(proposedVerticalDropInM, forKey: .proposedVerticalDropInM)
+        try c.encode(activityType,               forKey: .activityType)
+        try c.encode(proposedAvgSpeedInKmH,      forKey: .proposedAvgSpeedInKmH)
+        try c.encode(proposedAvgVerticalDropInM, forKey: .proposedAvgVerticalDropInM)
+        try c.encode(proposedNumberOfRuns,       forKey: .proposedNumberOfRuns)
+        try c.encode(proposedDurationInMin,      forKey: .proposedDurationInMin)
     }
 
-    func areFieldsValid() -> Bool { proposedSpeedInKmH > 0 && proposedVerticalDropInM > 0 }
+    func areFieldsValid() -> Bool {
+        proposedAvgSpeedInKmH > 0 && proposedAvgVerticalDropInM > 0 &&
+        proposedNumberOfRuns >= 1 && proposedDurationInMin > 0
+    }
 }
 
 // MARK: - Swimming
@@ -164,45 +183,54 @@ enum SwimmingStroke: String, Codable, CaseIterable {
 
 @Observable
 class ExtraArgsHolderSwimming: ExtraArgsHolderForSport, Decodable {
-    let activityType = ActivityType.swimming.rawValue
-    var proposedDistanceInM  = 1000.0
-    var proposedPacePer100M  = 2.0
-    var proposedStroke       = SwimmingStroke.freestyle
+    let activityType          = ActivityType.swimming.rawValue
+    var proposedDistanceInM   = 1000.0
+    var proposedPacePer100M   = 2.0
+    var proposedDurationInMin = 45.0
+    var proposedStroke        = SwimmingStroke.freestyle
 
     enum CodingKeys: String, CodingKey {
-        case activityType, proposedDistanceInM, proposedPacePer100M, proposedStroke
+        case activityType, proposedDistanceInM, proposedPacePer100M, proposedDurationInMin, proposedStroke
     }
 
     init() {}
 
     required init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        proposedDistanceInM = try c.decodeIfPresent(Double.self,         forKey: .proposedDistanceInM) ?? 1000.0
-        proposedPacePer100M = try c.decodeIfPresent(Double.self,         forKey: .proposedPacePer100M) ?? 2.0
-        proposedStroke      = try c.decodeIfPresent(SwimmingStroke.self, forKey: .proposedStroke)      ?? .freestyle
+        proposedDistanceInM   = try c.decodeIfPresent(Double.self,         forKey: .proposedDistanceInM)   ?? 1000.0
+        proposedPacePer100M   = try c.decodeIfPresent(Double.self,         forKey: .proposedPacePer100M)   ?? 2.0
+        proposedDurationInMin = try c.decodeIfPresent(Double.self,         forKey: .proposedDurationInMin) ?? 45.0
+        proposedStroke        = try c.decodeIfPresent(SwimmingStroke.self, forKey: .proposedStroke)        ?? .freestyle
     }
 
     nonisolated func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(activityType, forKey: .activityType)
-        try c.encode(proposedDistanceInM,  forKey: .proposedDistanceInM)
-        try c.encode(proposedPacePer100M,  forKey: .proposedPacePer100M)
-        try c.encode(proposedStroke,       forKey: .proposedStroke)
+        try c.encode(activityType,          forKey: .activityType)
+        try c.encode(proposedDistanceInM,   forKey: .proposedDistanceInM)
+        try c.encode(proposedPacePer100M,   forKey: .proposedPacePer100M)
+        try c.encode(proposedDurationInMin, forKey: .proposedDurationInMin)
+        try c.encode(proposedStroke,        forKey: .proposedStroke)
     }
 
-    func areFieldsValid() -> Bool { proposedDistanceInM > 0 && proposedPacePer100M > 0 }
+    func areFieldsValid() -> Bool {
+        proposedDistanceInM > 0 && proposedPacePer100M > 0 && proposedDurationInMin > 0
+    }
 }
 
 // MARK: - Hiking
 
 @Observable
 class ExtraArgsHolderHiking: ExtraArgsHolderForSport, Decodable {
-    let activityType     = ActivityType.hiking.rawValue
-    var proposedDistanceInKm     = 10.0
-    var proposedElevationGainInM = 400.0
+    let activityType                = ActivityType.hiking.rawValue
+    var proposedDistanceInKm        = 10.0
+    var proposedElevationGainInM    = 400.0
+    var proposedElevationLossInM    = 400.0
+    var proposedMaxAltitudeInM      = 1500.0
+    var proposedDurationInMin       = 180.0
 
     enum CodingKeys: String, CodingKey {
-        case activityType, proposedDistanceInKm, proposedElevationGainInM
+        case activityType, proposedDistanceInKm, proposedElevationGainInM,
+             proposedElevationLossInM, proposedMaxAltitudeInM, proposedDurationInMin
     }
 
     init() {}
@@ -211,16 +239,25 @@ class ExtraArgsHolderHiking: ExtraArgsHolderForSport, Decodable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         proposedDistanceInKm     = try c.decodeIfPresent(Double.self, forKey: .proposedDistanceInKm)     ?? 10.0
         proposedElevationGainInM = try c.decodeIfPresent(Double.self, forKey: .proposedElevationGainInM) ?? 400.0
+        proposedElevationLossInM = try c.decodeIfPresent(Double.self, forKey: .proposedElevationLossInM) ?? 400.0
+        proposedMaxAltitudeInM   = try c.decodeIfPresent(Double.self, forKey: .proposedMaxAltitudeInM)   ?? 1500.0
+        proposedDurationInMin    = try c.decodeIfPresent(Double.self, forKey: .proposedDurationInMin)    ?? 180.0
     }
 
     nonisolated func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(activityType,   forKey: .activityType)
-        try c.encode(proposedDistanceInKm,   forKey: .proposedDistanceInKm)
-        try c.encode(proposedElevationGainInM, forKey: .proposedElevationGainInM)
+        try c.encode(activityType,               forKey: .activityType)
+        try c.encode(proposedDistanceInKm,        forKey: .proposedDistanceInKm)
+        try c.encode(proposedElevationGainInM,    forKey: .proposedElevationGainInM)
+        try c.encode(proposedElevationLossInM,    forKey: .proposedElevationLossInM)
+        try c.encode(proposedMaxAltitudeInM,      forKey: .proposedMaxAltitudeInM)
+        try c.encode(proposedDurationInMin,       forKey: .proposedDurationInMin)
     }
 
-    func areFieldsValid() -> Bool { proposedDistanceInKm > 0 && proposedElevationGainInM >= 0 }
+    func areFieldsValid() -> Bool {
+        proposedDistanceInKm > 0 && proposedElevationGainInM >= 0 &&
+        proposedElevationLossInM >= 0 && proposedMaxAltitudeInM >= 0 && proposedDurationInMin > 0
+    }
 }
 
 // MARK: - Yoga
@@ -236,7 +273,7 @@ enum YogaStyle: String, Codable, CaseIterable {
 
 @Observable
 class ExtraArgsHolderYoga: ExtraArgsHolderForSport, Decodable {
-    let activityType   = ActivityType.yoga.rawValue
+    let activityType           = ActivityType.yoga.rawValue
     var proposedDurationInMin  = 60.0
     var proposedIntensityLevel = 5.0
     var proposedStyle          = YogaStyle.vinyasa
@@ -256,7 +293,7 @@ class ExtraArgsHolderYoga: ExtraArgsHolderForSport, Decodable {
 
     nonisolated func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(activityType,  forKey: .activityType)
+        try c.encode(activityType,          forKey: .activityType)
         try c.encode(proposedDurationInMin,  forKey: .proposedDurationInMin)
         try c.encode(proposedIntensityLevel, forKey: .proposedIntensityLevel)
         try c.encode(proposedStyle,          forKey: .proposedStyle)
@@ -276,7 +313,7 @@ enum TennisFormat: String, Codable, CaseIterable {
 
 @Observable
 class ExtraArgsHolderTennis: ExtraArgsHolderForSport, Decodable {
-    let activityType  = ActivityType.tennis.rawValue
+    let activityType          = ActivityType.tennis.rawValue
     var proposedSets          = 3.0
     var proposedDurationInMin = 90.0
     var proposedFormat        = TennisFormat.singles
@@ -296,7 +333,7 @@ class ExtraArgsHolderTennis: ExtraArgsHolderForSport, Decodable {
 
     nonisolated func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(activityType, forKey: .activityType)
+        try c.encode(activityType,          forKey: .activityType)
         try c.encode(proposedSets,          forKey: .proposedSets)
         try c.encode(proposedDurationInMin, forKey: .proposedDurationInMin)
         try c.encode(proposedFormat,        forKey: .proposedFormat)
@@ -306,6 +343,7 @@ class ExtraArgsHolderTennis: ExtraArgsHolderForSport, Decodable {
 }
 
 // MARK: - ExtraArgsHolder
+
 @Observable
 class ExtraArgsHolder: Decodable {
     var selectedActivity: ActivityType = .running {

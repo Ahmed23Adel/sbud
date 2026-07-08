@@ -23,7 +23,7 @@ struct JoinedEvent: Codable, Identifiable {
     var userFirstName: String = ""
     var userLastName: String = ""
     var userProfileImageUrl: String = ""
-    var joinedAt: Date = .now
+    var joinedAt: Date? = .now
 
     enum CodingKeys: String, CodingKey {
         case activityType
@@ -47,5 +47,13 @@ struct JoinedEvent: Codable, Identifiable {
             eventImage: eventImage,
             status: status,
             eventId: eventId)
+    }
+
+    var asUserProfile: UserProfile {
+        var profile = UserProfile(id: userId)
+        profile.name = userFirstName
+        profile.surName = userLastName
+        profile.profileImageUrl = userProfileImageUrl.isEmpty ? nil : userProfileImageUrl
+        return profile
     }
 }

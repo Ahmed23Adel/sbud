@@ -9,52 +9,53 @@ import Foundation
 import OSLog
 
 @Observable
-class NewEventBuilder{
-    // MARK: Step1
-    // TODO: To be replaced with user profile image
-    var coverImgURL: String = (ProfileManager.shared.getLocalProfile()?.profileImageUrl!) ?? ""
+class NewEventBuilder {
+    // MARK: Step 1
+    var coverImgURL: String = ProfileManager.shared.getLocalProfile()?.profileImageUrl ?? ""
     var title: String = ""
     var activityType: ActivityType = .running
     var description: String = ""
     var activityExtraArgs = ExtraArgsHolder()
-    // MARK: Step2
+    // MARK: Step 2
     var dateLocationsHolder = MultipleDateLocationsHolder()
     var isEventPublic = true
     var joiningCondition: JoinCondition = .requestFromHost
     var eventCapacity = 150
     let logger = Logger(subsystem: "sBud", category: "NewEventBuilder")
-    
+
+    // MARK: - Validation
+
     func areFieldsValid() -> Bool {
-        if coverImgURL.count != 0 &&
-            title.count != 0 &&
-            description.count != 0 &&
-            activityExtraArgs.areFieldsValid() &&
-            dateLocationsHolder.areFieldsValid() &&
-            eventCapacity > 0 {
-            return true
-        }
-        return false
+        !coverImgURL.isEmpty &&
+        !title.isEmpty &&
+        !description.isEmpty &&
+        activityExtraArgs.areFieldsValid() &&
+        dateLocationsHolder.areFieldsValid() &&
+        eventCapacity > 0
     }
-    
-    func generateErrorMsg(){
-        var errorMsg = ""
-        if title.count <= 0{
-            errorMsg = "Event must have a title"
-        }else if description.count <= 0 {
-            errorMsg = "Please enter a valid description"
-        } else if !activityExtraArgs.areFieldsValid() {
-            errorMsg = "Performance targets are not valid"
-        } else if !dateLocationsHolder.areFieldsValid(){
-            errorMsg = "Non valid Date&Locations"
-        } else if eventCapacity <= 0 {
-            errorMsg = "Please enter a valid capacity"
-        }
-        PopUpGenerator.shared.show(msg: errorMsg, type: .error)
-        
+
+    /// Returns the first validation failure message, or nil when all fields are valid.
+    /// Use this instead of intercepting PopUpGenerator in tests.
+    var validationErrorMessage: String? {
+        if coverImgURL.isEmpty    { return "Event image is required" }
+        if title.isEmpty          { return "Event must have a title" }
+        if description.isEmpty    { return "Please enter a valid description" }
+        if !activityExtraArgs.areFieldsValid() { return "Performance targets are not valid" }
+        if !dateLocationsHolder.areFieldsValid() { return "Non valid Date&Locations" }
+        if eventCapacity <= 0     { return "Please enter a valid capacity" }
+        return nil
     }
-    
-    func sendRequest() async  -> Bool{
-        let request = CreateNewEventRequest(
+
+    func generateErrorMsg() {
+        PopUpGenerator.shared.show(
+            msg: validationErrorMessage ?? "",
+            type: .error
+        )
+    }
+
+    /// Builds the network request from current state. Pure — no side effects.
+    func buildRequest() -> CreateNewEventRequest {
+        CreateNewEventRequest(
             activityDetails: activityExtraArgs.extraArgs,
             title: title,
             eventImage: coverImgURL,
@@ -62,10 +63,15 @@ class NewEventBuilder{
             joiningCondition: joiningCondition,
             maxAllowedToJoin: eventCapacity,
             notes: description,
-            dateLocations: dateLocationsHolder.lst)
+            dateLocations: dateLocationsHolder.lst
+        )
+    }
+
+    // sendRequest is kept for backward compatibility but now delegates to buildRequest.
+    func sendRequest() async -> Bool {
         let requester = CreateNewEventRequester()
         do {
-            let _ = try await requester.createNewEvent(requestParams: request)
+            _ = try await requester.createNewEvent(requestParams: buildRequest())
             return true
         } catch {
             PopUpGenerator.shared.show(msg: "Error, please try again", type: .error)

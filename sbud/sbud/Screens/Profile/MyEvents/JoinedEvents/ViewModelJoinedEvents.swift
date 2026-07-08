@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 import OSLog
+import FirebaseAnalytics
 @Observable
 class ViewModelJoinedEvents{
     let userId = ProfileManager.shared.getLocalProfile()?.id
@@ -26,6 +27,7 @@ class ViewModelJoinedEvents{
     var alertMsg = ""
     
     init(){
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "JoinedEvents"])
         if let userId {
             Task {
                 do {
@@ -46,10 +48,8 @@ class ViewModelJoinedEvents{
             .whereField("userId", isEqualTo: userId)
             .getDocuments()
         
-        print("snapshot")
         return snapshot.documents.compactMap { doc -> UsersEvent? in
             let data = doc.data()
-            print("Data: ", data)
             guard let rawStatus = data["status"] as? String,
                   let status = UsersEventStatus(rawValue: rawStatus) else { return nil }
 

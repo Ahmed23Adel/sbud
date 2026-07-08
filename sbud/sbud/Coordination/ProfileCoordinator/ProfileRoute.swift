@@ -33,6 +33,7 @@ enum ProfileRoutePushed: Equatable, Hashable {
     case othersProfile(userId: String)
     case scannedProfile(userId: String)
     case eventConversations(eventId: String, eventTitle: String)
+    case sessionSummary(event: EventFullDetails)
 }
 // MARK: - Sheet Types
 

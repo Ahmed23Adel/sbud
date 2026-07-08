@@ -9,6 +9,7 @@ import Foundation
 import OSLog
 import SwiftData
 import FirebaseFirestore
+import FirebaseAnalytics
 
 @Observable
 class ViewModelOthersSession {
@@ -36,6 +37,11 @@ class ViewModelOthersSession {
     init(eventDetails: EventFullDetails, isSessionCreated: Bool) {
         self.eventDetails = eventDetails
         self.isSessionCreated = isSessionCreated
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+            AnalyticsParameterScreenName: "LiveSession_Participant",
+            "activity_type": eventDetails.activityType.rawValue,
+            "event_id": eventDetails.id
+        ])
         initMetricsCollector()
     }
 
@@ -50,30 +56,31 @@ class ViewModelOthersSession {
     }
 
     private func initMetricsCollector() {
+        logger.info("in initMetricsCollector: eventDetails.numSessions\(self.eventDetails.numSessions)")
         switch eventDetails.activityType {
         case .running:
-            metricsCollector = MetricsCollectorRun(isCreator: false)
+            metricsCollector = MetricsCollectorRun(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorRun).startSession(eventId: eventDetails.id)
         case .cycling:
-            metricsCollector = MetricsCollectorCycling(isCreator: false)
+            metricsCollector = MetricsCollectorCycling(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorCycling).startSession(eventId: eventDetails.id)
         case .gym:
-            metricsCollector = MetricsCollectorGym(isCreator: false)
+            metricsCollector = MetricsCollectorGym(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorGym).startSession(eventId: eventDetails.id)
         case .skiing:
-            metricsCollector = MetricsCollectorSkiing(isCreator: false)
+            metricsCollector = MetricsCollectorSkiing(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorSkiing).startSession(eventId: eventDetails.id)
         case .swimming:
-            metricsCollector = MetricsCollectorSwimming(isCreator: false)
+            metricsCollector = MetricsCollectorSwimming(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorSwimming).startSession(eventId: eventDetails.id)
         case .hiking:
-            metricsCollector = MetricsCollectorHiking(isCreator: false)
+            metricsCollector = MetricsCollectorHiking(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorHiking).startSession(eventId: eventDetails.id)
         case .yoga:
-            metricsCollector = MetricsCollectorYoga(isCreator: false)
+            metricsCollector = MetricsCollectorYoga(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorYoga).startSession(eventId: eventDetails.id)
         case .tennis:
-            metricsCollector = MetricsCollectorTennis(isCreator: false)
+            metricsCollector = MetricsCollectorTennis(isCreator: false, numSessions: eventDetails.numSessions)
             (metricsCollector as! MetricsCollectorTennis).startSession(eventId: eventDetails.id)
         }
     }
@@ -150,7 +157,6 @@ class ViewModelOthersSession {
                 logger.fault("Failed to check creator end status: \(error)")
                 await MainActor.run {
                     isLoading = false
-                    // Can't determine status — fall back to simple confirm
                     isShowSimpleConfirm = true
                 }
             }
@@ -170,8 +176,10 @@ class ViewModelOthersSession {
             do {
                 try await metricsCollector?.endSession(event: eventDetails)
                 deleteLocalSession()
-                await MainActor.run { isLoading = false }
-                mainCoordinator?.goToHome()
+                await MainActor.run {
+                    isLoading = false
+                    mainCoordinator?.goToSessionSummary(eventDetails: eventDetails)
+                }
             } catch {
                 logger.fault("Error ending participant session: \(error)")
                 await MainActor.run {

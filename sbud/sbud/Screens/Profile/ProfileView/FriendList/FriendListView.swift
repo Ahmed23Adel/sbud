@@ -9,10 +9,11 @@ import SwiftUI
 import Kingfisher
 struct FriendListView: View {
     @StateObject private var vm: FriendListVM
-    @EnvironmentObject var coordinator: ProfileCoordinator
+    let onSelectUser: (String) -> Void
 
-    init(userId: String) {
+    init(userId: String, onSelectUser: @escaping (String) -> Void) {
         _vm = StateObject(wrappedValue: FriendListVM(userId: userId))
+        self.onSelectUser = onSelectUser
     }
 
     var body: some View {
@@ -20,17 +21,6 @@ struct FriendListView: View {
             Color(red: 0.05, green: 0.05, blue: 0.05).ignoresSafeArea()
 
             VStack(spacing: 0) {
-
-                // Title at top
-                Text("FRIENDS")
-                    .font(.system(size: 14, weight: .black, design: .monospaced))
-                    .foregroundColor(.white)
-                    .kerning(1.5)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color(red: 0.05, green: 0.05, blue: 0.05))
-
-                Divider().background(Color(white: 0.12))
 
                 if vm.isLoading {
                     Spacer()
@@ -48,7 +38,7 @@ struct FriendListView: View {
                             ForEach(vm.users) { user in
                                 UserRowCell(user: user)
                                     .onTapGesture {
-                                        coordinator.goToOthersProfile(userId: user.id)
+                                        onSelectUser(user.id)
                                     }
 
                                 Divider().background(Color(white: 0.1))
@@ -58,6 +48,14 @@ struct FriendListView: View {
                 }
             }
         }
+        .navigationTitle("FRIENDS")
+        .navigationBarTitleDisplayMode(.inline)
+            .font(.system(size: 14, weight: .black, design: .monospaced))
+            .foregroundColor(.white)
+            .kerning(1.5)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(Color(red: 0.05, green: 0.05, blue: 0.05))
         .task { await vm.load() }
     }
 }
@@ -121,4 +119,6 @@ private struct UserRowCell: View {
         .contentShape(Rectangle())
     }
 }
+
+
 

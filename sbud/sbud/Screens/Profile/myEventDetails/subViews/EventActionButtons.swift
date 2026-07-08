@@ -11,18 +11,34 @@ struct EventActionButtons: View {
     let eventTitle: String
     let isDateConfirmed: Bool
     let isLocationConfirmed: Bool
-    let queueResponse: JoinQueueResponse?   
+    let role: EventUserRole?
+    let queueResponse: JoinQueueResponse?
     let onConfirmTap: () -> Void
+    let onMessagesTap: () -> Void
     let onHostsTap: () -> Void
     let onQueueTap: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            if !isDateConfirmed || !isLocationConfirmed {
-                confirmButton
+            switch role {
+            case .creator:
+
+                if !isDateConfirmed || !isLocationConfirmed {
+                    confirmButton
+                }
+                messagesButton
+                hostsButton
+                queueButton
+
+            case .acceptedHost:
+
+                messagesButton
+                queueButton
+
+            default:
+
+                EmptyView()
             }
-            hostsButton
-            queueButton
         }
     }
 
@@ -37,7 +53,21 @@ struct EventActionButtons: View {
             }
         }
         .buttonStyle(PrimaryButton())
+    }
 
+    private var messagesButton: some View {
+        Button(action: onMessagesTap) {
+            HStack(spacing: 12) {
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: "tray.fill")
+                        .font(.system(size: 20))
+                    EventUnreadBadge(eventId: eventId)
+                        .offset(x: 12, y: -10)
+                }
+                Text("View Messages")
+            }
+        }
+        .buttonStyle(PrimaryButton())
     }
 
     private var hostsButton: some View {
@@ -68,6 +98,16 @@ struct EventActionButtons: View {
                     .font(.system(size: 15, weight: .semibold))
                 Text(queueButtonLabel(pending: pendingCount, waitlist: waitlistCount))
                     .font(.system(size: 15, weight: .semibold))
+                
+                if pendingCount > 0 {
+                    Text("\(pendingCount)")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.red)
+                        .clipShape(Capsule())
+                }
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
@@ -85,4 +125,3 @@ struct EventActionButtons: View {
         return "Review Requests (\(pending) pending\(waitlistSuffix))"
     }
 }
-

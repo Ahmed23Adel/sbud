@@ -31,17 +31,15 @@ enum UsersEventStatus: String, Codable {
 }
 
 struct UsersEvent: Codable, Identifiable {
-    var id = UUID()
-    var activityType: ActivityType = .running
-    var title: String = ""
-    var eventImage: String = ""
-    var status: UsersEventStatus = .proposed
-    var eventId = ""
+    var id       = UUID()
+    var activityType: ActivityType    = .running
+    var title:        String          = ""
+    var eventImage:   String          = ""
+    var status:       UsersEventStatus = .proposed
+    var eventId:      String          = ""
+    var isPublic:     Bool            = true
 
     enum CodingKeys: String, CodingKey {
-        case activityType
-        case title
-        case eventImage
-        case status
+        case activityType, title, eventImage, status, isPublic
     }
 }

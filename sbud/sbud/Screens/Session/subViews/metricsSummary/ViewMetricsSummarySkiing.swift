@@ -174,7 +174,7 @@ struct ViewMetricsSummarySkiing: View {
             .padding(.vertical, 12)
             .background(Color.black)
 
-            ViewMetricsSummarySkiing(collector: MetricsCollectorSkiing(isCreator: true))
+            ViewMetricsSummarySkiing(collector: MetricsCollectorSkiing(isCreator: true, numSessions: 1))
                 .frame(maxHeight: .infinity)
         }
     }

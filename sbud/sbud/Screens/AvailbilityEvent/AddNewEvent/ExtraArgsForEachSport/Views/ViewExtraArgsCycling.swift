@@ -17,14 +17,19 @@ struct ViewExtraArgsCycling: View {
                 selected: $args.proposedCyclingType
             )
             GenericPerformanceTarget(
-                targetHeader: "Target Power",
-                unitHeader: "WATTS",
-                targetValue: $args.proposedPowerInWatt
+                targetHeader: "Target Distance",
+                unitHeader: "KM",
+                targetValue: $args.proposedDistanceInKm
             )
             GenericPerformanceTarget(
-                targetHeader: "Target Cadence",
-                unitHeader: "RPM",
-                targetValue: $args.proposedCadenceInRPM
+                targetHeader: "Target Speed",
+                unitHeader: "KM/H",
+                targetValue: $args.proposedSpeedInKmH
+            )
+            GenericPerformanceTarget(
+                targetHeader: "Duration",
+                unitHeader: "MIN",
+                targetValue: $args.proposedDurationInMin
             )
         }
     }

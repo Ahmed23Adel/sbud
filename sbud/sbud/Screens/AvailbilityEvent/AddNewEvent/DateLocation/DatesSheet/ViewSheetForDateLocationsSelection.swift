@@ -10,9 +10,9 @@ import _MapKit_SwiftUI
 import FirebaseFirestore
 
 struct ViewSheetForDateLocationsSelection: View {
-    @State var startDate: Date? = nil
-    @State var endDate: Date? = nil
-    @State var pickedCoordinates: [CLLocationCoordinate2D] = []
+    @State private var startDate: Date? = nil
+    @State private var endDate: Date? = nil
+    @State private var pickedCoordinates: [CLLocationCoordinate2D] = []
     var returnables: MultipleDateLocationsHolder
     @Environment(\.dismiss) var dismiss
 
@@ -24,20 +24,21 @@ struct ViewSheetForDateLocationsSelection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
 
-            // MARK: Start Date
+            // MARK: - Start Date
             if let start = startDate {
-                DatePicker("Start date time",
-                           selection: Binding(
-                               get: { start },
-                               set: { newStart in
-                                   startDate = newStart
-                                   // Reset end date if it's no longer valid
-                                   if let end = endDate, end <= newStart {
-                                       endDate = nil
-                                   }
-                               }
-                           ),
-                           displayedComponents: [.date, .hourAndMinute]
+                DatePicker(
+                    "Start date time",
+                    selection: Binding(
+                        get: { start },
+                        set: { newStart in
+                            startDate = newStart
+                            // Push end date forward if it's no longer after start
+                            if let end = endDate, end <= newStart {
+                                endDate = newStart.addingTimeInterval(3600)
+                            }
+                        }
+                    ),
+                    displayedComponents: [.date, .hourAndMinute]
                 )
                 .font(.headline)
                 .foregroundStyle(Color.mainColor)
@@ -60,18 +61,22 @@ struct ViewSheetForDateLocationsSelection: View {
                 .transition(.opacity)
             }
 
-            // MARK: End Date (only shown after start date is set)
+            // MARK: - End Date
             if let start = startDate {
                 Divider().padding(.horizontal)
 
                 if let end = endDate {
-                    DatePicker("End date time",
-                               selection: Binding(
-                                   get: { end },
-                                   set: { endDate = $0 }
-                               ),
-                               in: start.addingTimeInterval(60)...,
-                               displayedComponents: [.date, .hourAndMinute]
+                    // ✅ NO range parameter — validate in the setter instead
+                    DatePicker(
+                        "End date time",
+                        selection: Binding(
+                            get: { end },
+                            set: { newEnd in
+                                // Clamp: end must always be after start
+                                endDate = newEnd > start ? newEnd : start.addingTimeInterval(3600)
+                            }
+                        ),
+                        displayedComponents: [.date, .hourAndMinute]
                     )
                     .font(.headline)
                     .foregroundStyle(Color.mainColor)
@@ -81,6 +86,7 @@ struct ViewSheetForDateLocationsSelection: View {
                 } else {
                     Button {
                         withAnimation {
+                            // Always derived fresh from current startDate value
                             endDate = start.addingTimeInterval(3600)
                         }
                     } label: {
@@ -96,10 +102,12 @@ struct ViewSheetForDateLocationsSelection: View {
 
             Divider().padding(.horizontal)
 
+            // MARK: - Map
             MapTabView(pickedCoordinates: $pickedCoordinates)
                 .padding()
                 .clipShape(RoundedRectangle(cornerRadius: 21))
 
+            // MARK: - Submit
             Button("Submit") {
                 guard
                     let start = startDate,
@@ -110,7 +118,9 @@ struct ViewSheetForDateLocationsSelection: View {
                 let oneReturnables = DateLocations(
                     startDateTime: start,
                     endDateTime: end,
-                    locations: pickedCoordinates.map { GeoPoint(latitude: $0.latitude, longitude: $0.longitude) }
+                    locations: pickedCoordinates.map {
+                        GeoPoint(latitude: $0.latitude, longitude: $0.longitude)
+                    }
                 )
                 returnables.append(oneReturnables)
                 dismiss()

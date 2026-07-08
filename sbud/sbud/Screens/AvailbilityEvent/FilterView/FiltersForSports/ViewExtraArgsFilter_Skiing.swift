@@ -13,16 +13,28 @@ struct ViewExtraArgsFilterSkiing: View {
     var body: some View {
         VStack(spacing: 0) {
             GenericRangeTarget(
-                header: "Speed",
+                header: "Avg Speed",
                 unitHeader: "KM/H",
-                minValue: $filter.minSpeed,
-                maxValue: $filter.maxSpeed
+                minValue: $filter.minAvgSpeedInKmH,
+                maxValue: $filter.maxAvgSpeedInKmH
             )
             GenericRangeTarget(
-                header: "Vertical Drop",
+                header: "Avg Vertical Drop",
                 unitHeader: "M",
-                minValue: $filter.minDrop,
-                maxValue: $filter.maxDrop
+                minValue: $filter.minAvgVerticalDropInM,
+                maxValue: $filter.maxAvgVerticalDropInM
+            )
+            GenericRangeTargetInt(
+                header: "Number of Runs",
+                unitHeader: "RUNS",
+                minValue: $filter.minNumberOfRuns,
+                maxValue: $filter.maxNumberOfRuns
+            )
+            GenericRangeTarget(
+                header: "Duration",
+                unitHeader: "MIN",
+                minValue: $filter.minDurationInMin,
+                maxValue: $filter.maxDurationInMin
             )
         }
     }

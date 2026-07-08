@@ -4,9 +4,10 @@
 //
 //  Created by Erdal on 28.04.2026.
 //
+
 import Foundation
-import FirebaseAuth
 import Combine
+import FirebaseAnalytics
 
 @MainActor
 final class SettingsVM: ObservableObject {
@@ -14,10 +15,19 @@ final class SettingsVM: ObservableObject {
     @Published var showEmail: Bool = false
     @Published var showPhone: Bool = false
     @Published var showAddress: Bool = false
-
     @Published var isSaving = false
 
-    private let profileManager = ProfileManager.shared
+    private let profileManager: IProfileServiceManager
+    private let currentUserProvider: CurrentUserProviding
+
+    init(
+        profileManager: IProfileServiceManager = ProfileManager.shared,
+        currentUserProvider: CurrentUserProviding = FirebaseCurrentUserProvider()
+    ) {
+        self.profileManager = profileManager
+        self.currentUserProvider = currentUserProvider
+        Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "Settings"])
+    }
 
     func loadFromLocal() {
         guard let local = profileManager.getLocalProfile() else { return }
@@ -28,23 +38,18 @@ final class SettingsVM: ObservableObject {
     }
 
     func savePrivacySettings() async {
-        guard let uid = Auth.auth().currentUser?.uid,
+        guard let uid = currentUserProvider.currentUserId,
               var local = profileManager.getLocalProfile() else { return }
-
         isSaving = true
         defer { isSaving = false }
-
-
-        local.isPrivate   = isPrivate
-        local.showEmail   = showEmail
-        local.showPhone   = showPhone
-
+        local.isPrivate = isPrivate
+        local.showEmail = showEmail
+        local.showPhone = showPhone
         let fields: [String: Any] = [
-            "isPrivate":   isPrivate,
-            "showEmail":   showEmail,
-            "showPhone":   showPhone
+            "isPrivate": isPrivate,
+            "showEmail": showEmail,
+            "showPhone": showPhone
         ]
-
         do {
             try await profileManager.updateProfileStep(uid: uid, fields: fields, localProfile: local)
         } catch {

@@ -13,14 +13,24 @@ struct ViewExtraArgsSkiing: View {
     var body: some View {
         VStack(spacing: 16) {
             GenericPerformanceTarget(
-                targetHeader: "Target Speed",
+                targetHeader: "Avg Speed",
                 unitHeader: "KM/H",
-                targetValue: $args.proposedSpeedInKmH
+                targetValue: $args.proposedAvgSpeedInKmH
             )
             GenericPerformanceTarget(
-                targetHeader: "Vertical Drop",
+                targetHeader: "Avg Vertical Drop",
                 unitHeader: "M",
-                targetValue: $args.proposedVerticalDropInM
+                targetValue: $args.proposedAvgVerticalDropInM
+            )
+            GenericPerformanceTargetInt(
+                targetHeader: "Number of Runs",
+                unitHeader: "RUNS",
+                targetValue: $args.proposedNumberOfRuns
+            )
+            GenericPerformanceTarget(
+                targetHeader: "Duration",
+                unitHeader: "MIN",
+                targetValue: $args.proposedDurationInMin
             )
         }
     }

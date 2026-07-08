@@ -75,12 +75,14 @@ struct TeamCapacitySelector: View {
         .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
         .padding()
         .toolbar{
-            ToolbarItemGroup(placement: .keyboard){
+            ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("✓"){
+                Button {
                     isKeyboardFocused = false
+                } label: {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                        .foregroundStyle(Color.mainColor)
                 }
-                .buttonStyle(.borderless)
             }
         }
     }

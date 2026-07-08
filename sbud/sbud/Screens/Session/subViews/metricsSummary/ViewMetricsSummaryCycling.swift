@@ -177,7 +177,7 @@ struct ViewMetricsSummaryCycling: View {
             .padding(.vertical, 12)
             .background(Color.black)
 
-            ViewMetricsSummaryCycling(collector: MetricsCollectorCycling(isCreator: true))
+            ViewMetricsSummaryCycling(collector: MetricsCollectorCycling(isCreator: true, numSessions: 0))
                 .frame(maxHeight: .infinity)
         }
     }

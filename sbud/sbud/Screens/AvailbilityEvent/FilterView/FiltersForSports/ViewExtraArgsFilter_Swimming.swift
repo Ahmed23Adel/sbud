@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-
 struct ViewExtraArgsFilterSwimming: View {
     @ObservedObject var filter: ExtraArgsFilterHolderSwimming
 
@@ -19,14 +18,20 @@ struct ViewExtraArgsFilterSwimming: View {
             GenericRangeTarget(
                 header: "Distance",
                 unitHeader: "M",
-                minValue: $filter.minDistance,
-                maxValue: $filter.maxDistance
+                minValue: $filter.minDistanceInM,
+                maxValue: $filter.maxDistanceInM
             )
             GenericRangeTarget(
                 header: "Pace",
                 unitHeader: "MIN/100M",
                 minValue: $filter.minPace,
                 maxValue: $filter.maxPace
+            )
+            GenericRangeTarget(
+                header: "Duration",
+                unitHeader: "MIN",
+                minValue: $filter.minDurationInMin,
+                maxValue: $filter.maxDurationInMin
             )
         }
     }

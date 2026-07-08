@@ -32,7 +32,8 @@ struct FiltersView: View {
                         .datePickerStyle(.compact)
                         .font(.subheadline)
                         .tint(.mainColor)
-                        
+                        .accessibilityIdentifier("filters.startDatePicker")
+
                         DatePicker(
                             "Until",
                             selection: $viewModel.availabilityFiltersResults.endDateTime,
@@ -41,6 +42,7 @@ struct FiltersView: View {
                         .datePickerStyle(.compact)
                         .font(.subheadline)
                         .tint(.mainColor)
+                        .accessibilityIdentifier("filters.endDatePicker")
                     }
                     .background(Color.backgroundColor)
                     .padding()
@@ -61,6 +63,7 @@ struct FiltersView: View {
                             }
                         }
                     }
+                    .accessibilityIdentifier("filters.activityFiltersLink")
                     .background(Color.backgroundColor)
                     .padding(.horizontal)
                     .buttonStyle(.plain)
