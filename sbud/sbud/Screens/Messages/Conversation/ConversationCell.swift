@@ -47,6 +47,11 @@ struct ConversationCell: View {
                 
                 Spacer()
                 
+                if message.isRead == false {
+                    Circle()
+                        .fill(Color.red)
+                        .frame(width: 10, height: 10)
+                }
                 
                 Image(systemName: "chevron.right")
                     .foregroundColor(Color.mainColor)

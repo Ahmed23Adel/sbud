@@ -27,6 +27,7 @@ struct Message: Identifiable, Hashable, Decodable {
     var eventId: String?
     
     var user: UserProfile?
+    var isRead: Bool? //to notifications
     
     var chatPartnerId: String { return fromId == Auth.auth().currentUser?.uid ? toId : fromId }
 
