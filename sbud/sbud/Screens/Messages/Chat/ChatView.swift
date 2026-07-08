@@ -76,6 +76,9 @@ struct ChatView: View {
         .toolbarBackground(Color.darkBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .onAppear {
+            viewModel.markMessagesAsRead() 
+        }
     }
     
     func sendMessage() {

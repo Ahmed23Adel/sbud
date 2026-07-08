@@ -66,7 +66,6 @@ struct ViewMyEventDetails: View {
                             BasicFloatingButton(iconName: "flag.pattern.checkered"){
                                 viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
                             }
-                            .padding(.trailing)
                             .scaleEffect(isPulsing ? 1.4 : 1.0)
                             .animation(
                                 .easeInOut(duration: 0.4).repeatForever(autoreverses: true),
@@ -79,7 +78,6 @@ struct ViewMyEventDetails: View {
                             BasicFloatingButton(iconName: "flag.pattern.checkered"){
                                 viewModel.navigateToConfirmationForSessionOrNavigateToSessionDetails()
                             }
-                            .padding(.trailing)
                         }
                     }
                 }
@@ -140,13 +138,17 @@ struct ViewMyEventDetails: View {
     @ViewBuilder
     private func eventContent(_ details: EventFullDetails) -> some View {
         VStack {
-            EventMetaBadgesRow(
-                isDateConfirmed: details.isDateConfirmed,
-                isLocationConfirmed: details.isLocationConfirmed,
-                joinCondition: details.joinCondition,
-                isPublic: details.isPublic,
-                maxAllowedToJoin: details.maxAllowedToJoin
-            )
+               
+            
+                
+                EventMetaBadgesRow(
+                    isDateConfirmed: details.isDateConfirmed,
+                    isLocationConfirmed: details.isLocationConfirmed,
+                    joinCondition: details.joinCondition,
+                    isPublic: details.isPublic,
+                    maxAllowedToJoin: details.maxAllowedToJoin
+                )
+                
 
             EventInfoSection(
                 title: details.title,
