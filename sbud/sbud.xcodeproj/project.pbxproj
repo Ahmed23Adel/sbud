@@ -67,6 +67,17 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		662CD89A30004A86006B95FF /* Exceptions for "sbudTests" folder in "sbudTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				CentralPopupIntegrationTests.swift,
+				FriendListVMTests.swift,
+				ProfileIntegrationTests.swift,
+				ProfileSetupTests.swift,
+				ViewModelJoinedEventsTests.swift,
+			);
+			target = E24825AC2EE2DCA400330DC2 /* sbudTests */;
+		};
 		E289D8042EE873C6005F9F37 /* Exceptions for "sbud" folder in "sbud" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -92,6 +103,9 @@
 		};
 		E24825B02EE2DCA400330DC2 /* sbudTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				662CD89A30004A86006B95FF /* Exceptions for "sbudTests" folder in "sbudTests" target */,
+			);
 			path = sbudTests;
 			sourceTree = "<group>";
 		};

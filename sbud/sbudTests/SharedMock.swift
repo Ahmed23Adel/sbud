@@ -49,6 +49,10 @@ final class MockProfileServiceManager: IProfileServiceManager {
 
     var updateProfileStepResult: Result<Void, Error> = .success(())
     var uploadProfileImageResult: Result<String, Error> = .success("https://cdn.sbud.app/test.jpg")
+    var syncProfileAfterLoginCalled = false
+    var syncProfileAfterLoginError: Error?
+    var onSyncProfile: (() -> Void)?
+    private(set) var deleteProfileFromLocaleCalled = false
 
     private(set) var getLocalProfileCallCount = 0
     private(set) var saveLocalCallCount = 0
@@ -67,8 +71,16 @@ final class MockProfileServiceManager: IProfileServiceManager {
     }
     func saveProfileToDatabase(profile: UserProfile) async throws { storedProfile = profile }
     func deleteProfileFromDatabase(uid: String) async throws {}
-    func deleteProfileFromLocale() { storedProfile = nil }
-    func syncProfileAfterLogin() async throws {}
+    func syncProfileAfterLogin() async throws {
+        syncProfileAfterLoginCalled = true
+        onSyncProfile?()
+        if let error = syncProfileAfterLoginError { throw error }
+    }
+
+    func deleteProfileFromLocale() {
+        deleteProfileFromLocaleCalled = true
+        storedProfile = nil
+    }
     func updateProfileStep(uid: String, fields: [String: Any], localProfile: UserProfile) async throws {
         updateStepCallCount += 1
         lastUpdatedUid = uid
@@ -166,6 +178,117 @@ final class MockHostInvitationResponding: HostInvitationResponding {
     func respond(eventId: String, accept: Bool) async throws {
         calls.append((eventId, accept))
         if case .failure(let e) = stubbedResult { throw e }
+    }
+}
+
+final class MockCurrentUserProvider: CurrentUserProviding {
+    var currentUserId: String? = nil
+}
+// MARK: - MockJoinRequester
+
+final class MockJoinRequester: JoinEventRequesting {
+    var stubbedJoinResult: Result<JoinEventResponse, Error> =
+        .success(JoinEventResponse(status: "confirmed", message: "ok"))
+    var stubbedWithdrawResult: Result<WithdrawResponse, Error> =
+        .success(WithdrawResponse(status: "ok", message: "ok"))
+    var stubbedLeaveResult: Result<LeaveResponse, Error> =
+        .success(LeaveResponse(status: "ok", message: "ok"))
+    var stubbedMyStatusResult: Result<MyStatusResponse, Error> =
+        .success(MyStatusResponse(status: "none", waitlistPosition: nil))
+    var stubbedQueueResult: Result<JoinQueueResponse, Error> =
+        .success(.fixture())
+    var stubbedRespondResult: Result<JoinRespondResponse, Error> =
+        .success(JoinRespondResponse(status: "ok", message: "ok"))
+
+    private(set) var joinCallCount = 0
+    private(set) var lastJoinedEventId: String?
+    private(set) var withdrawCallCount = 0
+    private(set) var leaveCallCount = 0
+    private(set) var respondCalls: [(eventId: String, requesterId: String, accept: Bool)] = []
+
+    func joinEvent(eventId: String) async throws -> JoinEventResponse {
+        joinCallCount += 1
+        lastJoinedEventId = eventId
+        switch stubbedJoinResult {
+        case .success(let v): return v
+        case .failure(let e): throw e
+        }
+    }
+
+    func withdraw(eventId: String) async throws -> WithdrawResponse {
+        withdrawCallCount += 1
+        switch stubbedWithdrawResult {
+        case .success(let v): return v
+        case .failure(let e): throw e
+        }
+    }
+
+    func leave(eventId: String) async throws -> LeaveResponse {
+        leaveCallCount += 1
+        switch stubbedLeaveResult {
+        case .success(let v): return v
+        case .failure(let e): throw e
+        }
+    }
+
+    func getMyStatus(eventId: String) async throws -> MyStatusResponse {
+        switch stubbedMyStatusResult {
+        case .success(let v): return v
+        case .failure(let e): throw e
+        }
+    }
+
+    func getPendingQueue(eventId: String) async throws -> JoinQueueResponse {
+        switch stubbedQueueResult {
+        case .success(let v): return v
+        case .failure(let e): throw e
+        }
+    }
+
+    func respondToRequest(eventId: String, requesterId: String, accept: Bool) async throws -> JoinRespondResponse {
+        respondCalls.append((eventId, requesterId, accept))
+        switch stubbedRespondResult {
+        case .success(let v): return v
+        case .failure(let e): throw e
+        }
+    }
+}
+// MARK: - MockEventFetcher
+
+final class MockEventFetcher: EventFetching {
+    var stubbedResult: Result<EventFullDetails, Error> = .success(.fixture())
+    private(set) var fetchCallCount = 0
+    private(set) var lastEventId: String?
+
+    func fetchEvent(eventId: String) async throws -> EventFullDetails {
+        fetchCallCount += 1
+        lastEventId = eventId
+        switch stubbedResult {
+        case .success(let v): return v
+        case .failure(let e): throw e
+        }
+    }
+}
+
+// MARK: - EventFullDetails fixture
+
+extension EventFullDetails {
+    static func fixture(id: String = "evt1", title: String = "Test Event") -> EventFullDetails {
+        EventFullDetails(
+            id: id,
+            title: title,
+            creator: .sample,
+            activityDetails: ExtraArgsHolder(),
+            isDateConfirmed: false,
+            isLocationConfirmed: false,
+            isPublic: true,
+            joinCondition: .autoJoin,
+            maxAllowedToJoin: 10,
+            notes: nil,
+            createdAt: Date(),
+            dateLocations: [.sample],
+            numSessions: 1
+        )
     }
 }
 
