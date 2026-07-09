@@ -21,13 +21,12 @@ struct EventMetaBadgesRow: View {
                 isLocationConfirmed: isLocationConfirmed
             )
 
-            HStack {
+            FlowLayout(spacing: 8) {
                 JoiningProtocolDetailed(joiningProtocol: joinCondition)
                 VisibilityDetailed(isPublic: isPublic)
                 if let max = maxAllowedToJoin {
                     CapacityBadge(max: max)
                 }
-                Spacer()
             }
             .padding(.leading, 14)
         }

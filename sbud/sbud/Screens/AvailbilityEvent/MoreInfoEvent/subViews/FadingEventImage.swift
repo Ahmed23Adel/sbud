@@ -11,13 +11,23 @@ import Kingfisher
 struct FadingEventImage: View {
     var coverImgURL: String
     var body: some View {
-        KFImage(URL(string: coverImgURL))
-            .placeholder {
-                ProgressView()
-            }
-            .resizable()
-            .scaledToFill()
+        // The photo lives in an overlay so its scaledToFill size can never
+        // leak into layout: with a height-only frame, scaledToFill reports
+        // width = 330 × image aspect ratio (e.g. 495pt for a 3:2 photo on a
+        // 393pt screen), which widens every ancestor and bleeds the whole
+        // screen off both edges. A flexible frame does NOT cap this — it
+        // adopts the child's oversized width. Overlay + clipped does.
+        Color.clear
             .frame(height: 330)
+            .overlay {
+                KFImage(URL(string: coverImgURL))
+                    .placeholder {
+                        ProgressView()
+                    }
+                    .resizable()
+                    .scaledToFill()
+            }
+            .clipped()
             .cornerRadius(16)
             .mask(
                 LinearGradient(
