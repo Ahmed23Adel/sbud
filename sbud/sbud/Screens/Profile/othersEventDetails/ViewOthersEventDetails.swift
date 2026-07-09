@@ -42,21 +42,14 @@ struct ViewOthersEventDetails: View {
                 VStack {
                     if let details = viewModel.myEventDertails {
                         
-                        ProposalVsDeterminedPhase(
+                        EventMetaBadgesRow(
                             isDateConfirmed: details.isDateConfirmed,
-                            isLocationConfirmed: details.isLocationConfirmed
+                            isLocationConfirmed: details.isLocationConfirmed,
+                            joinCondition: details.joinCondition,
+                            isPublic: details.isPublic,
+                            maxAllowedToJoin: details.maxAllowedToJoin
                         )
-                        
-                        HStack {
-                            JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
-                            VisibilityDetailed(isPublic: details.isPublic)
-                            if let max = details.maxAllowedToJoin {
-                                CapacityBadge(max: max)
-                            }
-                            Spacer()
-                        }
-                        .padding(.leading, 14)
-                        
+
                         HStack {
                             Text(details.title)
                                 .font(.title)
@@ -116,7 +109,6 @@ struct ViewOthersEventDetails: View {
                                 latitude:   firstLoc.latitude,
                                 longitude:  firstLoc.longitude
                             )
-                            .padding(.horizontal)
                         }
 
                         participantsSection
@@ -139,7 +131,6 @@ struct ViewOthersEventDetails: View {
                         }
                     }
                 }
-                .padding(.horizontal)
                 .padding(.top, 280)
                 .padding(.bottom, 100)
             }
