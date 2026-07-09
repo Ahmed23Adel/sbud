@@ -14,11 +14,10 @@ private struct ActivitySection: View {
         ActivityTypeSelector(
             selectedActivityType: $eventBuilder.activityType,
             extraArgsHolder: $eventBuilder.activityExtraArgs)
-            .padding(.horizontal, 30)
 
         ViewConditionalExtraArgs(argsHolder: eventBuilder.activityExtraArgs)
             .padding(.bottom, 100)
-            .padding(.horizontal, 30)
+            .padding(.horizontal, 15)
     }
 }
 
@@ -36,7 +35,6 @@ struct ViewAddNewEventStep1: View {
                     placeholder: "Ex: Midnight Runners",
                     iconString: "text.rectangle",
                     text: $eventBuilder.title)
-                .padding(.horizontal, 30)
 
                 GenericMultilineTextInputView(
                     fieldName: "Description",
@@ -44,7 +42,6 @@ struct ViewAddNewEventStep1: View {
                     iconString: "pencil",
                     text: $eventBuilder.description,
                     accessibilityId: "addEvent.descriptionField")
-                .padding(.horizontal, 30)
 
                 ActivitySection(eventBuilder: eventBuilder)
             }
