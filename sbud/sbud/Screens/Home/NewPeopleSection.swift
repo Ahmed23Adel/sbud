@@ -19,9 +19,7 @@ struct NewPeopleSection: View {
         VStack(alignment: .leading, spacing: 14) {
 
             HStack {
-                Text("NEW PEOPLE")
-                    .font(.system(size: 15, weight: .black))
-                    .foregroundColor(.white)
+                PageSectionTitle(title: "NEW PEOPLE")
                 Spacer()
             }
 

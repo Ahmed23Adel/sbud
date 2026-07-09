@@ -25,9 +25,7 @@ struct RecommendedEventsSection: View {
         VStack(alignment: .leading, spacing: 14) {
 
             HStack {
-                Text("RECOMMENDED EVENTS")
-                    .font(.system(size: 15, weight: .black))
-                    .foregroundColor(.white)
+                PageSectionTitle(title: "RECOMMENDED EVENTS")
                 Spacer()
             }
 
@@ -167,3 +165,4 @@ struct RecommendedEventCard: View {
             .onTapGesture { onTap() }
     }
 }
+

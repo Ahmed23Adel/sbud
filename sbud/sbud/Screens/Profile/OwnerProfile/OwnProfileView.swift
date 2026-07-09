@@ -44,12 +44,11 @@ struct OwnProfileView: View {
                             if let profile = vm.profile {
                                 ProfilePerformanceCard(profile: profile)
                             }
-
                             AthleteFeedbackSection(
                                 isOwnProfile: true,
                                 topFeedbacks: vm.profile?.top10Feedbacks ?? []
                             )
-                            
+
                             ProfileMyEventsButton(userId: vm.userId, title: "MY EVENTS") {
                                 coordinator.goToMyEvents()
                             }
@@ -298,3 +297,4 @@ private extension OwnProfileView {
 //    OwnProfileView(userId: "preview-own-user")
 //        .environmentObject(ProfileCoordinator(userId: "preview"))
 //}
+

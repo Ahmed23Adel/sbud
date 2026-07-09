@@ -48,14 +48,12 @@ struct FriendListView: View {
                 }
             }
         }
-        .navigationTitle("FRIENDS")
         .navigationBarTitleDisplayMode(.inline)
-            .font(.system(size: 14, weight: .black, design: .monospaced))
-            .foregroundColor(.white)
-            .kerning(1.5)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(Color(red: 0.05, green: 0.05, blue: 0.05))
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                PageSectionTitle(title: "FRIENDS")
+            }
+        }
         .task { await vm.load() }
     }
 }
@@ -119,6 +117,4 @@ private struct UserRowCell: View {
         .contentShape(Rectangle())
     }
 }
-
-
 

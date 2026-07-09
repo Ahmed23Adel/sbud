@@ -47,8 +47,12 @@ struct ViewMyEvents: View {
                 }
             }
         }
-        .navigationTitle("My Events")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                PageSectionTitle(title: "ALL EVENTS")
+            }
+        }
         .alert("Error", isPresented: $viewModel.isShowAlert) {
             Button("Ok", role: .cancel) {}
         } message: {

@@ -41,7 +41,13 @@ struct ViewOthersEvents: View {
             .animation(.easeInOut, value: selectedTab)
         }
         
-        .background(Color.darkBackground)
+        .background(Color(white: 0.07))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                PageSectionTitle(title: "ALL EVENTS")
+            }
+        }
     }
 }
 

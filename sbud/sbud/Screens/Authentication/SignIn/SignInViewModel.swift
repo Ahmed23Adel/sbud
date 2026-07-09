@@ -55,7 +55,8 @@ class SignInViewModel: ObservableObject {
         isSigningIn = true
         authManager.setAuthTypeEmailAndPassword()
         do {
-            try await authManager.signIn(email: email, password: password)
+            let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+            try await authManager.signIn(email: trimmedEmail, password: password)
             isSigningIn = false
             stopLoading()
             coordinator?.coordinatorDidCompleteSignIn()
@@ -99,7 +100,7 @@ class SignInViewModel: ObservableObject {
 
         startLoading()
         do {
-            try await authManager.sendPasswordReset(email: email)
+            try await authManager.sendPasswordReset(email: email.trimmingCharacters(in: .whitespacesAndNewlines))
             stopLoading()
             showAlert = true
             alertMsg = "Password reset email sent! Check your inbox."

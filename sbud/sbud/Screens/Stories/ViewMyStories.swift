@@ -11,7 +11,7 @@ struct ViewMyStories: View {
 
     var body: some View {
         ZStack {
-            Color.darkBackground.ignoresSafeArea()
+            Color(white: 0.07).ignoresSafeArea()
             if vm.isLoading && vm.stories.isEmpty {
                 ProgressView().tint(Color.mainColor)
             } else if vm.stories.isEmpty {
@@ -20,8 +20,12 @@ struct ViewMyStories: View {
                 storyList
             }
         }
-        .navigationTitle("My Stories")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                PageSectionTitle(title: "MY STORIES")
+            }
+        }
         .task { await vm.load() }
     }
 
@@ -57,12 +61,10 @@ struct ViewMyStories: View {
             Image(systemName: "photo.stack")
                 .font(.system(size: 48))
                 .foregroundStyle(Color.mainColor.opacity(0.6))
-            Text("No stories yet")
-                .font(.headline)
-                .foregroundStyle(.white)
-            Text("Stories you post will appear here")
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.5))
+            PageSectionTitle(title: "No Stories Yet.")
+            Text("Your friends' stories will appear here")
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundColor(.gray).frame(maxWidth: .infinity).padding(.vertical, 30)
         }
     }
 }

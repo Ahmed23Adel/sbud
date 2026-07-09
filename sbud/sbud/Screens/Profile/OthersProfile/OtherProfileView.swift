@@ -42,12 +42,11 @@ struct OtherProfileView: View {
                             if let profile = vm.profile {
                                 ProfilePerformanceCard(profile: profile)
                             }
-                            
                             AthleteFeedbackSection(
                                 isOwnProfile: true, // Sempre true per bloccare i tap sul profilo
                                 topFeedbacks: vm.profile?.top10Feedbacks ?? []
                             )
-                            
+
                             ProfileMyEventsButton(userId: vm.userId, title: "EVENTS") {
                                 print("goToOthersEvents")
                                 coordinator.goToOthersEvents()
