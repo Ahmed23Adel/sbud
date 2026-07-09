@@ -30,6 +30,9 @@ final class ProfileSetupVM: ObservableObject {
     @Published var isSendingSMS: Bool = false
     @Published var isVerifyingOTP: Bool = false
 
+    @Published var previewImage: UIImage?
+    @Published var isUploadingPhoto: Bool = false
+
     // MARK: - Child services (injected for testability)
 
     // Pull selectedItem up — PhotosPicker binds to this directly
@@ -239,8 +242,15 @@ final class ProfileSetupVM: ObservableObject {
     
     func handlePhotoSelection() async {
         guard let item = selectedPhotoItem else { return }
-        photo.selectedItem = item          // hand off to the service
+        isUploadingPhoto = true
+        // Hemen önizleme — loadTransferable tamamlanır tamamlanmaz göster
+        if let data = try? await item.loadTransferable(type: Data.self),
+           let image = UIImage(data: data) {
+            previewImage = image
+        }
+        photo.selectedItem = item
         await photo.handleSelection()
+        isUploadingPhoto = false
     }
 }
 

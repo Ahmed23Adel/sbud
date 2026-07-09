@@ -7,10 +7,13 @@
 
 import SwiftUI
 import PhotosUI
+import Photos
 
 struct StepOneView: View {
 
     @EnvironmentObject private var vm: ProfileSetupVM
+    @State private var showSettingsAlert = false
+    @State private var authStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -31,6 +34,10 @@ struct StepOneView: View {
             }
         }
         .onTapGesture { hideKeyboard() }
+        .onAppear { authStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite) }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            authStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        }
     }
 
     // MARK: - Subviews
@@ -43,17 +50,50 @@ struct StepOneView: View {
     }
 
     private var photoPicker: some View {
-        PhotosPicker(
-            selection: $vm.selectedPhotoItem,   // ← binds to VM directly, not nested
-            matching: .images,
-            photoLibrary: .shared()
-        ) {
-            photoPickerLabel
+        Group {
+            if photoAccessDenied {
+                Button {
+                    showSettingsAlert = true
+                } label: {
+                    photoPickerLabel
+                }
+                .alert("Photo Library Access Required", isPresented: $showSettingsAlert) {
+                    Button("Open Settings") {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("sBud needs access to your photos. Please enable it in Settings → Privacy → Photos.")
+                }
+            } else {
+                PhotosPicker(
+                    selection: $vm.selectedPhotoItem,
+                    matching: .images,
+                    photoLibrary: .shared()
+                ) {
+                    photoPickerLabel
+                }
+                .simultaneousGesture(TapGesture().onEnded {
+                    if authStatus == .notDetermined {
+                        PHPhotoLibrary.requestAuthorization(for: .readWrite) { newStatus in
+                            DispatchQueue.main.async {
+                                authStatus = newStatus
+                            }
+                        }
+                    }
+                })
+                .onChange(of: vm.selectedPhotoItem) { _ in
+                    Task { await vm.handlePhotoSelection() }
+                    vm.clearError()
+                }
+            }
         }
-        .onChange(of: vm.selectedPhotoItem) { _ in
-            Task { await vm.handlePhotoSelection() }
-            vm.clearError()
-        }
+    }
+
+    private var photoAccessDenied: Bool {
+        authStatus == .denied || authStatus == .restricted
     }
     private var photoPickerLabel: some View {
         ZStack {
@@ -61,7 +101,7 @@ struct StepOneView: View {
                 .fill(Color.white.opacity(0.03))
 
             VStack(spacing: 15) {
-                if let image = vm.photo.selectedImage {
+                if let image = vm.previewImage {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
@@ -81,7 +121,7 @@ struct StepOneView: View {
                 }
 
                 VStack(spacing: 4) {
-                    Text(vm.photo.isUploading ? "UPLOADING..." : "UPLOAD PROFILE IMAGE")
+                    Text(vm.isUploadingPhoto ? "UPLOADING..." : "UPLOAD PROFILE IMAGE")
                         .font(.system(size: 13, weight: .bold))
                         .foregroundColor(.white)
 
@@ -113,3 +153,4 @@ struct StepOneView: View {
         }
     }
 }
+
