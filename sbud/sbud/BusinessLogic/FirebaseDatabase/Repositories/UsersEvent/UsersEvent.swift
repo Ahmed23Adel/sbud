@@ -15,9 +15,9 @@ enum UsersEventStatus: String, Codable {
 
     var color: Color {
         switch self {
-        case .proposed:  return .yellow
+        case .proposed:  return Color("palelime")
         case .confirmed: return Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
-        case .completed: return .green
+        case .completed: return Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
         }
     }
 

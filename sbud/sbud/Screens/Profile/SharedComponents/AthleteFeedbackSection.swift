@@ -12,9 +12,7 @@ struct AthleteFeedbackSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("ATHLETE FEEDBACK")
-                .font(.system(size: 18, weight: .black))
-                .foregroundColor(.white)
+            PageSectionTitle(title: "ATHLETE FEEDBACK")
             
             if topFeedbacks.isEmpty {
                 Text("No feedback received yet.")

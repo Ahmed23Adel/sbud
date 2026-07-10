@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfilePerformanceCard: View {
     let profile: UserProfile
+    var statsLoaded: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -44,20 +45,7 @@ struct ProfilePerformanceCard: View {
         HStack {
             PageSectionTitle(title: "PERFORMANCE METRICS")
             Spacer()
-            if let streak = profile.currentStreakDays, streak > 1 {
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .foregroundColor(.orange)
-                        .font(.system(size: 11))
-                    Text("\(streak)d Streak")
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(.orange)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.orange.opacity(0.15))
-                .cornerRadius(6)
-            }
+
         }
     }
 
