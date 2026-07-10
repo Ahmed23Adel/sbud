@@ -57,36 +57,24 @@ struct ViewMoreInfoEvent: View {
                         }
                     } else if let details = viewModel.fullDetails {
 
-                        ProposalVsDeterminedPhase(
+                        EventMetaBadgesRow(
                             isDateConfirmed: details.isDateConfirmed,
-                            isLocationConfirmed: details.isLocationConfirmed
+                            isLocationConfirmed: details.isLocationConfirmed,
+                            joinCondition: details.joinCondition,
+                            isPublic: details.isPublic,
+                            maxAllowedToJoin: details.maxAllowedToJoin
                         )
-                        .padding(.horizontal)
-
-                        HStack {
-                            JoiningProtocolDetailed(joiningProtocol: details.joinCondition)
-                            VisibilityDetailed(isPublic: details.isPublic)
-                            if let max = details.maxAllowedToJoin {
-                                CapacityBadge(max: max)
-                            }
-                            Spacer()
-                        }
-                        .padding(.leading, 14)
-                        .padding(.horizontal)
 
                         HStack {
                             Text(details.title)
                                 .font(.title).foregroundColor(.white).italic()
-                                .padding(.horizontal)
                                 .padding(.horizontal)
                                 .accessibilityIdentifier("moreInfo.eventTitle")
                             Spacer()
                         }
 
                         ViewActivityTypeForDetails(activityType: details.activityType)
-                            .padding(.horizontal)
                         PerformanceTargetDetailedConditional(activityDetails: details.activityDetails)
-                            .padding(.horizontal)
 
                         GenericMultilineTextView(
                             fieldName: "Description",
@@ -94,7 +82,6 @@ struct ViewMoreInfoEvent: View {
                             iconString: "pencil",
                             text: details.notes ?? ""
                         )
-                        .padding(.horizontal)
 
                         if Auth.auth().currentUser?.uid != details.creator.id {
                             CreatorContactDetailed(
@@ -111,32 +98,14 @@ struct ViewMoreInfoEvent: View {
                                     coordinator.showChat(user: chatUser, eventId: viewModel.eventId, eventTitle: eTitle)
                                 }
                             )
-                            .padding(.horizontal)
                         }
 
-                        Button {
+                        ViewHostsButton {
                             showHostsList = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "person.2.fill")
-                                    .foregroundColor(Color("palelime"))
-                                Text("View Hosts")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
-                                    .font(.system(size: 12))
-                            }
-                            .padding()
-                            .background(Color.backgroundColor)
-                            .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
-                            .padding(.horizontal)
                         }
 
                         LocationMapCard(dateLocations: details.dateLocations).padding()
-                            .padding(.horizontal)
-                        
+
                         if details.isDateConfirmed,
                            let finalStart = details.finalStartDateTime,
                            let finalEnd   = details.finalEndDateTime,
@@ -148,7 +117,6 @@ struct ViewMoreInfoEvent: View {
                                 latitude:   firstLoc.latitude,
                                 longitude:  firstLoc.longitude
                             )
-                            .padding(.horizontal)
                         }
               
                         if !viewModel.isCurrentUserHost {
@@ -160,7 +128,6 @@ struct ViewMoreInfoEvent: View {
                                 onWithdraw: { Task { await viewModel.withdraw() } },
                                 onLeave: { Task { await viewModel.leave() } }
                             )
-                            .padding(.horizontal)
                             .padding(.vertical, 8)
                         }
                         

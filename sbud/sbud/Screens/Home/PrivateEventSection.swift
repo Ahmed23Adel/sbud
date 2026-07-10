@@ -21,9 +21,7 @@ struct PrivateEventsSection: View {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundColor(accent)
-                Text("PRIVATE EVENTS")
-                    .font(.system(size: 15, weight: .black))
-                    .foregroundColor(.white)
+                PageSectionTitle(title: "PRIVATE EVENTS")
                 Spacer()
             }
 
@@ -96,3 +94,4 @@ struct PrivateEventCard: View {
         .clipShape(RoundedRectangle(cornerRadius: UIConstants.cornerRadius))
     }
 }
+

@@ -93,6 +93,17 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     ) {
         completionHandler([.banner, .sound])
     }
+
+    func application(_ application: UIApplication,
+                     didReceiveRemoteNotification userInfo: [AnyHashable : Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        // Passa la notifica a Firebase Auth
+        if Auth.auth().canHandleNotification(userInfo) {
+            completionHandler(.noData)
+            return
+        }
+        completionHandler(.newData)
+    }
 }
 
 @main
@@ -119,7 +130,7 @@ struct SbudApp: App {
         )
     
         Task {
-            if let token = try? await Auth.auth().currentUser?.getIDToken() {
+            if let token = try? await FirebaseTokenProvider.shared.getToken() {
                 print("🔑 TOKEN: \(token)")
             }
         }
@@ -129,7 +140,12 @@ struct SbudApp: App {
         WindowGroup {
             MainAppCoordinator(coordinator: mainCoordinator)
                 .onOpenURL { url in
-                    GIDSignIn.sharedInstance.handle(url)
+                    if GIDSignIn.sharedInstance.handle(url) {
+                        return
+                    }
+                    if Auth.auth().canHandle(url) {
+                        return
+                    }
                     mainCoordinator.handle(universalLink: url)
                 }
         }

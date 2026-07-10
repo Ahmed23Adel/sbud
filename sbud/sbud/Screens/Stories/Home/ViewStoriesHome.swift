@@ -11,14 +11,18 @@ struct ViewStoriesHome: View {
 
     var body: some View {
         ZStack {
-            Color.darkBackground.ignoresSafeArea()
+            Color(white: 0.07).ignoresSafeArea()
             if vm.isLoading && vm.friendsWithStories.isEmpty {
                 ProgressView().tint(Color.mainColor)
             } else {
                 scrollContent
             }
         }
-        .navigationTitle("Stories")
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                PageSectionTitle(title: "STORIES")
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -80,13 +84,10 @@ struct ViewStoriesHome: View {
             Image(systemName: "photo.stack")
                 .font(.system(size: 48))
                 .foregroundStyle(Color.mainColor)
-            Text("No stories yet")
-                .font(.headline)
-                .foregroundStyle(.white)
+            PageSectionTitle(title: "No Stories Yet.")
             Text("Your friends' stories will appear here")
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.5))
-                .multilineTextAlignment(.center)
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundColor(.gray).frame(maxWidth: .infinity).padding(.vertical, 30)
         }
         .padding()
     }

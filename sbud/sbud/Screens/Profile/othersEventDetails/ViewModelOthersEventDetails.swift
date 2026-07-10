@@ -55,7 +55,26 @@ class ViewModelOthersEventDetails {
         do {
             async let detailsTask = EventByIdRequester().fetchEvent(eventId: eventId)
             async let roleTask = EventRoleService.getRole(eventId: eventId)
-            let (details, resolvedRole) = try await (detailsTask, roleTask)
+            var (details, resolvedRole) = try await (detailsTask, roleTask)
+
+            if details.isDateConfirmed && details.isLocationConfirmed {
+                // Once confirmed, there must be exactly one location.
+                if let firstLocation = details.dateLocations.first {
+                    details.dateLocations = [firstLocation]
+                }
+            } else {
+                // Not confirmed yet: drop any duplicate IDs the database produced.
+                var uniqueLocations: [DateLocationEntry] = []
+                var seenIds = Set<String>()
+                for loc in details.dateLocations {
+                    if !seenIds.contains(loc.id) {
+                        uniqueLocations.append(loc)
+                        seenIds.insert(loc.id)
+                    }
+                }
+                details.dateLocations = uniqueLocations
+            }
+
             await MainActor.run {
                 myEventDertails = details
                 role = resolvedRole

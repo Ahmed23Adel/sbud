@@ -71,6 +71,13 @@ class UserRepository: IFirebaesRepository{
     }
     
     
+    func giveFeedback(to targetUserId: String, tag: String, voterId: String) async throws {
+        
+        try await db.collection(collectionPath).document(targetUserId).updateData([
+            "receivedFeedbacks.\(voterId)": tag
+        ])
+    }
+    
     func updateUserProfileFields(uid: String, fields: [String: Any]) async throws {
         try await db.collection("users").document(uid).setData(fields, merge: true)
     }

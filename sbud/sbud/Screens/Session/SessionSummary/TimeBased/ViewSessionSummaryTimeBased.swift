@@ -159,7 +159,17 @@ struct ViewSessionSummaryTimeBased<M: SessionMetricsBase>: View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeaderView(title: "Participants", icon: "person.2.fill")
             ForEach(vm.participantSummaries) { summary in
-                ParticipantRowView(summary: summary) { onParticipantTapped(summary.id) }
+                ParticipantRowView(
+                    summary: summary,
+                    onTap: {
+                        onParticipantTapped(summary.id)
+                    },
+                    onVote: { tag in
+                        Task {
+                            await vm.voteForFeedback(targetUserId: summary.id, tag: tag)
+                        }
+                    }
+                )
             }
         }
     }

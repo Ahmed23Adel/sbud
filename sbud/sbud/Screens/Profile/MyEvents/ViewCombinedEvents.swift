@@ -13,24 +13,46 @@ struct ViewCombinedEvents: View {
     @State private var selectedTab: EventsTab = .created
     let onCreatedEventTap: (String) -> Void
     let onParticipatedEventTap: (String) -> Void
-    
+
     var body: some View {
         VStack(spacing: 0) {
-            // Segmented Picker
-            Picker("Events", selection: $selectedTab) {
+
+            // MARK: - Custom Tab Bar
+            HStack(spacing: 0) {
                 ForEach(EventsTab.allCases) { tab in
-                    Text(tab.title).tag(tab)
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedTab = tab
+                        }
+                    } label: {
+                        Text(tab.title.uppercased())
+                            .font(.system(size: 11, weight: .black, design: .monospaced))
+                            .kerning(1)
+                            .foregroundColor(selectedTab == tab ? .black : .white.opacity(0.4))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(
+                                Group {
+                                    if selectedTab == tab {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(Color("palelime"))
+                                    }
+                                }
+                            )
+                    }
+                    .animation(.easeInOut(duration: 0.2), value: selectedTab)
                 }
             }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
+            .padding(4)
+            .background(Color(white: 0.12))
+            .clipShape(RoundedRectangle(cornerRadius: 13))
+            .padding(.horizontal, 16)
             .padding(.vertical, 12)
 
-            // Swipeable TabView
+            // MARK: - Content
             TabView(selection: $selectedTab) {
                 CreatedEventsView(userId: userId, onEventTap: onCreatedEventTap)
                     .tag(EventsTab.created)
-                    
 
                 HostedEventsView(userId: userId, onEventTap: onCreatedEventTap)
                     .tag(EventsTab.hostedEvents)
@@ -41,7 +63,12 @@ struct ViewCombinedEvents: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: selectedTab)
         }
-        
-        .background(Color.darkBackground)
+        .background(Color(white: 0.07))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                PageSectionTitle(title: "ALL EVENTS")
+            }
+        }
     }
 }

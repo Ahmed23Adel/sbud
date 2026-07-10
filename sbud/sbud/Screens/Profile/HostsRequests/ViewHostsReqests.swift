@@ -49,10 +49,7 @@ struct ViewHostsRequests: View {
         .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text("HOST INVITATIONS")
-                    .font(.system(size: 14, weight: .black, design: .monospaced))
-                    .foregroundColor(.white)
-                    .kerning(1.5)
+                PageSectionTitle(title: "HOST INVITATIONS")
             }
         }
         .task { await vm.load() }

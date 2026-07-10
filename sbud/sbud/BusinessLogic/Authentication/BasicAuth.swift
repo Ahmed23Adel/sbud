@@ -14,7 +14,7 @@ class BasicAuth {
         guard let currentUser = Auth.auth().currentUser else{
             return nil
         }
-        let token = try await currentUser.getIDToken()
-        return token
+        print("🔑 [DEBUG] BasicAuth.getTokenId uid=\(currentUser.uid)")
+        return try await FirebaseTokenProvider.shared.getToken()
     }
 }

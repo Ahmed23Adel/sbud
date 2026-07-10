@@ -35,7 +35,7 @@ class ProfileManager: IProfileServiceManager {
                 userInfo: [NSLocalizedDescriptionKey: "Authenticated user not found."]
             )
         }
-        let token = try await Auth.auth().currentUser?.getIDToken()
+        let token = try await FirebaseTokenProvider.shared.getToken()
         print("TOKEN:", token ?? "")
         
         if let remoteProfile = try await userRepository.fetchProfile(uid) {
@@ -71,11 +71,9 @@ class ProfileManager: IProfileServiceManager {
     }
     
     func uploadProfileImage(data: Data) async throws -> String {
-        guard let currentUser = Auth.auth().currentUser else {
+        guard let token = try await FirebaseTokenProvider.shared.getToken() else {
             throw URLError(.userAuthenticationRequired)
         }
-
-        let token = try await currentUser.getIDToken()
 
         guard let url = URL(string: "https://sbud-backend.onrender.com/api/v1/images/upload") else {
             throw URLError(.badURL)

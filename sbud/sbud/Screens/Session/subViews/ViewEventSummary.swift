@@ -4,7 +4,6 @@
 //
 //  Created by ahmed on 16/05/2026.
 //
-//
 //  ViewEventSummary.swift
 //  sbud
 //

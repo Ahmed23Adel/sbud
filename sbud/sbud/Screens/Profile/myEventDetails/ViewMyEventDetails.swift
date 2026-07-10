@@ -29,7 +29,6 @@ struct ViewMyEventDetails: View {
                     VStack(spacing: 0) {
                         eventContent(details)
                             .padding(.top, 200)
-                            .padding(.horizontal, 24)
                             .frame(maxWidth: .infinity)
 
 
@@ -138,9 +137,6 @@ struct ViewMyEventDetails: View {
     @ViewBuilder
     private func eventContent(_ details: EventFullDetails) -> some View {
         VStack {
-               
-            
-                
                 EventMetaBadgesRow(
                     isDateConfirmed: details.isDateConfirmed,
                     isLocationConfirmed: details.isLocationConfirmed,
@@ -148,7 +144,6 @@ struct ViewMyEventDetails: View {
                     isPublic: details.isPublic,
                     maxAllowedToJoin: details.maxAllowedToJoin
                 )
-                
 
             EventInfoSection(
                 title: details.title,
@@ -168,7 +163,6 @@ struct ViewMyEventDetails: View {
                     latitude:   firstLoc.latitude,
                     longitude:  firstLoc.longitude
                 )
-                .padding(.horizontal)
             }
 
             participantsSection
@@ -220,6 +214,7 @@ struct ViewMyEventDetails: View {
                 }
                 Spacer()
             }
+            .padding(.horizontal)
             .padding(.top, 16)
 
             if !viewModel.confirmedParticipants.isEmpty {
@@ -252,6 +247,7 @@ struct ViewMyEventDetails: View {
                             }
                         }
                     }
+                    .padding(.horizontal)
                     .padding(.top, 8)
                 }
             } else if !viewModel.isLoadingParticipants {
@@ -259,6 +255,7 @@ struct ViewMyEventDetails: View {
                     .font(.subheadline)
                     .foregroundColor(.gray)
                     .italic()
+                    .padding(.horizontal)
                     .padding(.top, 8)
             }
         }

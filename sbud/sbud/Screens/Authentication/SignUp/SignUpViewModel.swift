@@ -71,7 +71,8 @@ class SignUpViewModel: ObservableObject {
         authManager.setAuthTypeEmailAndPassword()
         isSigningUp = true
         do {
-            try await authManager.signUp(email: email, password: password)
+            let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+            try await authManager.signUp(email: trimmedEmail, password: password)
             authManager.sendVerificationEmail()
             isSigningUp = false
             stopLoading()

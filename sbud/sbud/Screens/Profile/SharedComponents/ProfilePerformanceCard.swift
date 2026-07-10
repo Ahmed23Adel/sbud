@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfilePerformanceCard: View {
     let profile: UserProfile
+    var statsLoaded: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -22,7 +23,6 @@ struct ProfilePerformanceCard: View {
                 .padding(.vertical, 14)
 
             overallContent
-                .padding(.bottom, 4)
 
             Divider().background(Color(white: 0.12))
                 .padding(.horizontal, 20)
@@ -43,65 +43,50 @@ struct ProfilePerformanceCard: View {
 
     private var fixedHeader: some View {
         HStack {
-            Text("PERFORMANCE METRICS")
-                .font(.system(size: 13, weight: .black))
-                .foregroundColor(.white)
-                .kerning(1.2)
+            PageSectionTitle(title: "PERFORMANCE METRICS")
             Spacer()
-            if let streak = profile.currentStreakDays, streak > 1 {
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .foregroundColor(.orange)
-                        .font(.system(size: 11))
-                    Text("\(streak)d Streak")
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(.orange)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.orange.opacity(0.15))
-                .cornerRadius(6)
-            }
+
         }
     }
 
-    // MARK: - Overall Content
+    // MARK: - Overall Content (2x2 sabit sütun grid)
 
     private var overallContent: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // Row 1
-            HStack(alignment: .top) {
+        // Her sütun eşit genişlikte → hizalar her satırda aynı
+        HStack(alignment: .top, spacing: 0) {
+            // Sol sütun: SESSIONS üstte, TIME altta
+            VStack(alignment: .leading, spacing: 20) {
                 ProfileMetricItem(label: "SESSIONS",
                                   value: "\(profile.totalSessions)",
                                   color: Color("turquoise"))
-                Spacer()
-                ProfileMetricItem(label: "DISTANCE",
-                                  value: ProfileUtils.distanceNumber(profile.totalDistanceKm),
-                                  color: .white,
-                                  unit: ProfileUtils.distanceUnit(profile.totalDistanceKm))
-            }
-            .padding(.horizontal, 20)
-
-            // Row 2
-            HStack(alignment: .top) {
                 ProfileMetricItem(label: "TIME",
                                   value: ProfileUtils.durationNumber(profile.totalDurationHours ?? 0),
                                   color: .white,
                                   unit: ProfileUtils.durationUnit(profile.totalDurationHours ?? 0))
-                Spacer()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            // Sağ sütun: DISTANCE üstte, THIS MONTH altta
+            VStack(alignment: .leading, spacing: 20) {
+                ProfileMetricItem(label: "DISTANCE",
+                                  value: ProfileUtils.distanceNumber(profile.totalDistanceKm),
+                                  color: .white,
+                                  unit: ProfileUtils.distanceUnit(profile.totalDistanceKm))
                 ProfileMetricItem(label: "THIS MONTH",
                                   value: "\(profile.monthlySessionCount ?? 0)",
                                   color: Color("palelime"))
             }
-            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 4)
     }
 
     // MARK: - Last Activity
 
     private func lastActivityRow(now: Date) -> some View {
         HStack {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text("LAST ACTIVITY")
                     .font(.system(size: 9, weight: .bold, design: .monospaced))
                     .foregroundColor(.gray)
@@ -125,4 +110,3 @@ struct ProfilePerformanceCard: View {
         return "\(name) · \(f.localizedString(for: date, relativeTo: now))"
     }
 }
-
