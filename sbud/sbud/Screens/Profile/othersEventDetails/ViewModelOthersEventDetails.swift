@@ -28,11 +28,12 @@ class ViewModelOthersEventDetails {
     var joinState: JoinState = .idle
     var isJoiningLoading = false
 
-    private let joinRequester = JoinEventRequester()
+    private let joinRequester: JoinEventRequesting
 
-    init(eventId: String) {
+    init(eventId: String, joinRequester: JoinEventRequesting = JoinEventRequester()) {
         logger.info("eventId: \(eventId)")
         self.eventId = eventId
+        self.joinRequester = joinRequester
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [
             AnalyticsParameterScreenName: "OthersEventDetails",
             "event_id": eventId

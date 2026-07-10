@@ -108,33 +108,6 @@ final class MainCoordinatorTests: XCTestCase {
         try await Task.sleep(nanoseconds: 50_000_000)
         XCTAssertTrue(mockAuthManager.signOutCalled)
     }
-}
-
-class MockAuthenticationManager: IAuthenticationManager {
-
-    @Published var isSignedIn: Bool = false
-    @Published var currentUser: FirebaseAuth.User? = nil
-
-    var authStatusReturnValue = false
-    var signOutCalled = false
-    var signOutError: Error?
-
-    func checkAuthStatus() -> Bool {
-        return authStatusReturnValue
-    }
-
-    func signOut() async throws {
-        signOutCalled = true
-        if let error = signOutError {
-            throw error
-        }
-    }
-
-    func signIn() async throws {}
-    func signUp() async throws {}
-    func signIn(email: String, password: String) async throws {}
-    func signUp(email: String, password: String) async throws {}
-    
     // MARK: - Deep link
 
         func test_deepLink_profile_whenHome_setsProfileUserId() {
@@ -169,4 +142,32 @@ class MockAuthenticationManager: IAuthenticationManager {
             XCTAssertNil(sut.deepLinkProfileUserId)
             XCTAssertNil(sut.deepLinkEventId)
         }
+}
+
+class MockAuthenticationManager: IAuthenticationManager {
+
+    @Published var isSignedIn: Bool = false
+    @Published var currentUser: FirebaseAuth.User? = nil
+
+    var authStatusReturnValue = false
+    var signOutCalled = false
+    var signOutError: Error?
+
+    func checkAuthStatus() -> Bool {
+        return authStatusReturnValue
+    }
+
+    func signOut() async throws {
+        signOutCalled = true
+        if let error = signOutError {
+            throw error
+        }
+    }
+
+    func signIn() async throws {}
+    func signUp() async throws {}
+    func signIn(email: String, password: String) async throws {}
+    func signUp(email: String, password: String) async throws {}
+    
+    
 }
