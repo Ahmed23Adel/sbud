@@ -134,4 +134,39 @@ class MockAuthenticationManager: IAuthenticationManager {
     func signUp() async throws {}
     func signIn(email: String, password: String) async throws {}
     func signUp(email: String, password: String) async throws {}
+    
+    // MARK: - Deep link
+
+        func test_deepLink_profile_whenHome_setsProfileUserId() {
+            sut.goToHome()
+            sut.handle(universalLink: URL(string: "sbud://profile/user123")!)
+            XCTAssertEqual(sut.deepLinkProfileUserId, "user123")
+        }
+
+        func test_deepLink_event_whenHome_setsEventId() {
+            sut.goToHome()
+            sut.handle(universalLink: URL(string: "sbud://event/evento456")!)
+            XCTAssertEqual(sut.deepLinkEventId, "evento456")
+        }
+
+        func test_deepLink_universalLink_profile_whenHome_setsProfileUserId() {
+            sut.goToHome()
+            sut.handle(universalLink: URL(string: "https://sbud-backend.onrender.com/profile/user789")!)
+            XCTAssertEqual(sut.deepLinkProfileUserId, "user789")
+        }
+
+        func test_deepLink_beforeHome_isDeliveredOnGoToHome() {
+            sut.navigateTo(.signIn)
+            sut.handle(universalLink: URL(string: "sbud://profile/pendingUser")!)
+            XCTAssertNil(sut.deepLinkProfileUserId)
+            sut.goToHome()
+            XCTAssertEqual(sut.deepLinkProfileUserId, "pendingUser")
+        }
+
+        func test_deepLink_unknownHost_doesNothing() {
+            sut.goToHome()
+            sut.handle(universalLink: URL(string: "https://sito-a-caso.com/profile/u1")!)
+            XCTAssertNil(sut.deepLinkProfileUserId)
+            XCTAssertNil(sut.deepLinkEventId)
+        }
 }

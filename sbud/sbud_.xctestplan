@@ -32,7 +32,7 @@
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:sbud.xcodeproj",
         "identifier" : "E24825AC2EE2DCA400330DC2",
@@ -40,7 +40,6 @@
       }
     },
     {
-      "parallelizable" : true,
       "target" : {
         "containerPath" : "container:sbud.xcodeproj",
         "identifier" : "66EFCA042FF7A40200241493",
