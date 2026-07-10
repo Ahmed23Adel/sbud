@@ -81,7 +81,24 @@ class UserRepository: IFirebaesRepository{
     func updateUserProfileFields(uid: String, fields: [String: Any]) async throws {
         try await db.collection("users").document(uid).setData(fields, merge: true)
     }
-        
+
+    // MARK: - Real-time Listener
+
+    /// users/{id} dokümanını canlı dinler — friendsCount vb. alanlar başka
+    /// bir cihazdan değişince ekran açıkken bile otomatik yansır.
+    func listenProfile(_ id: String, onChange: @escaping (UserProfile?) -> Void) -> RealtimeListenerHandle {
+        let registration = db.collection("users").document(id)
+            .addSnapshotListener { snapshot, _ in
+                guard let snapshot, snapshot.exists else {
+                    onChange(nil)
+                    return
+                }
+                let profile = try? snapshot.data(as: UserProfile.self)
+                onChange(profile)
+            }
+        return FirestoreListenerHandle(registration)
+    }
+
     func delete(_ id: String) async throws {
     }
     

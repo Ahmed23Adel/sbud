@@ -87,8 +87,20 @@ class FriendManager {
     func fetchHostsPendingRequests(userId: String) async throws -> [String] {
         try await repository.fetchPendingHostsRequests(userId: userId)
     }
-    
-    
+
+    // MARK: - Real-time Listeners
+
+    func listenPendingFriendsRequestsCount(userId: String, onChange: @escaping (Int) -> Void) -> RealtimeListenerHandle {
+        repository.listenPendingFriendsRequestsCount(userId: userId, onChange: onChange)
+    }
+
+    func listenPendingHostsRequestsCount(userId: String, onChange: @escaping (Int) -> Void) -> RealtimeListenerHandle {
+        repository.listenPendingHostsRequestsCount(userId: userId, onChange: onChange)
+    }
+
+    func listenFriendStatus(currentUserId: String, targetUserId: String, onChange: @escaping (FriendStatus) -> Void) -> RealtimeListenerHandle {
+        repository.listenFriendStatus(currentUserId: currentUserId, targetUserId: targetUserId, onChange: onChange)
+    }
 }
 
 enum FriendError: LocalizedError {
@@ -102,4 +114,3 @@ enum FriendError: LocalizedError {
         }
     }
 }
-

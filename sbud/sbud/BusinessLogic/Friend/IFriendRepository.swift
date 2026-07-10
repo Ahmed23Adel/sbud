@@ -21,7 +21,27 @@ protocol IFriendRepository {
     func fetchFriends(userId: String) async throws -> [String]
     func fetchPendingFriendsRequests(userId: String) async throws -> [String]
     func fetchPendingHostsRequests(userId: String) async throws -> [String]
+
+    func listenPendingFriendsRequestsCount(userId: String, onChange: @escaping (Int) -> Void) -> RealtimeListenerHandle
+
+    func listenPendingHostsRequestsCount(userId: String, onChange: @escaping (Int) -> Void) -> RealtimeListenerHandle
+
+    func listenFriendStatus(currentUserId: String, targetUserId: String, onChange: @escaping (FriendStatus) -> Void) -> RealtimeListenerHandle
+}
+
+extension IFriendRepository {
+    
+    func listenPendingFriendsRequestsCount(userId: String, onChange: @escaping (Int) -> Void) -> RealtimeListenerHandle {
+        NoOpListenerHandle()
+    }
+
+    func listenPendingHostsRequestsCount(userId: String, onChange: @escaping (Int) -> Void) -> RealtimeListenerHandle {
+        NoOpListenerHandle()
+    }
+
+    func listenFriendStatus(currentUserId: String, targetUserId: String, onChange: @escaping (FriendStatus) -> Void) -> RealtimeListenerHandle {
+        NoOpListenerHandle()
+    }
 }
 
 extension FriendRepository: IFriendRepository {}
-

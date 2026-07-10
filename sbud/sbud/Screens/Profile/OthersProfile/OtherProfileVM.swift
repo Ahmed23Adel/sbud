@@ -20,15 +20,23 @@ final class OtherProfileVM: BaseProfileVM {
     var isRequestReceived: Bool { friendStatus == .requestReceived }
 
     private let friendManager: FriendManager
+    private let currentUserProvider: CurrentUserProviding
     private let statsRequester: UserStatsRequester
+
+    // MARK: - Real-time listener handles
+
+    private var friendStatusListener: RealtimeListenerHandle?
+    private var profileListener: RealtimeListenerHandle?
 
     init(
         userId: String,
         userRepository: UserProfileFetching = UserRepository(),
         friendManager: FriendManager = FriendManager.shared,
+        currentUserProvider: CurrentUserProviding = FirebaseCurrentUserProvider(),
         statsRequester: UserStatsRequester = UserStatsRequester()
     ) {
         self.friendManager = friendManager
+        self.currentUserProvider = currentUserProvider
         self.statsRequester = statsRequester
         super.init(userId: userId, userRepository: userRepository)
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [
@@ -38,24 +46,53 @@ final class OtherProfileVM: BaseProfileVM {
     }
 
     func load() async {
-        // 1. Önce profili yükle — profile nil olmamalı stats apply edilmeden önce
+        startRealtimeListening()
+
         await loadProfile()
 
-        // 2. Sonra paralel: stats + friend status
         await withTaskGroup(of: Void.self) { group in
             group.addTask { await self.loadStats() }
             group.addTask { await self.refreshFriendStatus() }
         }
     }
 
+    // MARK: - Real-time listening lifecycle
+
+    func startRealtimeListening() {
+        guard let currentUid = currentUserProvider.currentUserId else { return }
+        guard friendStatusListener == nil else { return }
+
+        friendStatusListener = friendManager.listenFriendStatus(
+            currentUserId: currentUid,
+            targetUserId: userId
+        ) { [weak self] status in
+            Task { @MainActor in self?.friendStatus = status }
+        }
+
+        profileListener = userRepository.listenProfile(userId) { [weak self] updatedProfile in
+            guard let self, let updatedProfile else { return }
+            Task { @MainActor in
+                self.profile?.friendsCount = updatedProfile.friendsCount
+            }
+        }
+    }
+
+    func stopRealtimeListening() {
+        friendStatusListener?.remove()
+        profileListener?.remove()
+        friendStatusListener = nil
+        profileListener = nil
+    }
+
     // MARK: - Stats
 
     private func loadStats() async {
+        guard !userId.isEmpty else { return }
         do {
             let stats = try await statsRequester.fetchStats(userId: userId)
             profile?.applyStats(stats)
         } catch {
-            // Stats yüklenemese bile profil gösterilmeye devam eder
+            
         }
     }
 
@@ -101,4 +138,5 @@ final class OtherProfileVM: BaseProfileVM {
         }
     }
 }
+
 

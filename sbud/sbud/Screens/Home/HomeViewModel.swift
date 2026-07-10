@@ -24,6 +24,7 @@ class HomeViewModel: NSObject, CLLocationManagerDelegate {
     private let cache = RecommendedEventsCache.shared
     let logger = Logger(subsystem: "sbud", category: "HomeViewModel")
 
+    private var didLoadWithLocation = false
     // MARK: - Dependencies (test seams)
 
     private let homeDataFetcher: HomeDataFetching
@@ -52,6 +53,7 @@ class HomeViewModel: NSObject, CLLocationManagerDelegate {
         do {
             let lat = userLocation?.coordinate.latitude
             let lon = userLocation?.coordinate.longitude
+            if lat != nil && lon != nil { didLoadWithLocation = true }
             let response = try await homeDataFetcher.fetchHome(lat: lat, lon: lon)
             await MainActor.run {
                 withAnimation(.easeInOut(duration: 0.4)) {
@@ -109,9 +111,14 @@ class HomeViewModel: NSObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         userLocation = locations.last
         locationManager.stopUpdatingLocation()
+
+        if !didLoadWithLocation {
+            Task { await load() }
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         logger.error("Location error: \(error)")
     }
 }
+

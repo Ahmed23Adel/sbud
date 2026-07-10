@@ -183,4 +183,75 @@ class FriendRepository {
             .getDocuments()
         return snapshot.documents.map { $0.documentID } // documentID = eventId
     }
+
+    // MARK: - Real-time Listeners
+
+    func listenPendingFriendsRequestsCount(userId: String, onChange: @escaping (Int) -> Void) -> RealtimeListenerHandle {
+        let registration = db
+            .collection("users").document(userId)
+            .collection("friendRequests")
+            .whereField("status", isEqualTo: "pending")
+            .addSnapshotListener { snapshot, _ in
+                onChange(snapshot?.documents.count ?? 0)
+            }
+        return FirestoreListenerHandle(registration)
+    }
+
+    func listenPendingHostsRequestsCount(userId: String, onChange: @escaping (Int) -> Void) -> RealtimeListenerHandle {
+        let registration = db
+            .collection("users").document(userId)
+            .collection("hostInvitations")
+            .whereField("status", isEqualTo: HostInvitationStatus.pending.rawValue)
+            .addSnapshotListener { snapshot, _ in
+                onChange(snapshot?.documents.count ?? 0)
+            }
+        return FirestoreListenerHandle(registration)
+    }
+
+    func listenFriendStatus(
+        currentUserId: String,
+        targetUserId: String,
+        onChange: @escaping (FriendStatus) -> Void
+    ) -> RealtimeListenerHandle {
+        var isFriend = false
+        var hasSentRequest = false
+        var hasReceivedRequest = false
+
+        func emit() {
+            if isFriend { onChange(.friends) }
+            else if hasSentRequest { onChange(.requestSent) }
+            else if hasReceivedRequest { onChange(.requestReceived) }
+            else { onChange(.notFriend) }
+        }
+
+        let friendsReg = db
+            .collection("users").document(currentUserId)
+            .collection("friends").document(targetUserId)
+            .addSnapshotListener { snapshot, _ in
+                isFriend = snapshot?.exists ?? false
+                emit()
+            }
+
+        let sentReg = db
+            .collection("users").document(targetUserId)
+            .collection("friendRequests").document(currentUserId)
+            .addSnapshotListener { snapshot, _ in
+                hasSentRequest = snapshot?.exists ?? false
+                emit()
+            }
+
+        let receivedReg = db
+            .collection("users").document(currentUserId)
+            .collection("friendRequests").document(targetUserId)
+            .addSnapshotListener { snapshot, _ in
+                hasReceivedRequest = snapshot?.exists ?? false
+                emit()
+            }
+
+        return CompositeListenerHandle([
+            FirestoreListenerHandle(friendsReg),
+            FirestoreListenerHandle(sentReg),
+            FirestoreListenerHandle(receivedReg)
+        ])
+    }
 }
