@@ -13,40 +13,75 @@ import FirebaseAuth
 
 class HomeTabsViewModel: ObservableObject {
     @Published var selectedTab = 0
+    @Published var totalNotificationsCount = 0
 
-    init() {
+    private let friendManager: FriendManager
+
+    private var unreadMessagesCount = 0
+    private var eventJoinRequestsCount = 0
+    private var pendingFriendsRequestCount = 0
+    private var pendingHostsRequestCount = 0
+
+    private var userDocListener: ListenerRegistration?
+    private var friendsRequestsListener: RealtimeListenerHandle?
+    private var hostsRequestsListener: RealtimeListenerHandle?
+
+    init(friendManager: FriendManager = .shared) {
+        self.friendManager = friendManager
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [AnalyticsParameterScreenName: "Home"])
-        // When a UI test needs to deep-link into the event detail screen,
-        // start on the Availability tab (1) so AvailabilityAppCoordinator.onAppear fires.
         if ProcessInfo.processInfo.environment["UI_TESTING_EVENT_ID"] != nil {
             selectedTab = 1
         }
     }
 
-    @Published var totalNotificationsCount = 0
-
-    private var userListener: ListenerRegistration?
-
     deinit {
-        userListener?.remove()
+        userDocListener?.remove()
+        friendsRequestsListener?.remove()
+        hostsRequestsListener?.remove()
     }
 
     func listenForUnreadMessages() {
-        guard userListener == nil else { return }
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
-        userListener = Firestore.firestore().collection("users").document(uid)
-            .addSnapshotListener { [weak self] snapshot, error in
-                if let error = error {
-                    print("❌ Error listening to notification counts: \(error.localizedDescription)")
-                    return
+        if userDocListener == nil {
+            userDocListener = Firestore.firestore().collection("users").document(uid)
+                .addSnapshotListener { [weak self] snapshot, error in
+                    guard let self else { return }
+                    if let error {
+                        print("❌ Error listening to notification counts: \(error.localizedDescription)")
+                        return
+                    }
+                    let data = snapshot?.data() ?? [:]
+
+                    self.unreadMessagesCount     = max(0, data["unreadMessagesCount"] as? Int ?? 0)
+                    self.eventJoinRequestsCount  = max(0, data["pendingRequestsCount"] as? Int ?? 0)
+                    DispatchQueue.main.async { self.recomputeTotal() }
                 }
-                let data = snapshot?.data() ?? [:]
-                let unreadMessages = data["unreadMessagesCount"] as? Int ?? 0
-                let pendingRequests = data["pendingRequestsCount"] as? Int ?? 0
-                DispatchQueue.main.async {
-                    self?.totalNotificationsCount = unreadMessages + pendingRequests
-                }
+        }
+
+        if friendsRequestsListener == nil {
+            friendsRequestsListener = friendManager.listenPendingFriendsRequestsCount(userId: uid) { [weak self] count in
+                guard let self else { return }
+                self.pendingFriendsRequestCount = count
+                DispatchQueue.main.async { self.recomputeTotal() }
             }
+        }
+
+        if hostsRequestsListener == nil {
+            hostsRequestsListener = friendManager.listenPendingHostsRequestsCount(userId: uid) { [weak self] count in
+                guard let self else { return }
+                self.pendingHostsRequestCount = count
+                DispatchQueue.main.async { self.recomputeTotal() }
+            }
+        }
+    }
+
+    private func recomputeTotal() {
+        totalNotificationsCount = max(0,
+            unreadMessagesCount
+            + eventJoinRequestsCount
+            + pendingFriendsRequestCount
+            + pendingHostsRequestCount
+        )
     }
 }

@@ -5,31 +5,52 @@
 //  Created by ahmed on 01/05/2026.
 //
 
-
 import SwiftUI
 
 struct ViewOthersEvents: View {
     let userId: String
     @State private var selectedTab: EventsTab = .created
     let onEventTap: (String) -> Void
-    
+
     var body: some View {
         VStack(spacing: 0) {
-            // Segmented Picker
-            Picker("Events", selection: $selectedTab) {
+
+            // MARK: - Custom Tab Bar 
+            HStack(spacing: 0) {
                 ForEach(EventsTab.allCases) { tab in
-                    Text(tab.title).tag(tab)
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedTab = tab
+                        }
+                    } label: {
+                        Text(tab.title.uppercased())
+                            .font(.system(size: 11, weight: .black, design: .monospaced))
+                            .kerning(1)
+                            .foregroundColor(selectedTab == tab ? .black : .white.opacity(0.4))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(
+                                Group {
+                                    if selectedTab == tab {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(Color("palelime"))
+                                    }
+                                }
+                            )
+                    }
+                    .animation(.easeInOut(duration: 0.2), value: selectedTab)
                 }
             }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
+            .padding(4)
+            .background(Color(white: 0.12))
+            .clipShape(RoundedRectangle(cornerRadius: 13))
+            .padding(.horizontal, 16)
             .padding(.vertical, 12)
 
-            // Swipeable TabView
+            // MARK: - Swipeable Content
             TabView(selection: $selectedTab) {
                 CreatedEventsView(userId: userId, onEventTap: onEventTap)
                     .tag(EventsTab.created)
-                    
 
                 HostedEventsView(userId: userId, onEventTap: onEventTap)
                     .tag(EventsTab.hostedEvents)
@@ -40,7 +61,6 @@ struct ViewOthersEvents: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: selectedTab)
         }
-        
         .background(Color(white: 0.07))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -62,17 +82,9 @@ enum EventsTab: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .created:           return "Created"
-        case .hostedEvents:      return "Hosted"
+        case .created:            return "Created"
+        case .hostedEvents:       return "Hosted"
         case .participatedEvents: return "Participated"
         }
     }
 }
-
-
-// MARK: - Preview
-//
-//#Preview {
-//    ViewOthersEvents(userId: "user123")
-//}
-

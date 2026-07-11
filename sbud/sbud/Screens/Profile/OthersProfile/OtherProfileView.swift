@@ -43,7 +43,7 @@ struct OtherProfileView: View {
                                 ProfilePerformanceCard(profile: profile)
                             }
                             AthleteFeedbackSection(
-                                isOwnProfile: true, // Sempre true per bloccare i tap sul profilo
+                                isOwnProfile: true,
                                 topFeedbacks: vm.profile?.top10Feedbacks ?? []
                             )
 
@@ -65,6 +65,7 @@ struct OtherProfileView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: showPhotoPreview)
         .task { await vm.load() }
+        .onDisappear { vm.stopRealtimeListening() }
     }
 }
 

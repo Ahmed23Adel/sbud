@@ -80,6 +80,7 @@ struct OwnProfileView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: showPhotoPreview)
         .task { await vm.load() }
+        .onDisappear { vm.stopRealtimeListening() }
         .fullScreenCover(isPresented: $showEditProfile) {
             EditProfileView(profile: vm.profile) { updatedProfile in
                 vm.profile = updatedProfile

@@ -14,10 +14,17 @@ final class OwnProfileVM: BaseProfileVM {
 
     @Published var pendingFriendsRequestCount: Int = 0
     @Published var pendingHostsRequestCount: Int = 0
+    @Published var statsLoaded: Bool = false
 
     private let friendManager: FriendManager
     private let currentUserProvider: CurrentUserProviding
     private let statsRequester: UserStatsRequester
+
+    // MARK: - Real-time listener handles
+
+    private var friendsRequestsListener: RealtimeListenerHandle?
+    private var hostsRequestsListener: RealtimeListenerHandle?
+    private var profileListener: RealtimeListenerHandle?
 
     init(
         userId: String,
@@ -34,41 +41,66 @@ final class OwnProfileVM: BaseProfileVM {
     }
 
     func load() async {
-        // 1. Önce profili yükle — profile nil olmamalı stats apply edilmeden önce
+       
+        startRealtimeListening()
+
+       
         await loadProfile()
 
-        // 2. Sonra paralel: stats + badge counts
+       
         await withTaskGroup(of: Void.self) { group in
             group.addTask { await self.loadStats() }
-            group.addTask { await self.loadPendingFriendsRequests() }
-            group.addTask { await self.loadPendingHostRequests() }
         }
 
         if let profile { profileManager.saveProfileToLocale(profile: profile) }
     }
 
+    // MARK: - Real-time listening lifecycle
+
+    func startRealtimeListening() {
+        guard let uid = currentUserProvider.currentUserId else { return }
+
+        guard friendsRequestsListener == nil else { return }
+
+        friendsRequestsListener = friendManager.listenPendingFriendsRequestsCount(userId: uid) { [weak self] count in
+            Task { @MainActor in self?.pendingFriendsRequestCount = count }
+        }
+
+        hostsRequestsListener = friendManager.listenPendingHostsRequestsCount(userId: uid) { [weak self] count in
+            Task { @MainActor in self?.pendingHostsRequestCount = count }
+        }
+
+        profileListener = userRepository.listenProfile(userId) { [weak self] updatedProfile in
+            guard let self, let updatedProfile else { return }
+            Task { @MainActor in
+                self.profile?.friendsCount = updatedProfile.friendsCount
+            }
+        }
+    }
+
+    func stopRealtimeListening() {
+        friendsRequestsListener?.remove()
+        hostsRequestsListener?.remove()
+        profileListener?.remove()
+        friendsRequestsListener = nil
+        hostsRequestsListener = nil
+        profileListener = nil
+    }
+
     // MARK: - Stats
 
     private func loadStats() async {
+        guard !userId.isEmpty else {
+            statsLoaded = true
+            return
+        }
         do {
             let stats = try await statsRequester.fetchStats(userId: userId)
             profile?.applyStats(stats)
         } catch {
-            // Stats yüklenemese bile profil gösterilmeye devam eder
+            
         }
-    }
-
-    // MARK: - Pending counts
-
-    private func loadPendingFriendsRequests() async {
-        guard let uid = currentUserProvider.currentUserId else { return }
-        let ids = (try? await friendManager.fetchFriendsPendingRequests(userId: uid)) ?? []
-        pendingFriendsRequestCount = ids.count
-    }
-
-    private func loadPendingHostRequests() async {
-        guard let uid = currentUserProvider.currentUserId else { return }
-        let ids = (try? await friendManager.fetchHostsPendingRequests(userId: uid)) ?? []
-        pendingHostsRequestCount = ids.count
+        statsLoaded = true
     }
 }
+
