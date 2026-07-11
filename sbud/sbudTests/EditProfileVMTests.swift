@@ -163,10 +163,10 @@ final class EditProfileVMTests: XCTestCase {
     }
 
     func test_save_trimsWhitespace() async {
-        sut.name = "  Alice  "; sut.surName = "  Smith  "
+        sut.name = "  Bob  "; sut.surName = "  Jones  "
         _ = await sut.save()
-        XCTAssertEqual(mockRepo.lastFields?["name"] as? String, "Alice")
-        XCTAssertEqual(mockRepo.lastFields?["surName"] as? String, "Smith")
+        XCTAssertEqual(mockRepo.lastFields?["name"] as? String, "Bob")
+        XCTAssertEqual(mockRepo.lastFields?["surName"] as? String, "Jones")
     }
 
     func test_save_setsIsSavingFalseAfterCompletion() async {

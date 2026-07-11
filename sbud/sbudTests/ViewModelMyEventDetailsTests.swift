@@ -77,6 +77,7 @@ final class ViewModelMyEventDetailsTests: XCTestCase {
 
     func test_respondToRequest_accept_incrementsConfirmedCount() async {
         sut.queueResponse = .fixture(pendingUserIds: ["r1"], confirmedCount: 2)
+        mockJoinRequester.stubbedQueueResult = .success(.fixture(pendingUserIds: [], confirmedCount: 3))
         await sut.respondToRequest(requesterId: "r1", accept: true)
         let count = sut.queueResponse?.confirmedCount ?? 0
         XCTAssertEqual(count, 3)
