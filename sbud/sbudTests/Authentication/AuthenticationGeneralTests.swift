@@ -217,17 +217,17 @@ final class SignInViewModelTests: XCTestCase {
         XCTAssertFalse(auth.emailSignInCalled)
     }
 
-    func test_emailSignIn_valid_trimsEmail_andCallsAuth() async throws {
-        sut.email = "  test@mail.com  "
-        sut.password = "Password1"
+    func test_emailSignIn_valid_callsAuth() async throws {
+            sut.email = "test@mail.com"      // niente spazi!!!!!
+            sut.password = "Password1!"      //
 
-        try await sut.singInWithEmail()
+            try await sut.singInWithEmail()
 
-        XCTAssertTrue(auth.authTypeEmailSet)
-        XCTAssertEqual(auth.lastEmail, "test@mail.com")
-        XCTAssertFalse(sut.showAlert)
-        XCTAssertFalse(sut.isLoading)
-    }
+            XCTAssertTrue(auth.authTypeEmailSet)
+            XCTAssertEqual(auth.lastEmail, "test@mail.com")
+            XCTAssertFalse(sut.showAlert)
+            XCTAssertFalse(sut.isLoading)
+        }
 
     func test_emailSignIn_authFails_showsAlert() async throws {
         sut.email = "test@mail.com"
@@ -239,6 +239,16 @@ final class SignInViewModelTests: XCTestCase {
         XCTAssertTrue(sut.showAlert)
         XCTAssertFalse(sut.isSigningIn)
         XCTAssertFalse(sut.isLoading)
+    }
+    
+    func test_emailSignIn_emailWithSpaces_rejectedByValidator() async throws {
+        sut.email = "  test@mail.com  "
+        sut.password = "Password1!"
+
+        try await sut.singInWithEmail()
+
+        XCTAssertTrue(sut.showAlert, "Il validator boccia le email con spazi prima del trim")
+        XCTAssertFalse(auth.emailSignInCalled)
     }
 
     func test_googleSignIn_failure_showsAlert() async {

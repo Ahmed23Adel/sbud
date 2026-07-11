@@ -78,6 +78,16 @@
 			);
 			target = E24825AC2EE2DCA400330DC2 /* sbudTests */;
 		};
+		66C4CD573002E7860011F1FF /* Exceptions for "sbudUITests" folder in "sbudUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				CentralPopupTests.swift,
+				Messages/MessagesUITests.swift,
+				ProfileUITests.swift,
+				Stories/StoriesUITests.swift,
+			);
+			target = 66EFCA042FF7A40200241493 /* sbudUITests */;
+		};
 		E289D8042EE873C6005F9F37 /* Exceptions for "sbud" folder in "sbud" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -90,6 +100,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		66EFCA062FF7A40200241493 /* sbudUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				66C4CD573002E7860011F1FF /* Exceptions for "sbudUITests" folder in "sbudUITests" target */,
+			);
 			path = sbudUITests;
 			sourceTree = "<group>";
 		};

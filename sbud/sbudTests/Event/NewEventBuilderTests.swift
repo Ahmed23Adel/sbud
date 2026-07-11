@@ -43,10 +43,11 @@ final class NewEventBuilderTests: XCTestCase {
         XCTAssertEqual(sut.validationErrorMessage, "Please enter a valid description")
     }
 
-    func test_validation_zeroCapacity() {
+    func test_validation_zeroCapacity_failsValidation() {
         let sut = makeValidBuilder()
         sut.eventCapacity = 0
-        XCTAssertEqual(sut.validationErrorMessage, "Please enter a valid capacity")
+        XCTAssertFalse(sut.areFieldsValid())
+        XCTAssertNotNil(sut.validationErrorMessage)
     }
 
     func test_buildRequest_mapsAllFields() {
@@ -56,10 +57,10 @@ final class NewEventBuilderTests: XCTestCase {
 
         let request = sut.buildRequest()
 
-        XCTAssertEqual(request.title, "Corsa al parco")
+        XCTAssertEqual(request.title, "Run in the park")
         XCTAssertEqual(request.eventImage, "http://img.test/x.jpg")
         XCTAssertEqual(request.maxAllowedToJoin, 10)
-        XCTAssertEqual(request.notes, "Descrizione")
+        XCTAssertEqual(request.notes, "Description")
         XCTAssertFalse(request.isPublic)
     }
 }
