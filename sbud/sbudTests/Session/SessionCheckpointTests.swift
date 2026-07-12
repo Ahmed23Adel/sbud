@@ -22,30 +22,29 @@ final class SessionCheckpointTests: XCTestCase {
     }
 
     override func tearDown() {
-        // Belt-and-suspenders: clear any checkpoint that leaked from the test
         let eventId = "test-event-checkpoint"
         MetricsCollectorRun(isCreator: true, numSessions: 1,
-                             locationManager: MockSessionLocationManager(),
-                             healthKit: MockHealthKitService(),
-                             userIdProvider: { nil })
+                            locationManager: MockSessionLocationManager(),
+                            healthKit: MockHealthKitService(),
+                            userIdProvider: { nil })
             .clearCheckpoint(eventId: eventId)
 
         MetricsCollectorHiking(isCreator: true, numSessions: 1,
-                                locationManager: MockSessionLocationManager(),
-                                healthKit: MockHealthKitService(),
-                                userIdProvider: { nil })
+                               locationManager: MockSessionLocationManager(),
+                               healthKit: MockHealthKitService(),
+                               userIdProvider: { nil })
             .clearCheckpoint(eventId: eventId)
 
         MetricsCollectorCycling(isCreator: true, numSessions: 1,
-                                 locationManager: MockSessionLocationManager(),
-                                 healthKit: MockHealthKitService(),
-                                 userIdProvider: { nil })
-            .clearCheckpoint(eventId: eventId)
-
-        MetricsCollectorSkiing(isCreator: true, numSessions: 1,
                                 locationManager: MockSessionLocationManager(),
                                 healthKit: MockHealthKitService(),
                                 userIdProvider: { nil })
+            .clearCheckpoint(eventId: eventId)
+
+        MetricsCollectorSkiing(isCreator: true, numSessions: 1,
+                               locationManager: MockSessionLocationManager(),
+                               healthKit: MockHealthKitService(),
+                               userIdProvider: { nil })
             .clearCheckpoint(eventId: eventId)
 
         mockLoc = nil
@@ -59,10 +58,9 @@ final class SessionCheckpointTests: XCTestCase {
         let eventId = "test-event-checkpoint"
 
         let writer = MetricsCollectorRun(isCreator: true, numSessions: 1,
-                                          locationManager: mockLoc,
-                                          healthKit: mockHK,
-                                          userIdProvider: { "u1" })
-        // startSession initialises startDate (required for saveCheckpoint to fire)
+                                         locationManager: mockLoc,
+                                         healthKit: mockHK,
+                                         userIdProvider: { "u1" })
         writer.startSession(eventId: eventId)
         writer.totalDistanceMeters = 2345.6
         writer.elapsedSeconds = 720
@@ -72,9 +70,9 @@ final class SessionCheckpointTests: XCTestCase {
         writer.saveCheckpoint(eventId: eventId)
 
         let reader = MetricsCollectorRun(isCreator: true, numSessions: 1,
-                                          locationManager: MockSessionLocationManager(),
-                                          healthKit: MockHealthKitService(),
-                                          userIdProvider: { "u1" })
+                                         locationManager: MockSessionLocationManager(),
+                                         healthKit: MockHealthKitService(),
+                                         userIdProvider: { "u1" })
         let restored = reader.restoreCheckpoint(eventId: eventId)
 
         XCTAssertTrue(restored)
@@ -93,35 +91,35 @@ final class SessionCheckpointTests: XCTestCase {
     func test_runCheckpoint_restoreWithNoSavedData_returnsFalse() {
         let eventId = "test-event-checkpoint-nosave"
         let sut = MetricsCollectorRun(isCreator: true, numSessions: 1,
-                                       locationManager: mockLoc,
-                                       healthKit: mockHK,
-                                       userIdProvider: { "u1" })
+                                      locationManager: mockLoc,
+                                      healthKit: mockHK,
+                                      userIdProvider: { "u1" })
         XCTAssertFalse(sut.restoreCheckpoint(eventId: eventId))
     }
 
     func test_runCheckpoint_clearRemovesData() {
         let eventId = "test-event-checkpoint"
         let sut = MetricsCollectorRun(isCreator: true, numSessions: 1,
-                                       locationManager: mockLoc,
-                                       healthKit: mockHK,
-                                       userIdProvider: { "u1" })
+                                      locationManager: mockLoc,
+                                      healthKit: mockHK,
+                                      userIdProvider: { "u1" })
         sut.startSession(eventId: eventId)
         sut.saveCheckpoint(eventId: eventId)
         sut.clearCheckpoint(eventId: eventId)
 
         let reader = MetricsCollectorRun(isCreator: true, numSessions: 1,
-                                          locationManager: MockSessionLocationManager(),
-                                          healthKit: MockHealthKitService(),
-                                          userIdProvider: { "u1" })
+                                         locationManager: MockSessionLocationManager(),
+                                         healthKit: MockHealthKitService(),
+                                         userIdProvider: { "u1" })
         XCTAssertFalse(reader.restoreCheckpoint(eventId: eventId))
     }
 
     func test_runCheckpoint_saveAndRestore_preservesSplitsOrder() {
         let eventId = "test-event-checkpoint"
         let writer = MetricsCollectorRun(isCreator: true, numSessions: 1,
-                                          locationManager: mockLoc,
-                                          healthKit: mockHK,
-                                          userIdProvider: { "u1" })
+                                         locationManager: mockLoc,
+                                         healthKit: mockHK,
+                                         userIdProvider: { "u1" })
         writer.startSession(eventId: eventId)
         writer.splits = [
             Split(number: 1, paceInMinPerKm: 5.0),
@@ -131,9 +129,9 @@ final class SessionCheckpointTests: XCTestCase {
         writer.saveCheckpoint(eventId: eventId)
 
         let reader = MetricsCollectorRun(isCreator: true, numSessions: 1,
-                                          locationManager: MockSessionLocationManager(),
-                                          healthKit: MockHealthKitService(),
-                                          userIdProvider: { "u1" })
+                                         locationManager: MockSessionLocationManager(),
+                                         healthKit: MockHealthKitService(),
+                                         userIdProvider: { "u1" })
         _ = reader.restoreCheckpoint(eventId: eventId)
 
         XCTAssertEqual(reader.splits.count, 3)
@@ -141,25 +139,26 @@ final class SessionCheckpointTests: XCTestCase {
         XCTAssertEqual(reader.splits[0].number, 1)
         XCTAssertEqual(reader.splits[1].number, 2)
         XCTAssertEqual(reader.splits[2].number, 3)
-
         writer.clearCheckpoint(eventId: eventId)
     }
 
     func test_runCheckpoint_saveAndRestore_preservesTrackPoints() {
         let eventId = "test-event-checkpoint"
         let writer = MetricsCollectorRun(isCreator: true, numSessions: 1,
-                                          locationManager: mockLoc,
-                                          healthKit: mockHK,
-                                          userIdProvider: { "u1" })
+                                         locationManager: mockLoc,
+                                         healthKit: mockHK,
+                                         userIdProvider: { "u1" })
         writer.startSession(eventId: eventId)
-        let t = Date.seconds(50000)
-        writer.trackedLocations = [(t, CLLocation.make(lat: 45.0, lon: 9.0, timestamp: t))]
+
+        // Adattato: usa l'helper makeLocation dei tuoi mock condivisi
+        let t = Date(timeIntervalSince1970: 50_000)
+        writer.trackedLocations = [(t, makeLocation(lat: 45.0, lon: 9.0, timestamp: t))]
         writer.saveCheckpoint(eventId: eventId)
 
         let reader = MetricsCollectorRun(isCreator: true, numSessions: 1,
-                                          locationManager: MockSessionLocationManager(),
-                                          healthKit: MockHealthKitService(),
-                                          userIdProvider: { "u1" })
+                                         locationManager: MockSessionLocationManager(),
+                                         healthKit: MockHealthKitService(),
+                                         userIdProvider: { "u1" })
         _ = reader.restoreCheckpoint(eventId: eventId)
 
         XCTAssertEqual(reader.trackedLocations.count, 1)
@@ -173,9 +172,9 @@ final class SessionCheckpointTests: XCTestCase {
     func test_hikingCheckpoint_saveAndRestore_preservesElevation() {
         let eventId = "test-event-checkpoint"
         let writer = MetricsCollectorHiking(isCreator: true, numSessions: 1,
-                                             locationManager: mockLoc,
-                                             healthKit: mockHK,
-                                             userIdProvider: { "u1" })
+                                            locationManager: mockLoc,
+                                            healthKit: mockHK,
+                                            userIdProvider: { "u1" })
         writer.startSession(eventId: eventId)
         writer.elevationGainMeters = 320.0
         writer.elevationLossMeters = 80.0
@@ -184,9 +183,9 @@ final class SessionCheckpointTests: XCTestCase {
         writer.saveCheckpoint(eventId: eventId)
 
         let reader = MetricsCollectorHiking(isCreator: true, numSessions: 1,
-                                             locationManager: MockSessionLocationManager(),
-                                             healthKit: MockHealthKitService(),
-                                             userIdProvider: { "u1" })
+                                            locationManager: MockSessionLocationManager(),
+                                            healthKit: MockHealthKitService(),
+                                            userIdProvider: { "u1" })
         XCTAssertTrue(reader.restoreCheckpoint(eventId: eventId))
         XCTAssertEqual(reader.elevationGainMeters, 320.0, accuracy: 0.001)
         XCTAssertEqual(reader.elevationLossMeters, 80.0, accuracy: 0.001)
@@ -197,9 +196,9 @@ final class SessionCheckpointTests: XCTestCase {
 
     func test_hikingCheckpoint_noSavedData_returnsFalse() {
         let sut = MetricsCollectorHiking(isCreator: true, numSessions: 1,
-                                          locationManager: mockLoc,
-                                          healthKit: mockHK,
-                                          userIdProvider: { "u1" })
+                                         locationManager: mockLoc,
+                                         healthKit: mockHK,
+                                         userIdProvider: { "u1" })
         XCTAssertFalse(sut.restoreCheckpoint(eventId: "no-such-event"))
     }
 
@@ -208,9 +207,9 @@ final class SessionCheckpointTests: XCTestCase {
     func test_cyclingCheckpoint_saveAndRestore_preservesSpeedBounds() {
         let eventId = "test-event-checkpoint"
         let writer = MetricsCollectorCycling(isCreator: true, numSessions: 1,
-                                              locationManager: mockLoc,
-                                              healthKit: mockHK,
-                                              userIdProvider: { "u1" })
+                                             locationManager: mockLoc,
+                                             healthKit: mockHK,
+                                             userIdProvider: { "u1" })
         writer.startSession(eventId: eventId)
         writer.minSpeedKmH = 15.0
         writer.maxSpeedKmH = 48.0
@@ -219,9 +218,9 @@ final class SessionCheckpointTests: XCTestCase {
         writer.saveCheckpoint(eventId: eventId)
 
         let reader = MetricsCollectorCycling(isCreator: true, numSessions: 1,
-                                              locationManager: MockSessionLocationManager(),
-                                              healthKit: MockHealthKitService(),
-                                              userIdProvider: { "u1" })
+                                             locationManager: MockSessionLocationManager(),
+                                             healthKit: MockHealthKitService(),
+                                             userIdProvider: { "u1" })
         XCTAssertTrue(reader.restoreCheckpoint(eventId: eventId))
         XCTAssertEqual(reader.minSpeedKmH, 15.0, accuracy: 0.001)
         XCTAssertEqual(reader.maxSpeedKmH, 48.0, accuracy: 0.001)
@@ -234,9 +233,9 @@ final class SessionCheckpointTests: XCTestCase {
     func test_skiingCheckpoint_saveAndRestore_preservesRunsAndDrop() {
         let eventId = "test-event-checkpoint"
         let writer = MetricsCollectorSkiing(isCreator: true, numSessions: 1,
-                                             locationManager: mockLoc,
-                                             healthKit: mockHK,
-                                             userIdProvider: { "u1" })
+                                            locationManager: mockLoc,
+                                            healthKit: mockHK,
+                                            userIdProvider: { "u1" })
         writer.startSession(eventId: eventId)
         writer.numberOfRuns = 5
         writer.verticalDropMeters = 1200
@@ -244,9 +243,9 @@ final class SessionCheckpointTests: XCTestCase {
         writer.saveCheckpoint(eventId: eventId)
 
         let reader = MetricsCollectorSkiing(isCreator: true, numSessions: 1,
-                                             locationManager: MockSessionLocationManager(),
-                                             healthKit: MockHealthKitService(),
-                                             userIdProvider: { "u1" })
+                                            locationManager: MockSessionLocationManager(),
+                                            healthKit: MockHealthKitService(),
+                                            userIdProvider: { "u1" })
         XCTAssertTrue(reader.restoreCheckpoint(eventId: eventId))
         XCTAssertEqual(reader.numberOfRuns, 5)
         XCTAssertEqual(reader.verticalDropMeters, 1200, accuracy: 0.001)

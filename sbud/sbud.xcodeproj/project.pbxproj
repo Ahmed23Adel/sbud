@@ -74,6 +74,7 @@
 				FriendListVMTests.swift,
 				ProfileIntegrationTests.swift,
 				ProfileSetupTests.swift,
+				Session/MetricsUploadRetryServiceTests.swift,
 				ViewModelJoinedEventsTests.swift,
 			);
 			target = E24825AC2EE2DCA400330DC2 /* sbudTests */;
