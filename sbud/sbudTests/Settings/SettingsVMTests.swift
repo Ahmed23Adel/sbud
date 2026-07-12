@@ -7,6 +7,8 @@
 
 
 import XCTest
+import FirebaseAuth
+import FirebaseFirestore
 @testable import sbud
 
 @MainActor
@@ -95,5 +97,29 @@ final class SettingsVMTests: XCTestCase {
         await sut.savePrivacySettings()
 
         XCTAssertFalse(sut.isSaving)
+    }
+    func test_savePrivacySettings_withEmulatorUser_updatesRemoteAndLocal() async throws {
+        let email = "settings\(Int.random(in: 0..<100000))@sbud.test"
+        let result = try await Auth.auth().createUser(withEmail: email, password: "password123")
+        var profile = UserProfile(id: result.user.uid)
+        ProfileManager.shared.saveProfileToLocale(profile: profile)
+
+        sut.isPrivate = true
+        sut.showEmail = true
+        sut.showPhone = false
+
+        await sut.savePrivacySettings()
+
+        XCTAssertFalse(sut.isSaving)
+        let doc = try await Firestore.firestore().collection("users")
+            .document(result.user.uid).getDocument()
+        XCTAssertEqual(doc.data()?["isPrivate"] as? Bool, true)
+        XCTAssertEqual(doc.data()?["showEmail"] as? Bool, true)
+        XCTAssertEqual(doc.data()?["showPhone"] as? Bool, false)
+
+        let local = ProfileManager.shared.getLocalProfile()
+        XCTAssertEqual(local?.isPrivate, true)
+
+        try? Auth.auth().signOut()
     }
 }
