@@ -82,7 +82,13 @@ struct MainAppCoordinator: View {
             .transition(slideTransition)
             .ignoresSafeArea()
         case .sessionSummary(let eventDetails):
-            ViewSessionSummaryConditional(event: eventDetails)
+            NavigationStack {
+                ViewSessionSummaryConditional(
+                    event: eventDetails,
+                    onBack: { coordinator.goToHome() }
+                )
+            }
+            .transition(slideTransition)
         }
     }
 

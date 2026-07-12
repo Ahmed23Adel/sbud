@@ -10,6 +10,9 @@ import SwiftUI
 struct ViewSessionSummaryConditional: View {
     let event: EventFullDetails
     var onParticipantTapped: (String) -> Void = { _ in }
+    // Provided only when there's no system back button (e.g. the post-session
+    // route swap in MainAppCoordinator, which isn't inside a NavigationStack push).
+    var onBack: (() -> Void)? = nil
 
     var body: some View {
         Group {
@@ -43,6 +46,17 @@ struct ViewSessionSummaryConditional: View {
                 activityIcon: "figure.mind.and.body",
                 onParticipantTapped: onParticipantTapped)
         }
+        }
+        .toolbar {
+            if let onBack {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.neonCyan)
+                    }
+                }
+            }
         }
         .task {
             try? await UserStatsRequester().recalculate()
