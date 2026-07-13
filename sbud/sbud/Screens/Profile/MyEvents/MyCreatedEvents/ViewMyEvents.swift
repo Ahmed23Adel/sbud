@@ -31,7 +31,7 @@ struct ViewMyEvents: View {
                             EventsSectionHeader(status: status)
                             VStack(spacing: 8) {
                                 ForEach(events) { event in
-                                    MyEventRow(event: event)
+                                    MyEventRow(event: event, showNotifications: true)
                                         .padding(.horizontal, 16)
                                         .environmentObject(coordinator)
                                         .onTapGesture{

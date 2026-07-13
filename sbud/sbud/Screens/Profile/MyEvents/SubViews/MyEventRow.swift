@@ -10,6 +10,9 @@ import Kingfisher
 
 struct MyEventRow: View {
     var event: UsersEvent
+    // Off by default: the event-level unread/pending count belongs to the creator,
+    // so it's only meaningful in the owner's own events list.
+    var showNotifications: Bool = false
     @EnvironmentObject var coordinator: ProfileCoordinator
 
     private let teal = Color(red: 0.0, green: 227.0/255.0, blue: 253.0/255.0)
@@ -53,6 +56,10 @@ struct MyEventRow: View {
                         .font(.system(size: 16, weight: .black, design: .monospaced))
                         .foregroundColor(.white)
                         .lineLimit(1)
+                }
+
+                if showNotifications {
+                    EventNotificationsBadge(eventId: event.eventId)
                 }
 
                 Image(systemName: "chevron.right")

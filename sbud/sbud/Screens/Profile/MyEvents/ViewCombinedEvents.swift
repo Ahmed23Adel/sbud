@@ -51,7 +51,7 @@ struct ViewCombinedEvents: View {
 
             // MARK: - Content
             TabView(selection: $selectedTab) {
-                CreatedEventsView(userId: userId, onEventTap: onCreatedEventTap)
+                CreatedEventsView(userId: userId, onEventTap: onCreatedEventTap, showNotifications: true)
                     .tag(EventsTab.created)
 
                 HostedEventsView(userId: userId, onEventTap: onCreatedEventTap)
