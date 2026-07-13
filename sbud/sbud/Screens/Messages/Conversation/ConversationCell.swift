@@ -10,9 +10,10 @@ import SwiftUI
 import Kingfisher
 
 struct ConversationCell: View {
-    let message: Message
+    /// `nil` when this is a participant the creator hasn't messaged yet.
+    let message: Message?
     let user: UserProfile
-    
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
@@ -38,16 +39,17 @@ struct ConversationCell: View {
                         .foregroundColor(.white)
                     
                     //last messages
-                    Text(message.text)
+                    Text(message?.text ?? "Tap to start a conversation")
                         .font(.system(size: 14))
                         .foregroundColor(.gray)
+                        .italic(message == nil)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                 }
-                
+
                 Spacer()
-                
-                if message.isRead == false {
+
+                if message?.isRead == false {
                     Circle()
                         .fill(Color.red)
                         .frame(width: 10, height: 10)

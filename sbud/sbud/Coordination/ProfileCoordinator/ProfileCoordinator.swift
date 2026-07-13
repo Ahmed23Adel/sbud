@@ -103,6 +103,10 @@ final class ProfileCoordinator: ObservableObject {
     func goToEventConversations(eventId: String, eventTitle: String) {
         push(.eventConversations(eventId: eventId, eventTitle: eventTitle))
     }
+
+    func goToEventChat(partnerId: String, partnerName: String, partnerImageUrl: String?, eventId: String, eventTitle: String) {
+        push(.eventChat(partnerId: partnerId, partnerName: partnerName, partnerImageUrl: partnerImageUrl, eventId: eventId, eventTitle: eventTitle))
+    }
     
     func goToSessionSummary(evnet: EventFullDetails) {
         push(.sessionSummary(event: evnet))

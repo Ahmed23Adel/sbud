@@ -229,12 +229,25 @@ struct ProfileDestinationView: View {
 
         case .eventConversations(let eventId, let eventTitle):
             EventConversationsView(eventId: eventId, eventTitle: eventTitle)
+
+        case .eventChat(let partnerId, let partnerName, let partnerImageUrl, let eventId, let eventTitle):
+            chatDestination(partnerId: partnerId, partnerName: partnerName, partnerImageUrl: partnerImageUrl, eventId: eventId, eventTitle: eventTitle)
         case .sessionSummary(event: let event):
             ViewSessionSummaryConditional(event: event) { userId in
                 guard userId != currentUserId else { return }
                 pushToParent(.othersProfile(userId: userId))
             }
         }
+    }
+
+    /// Built outside the `body` ViewBuilder because constructing the partner profile
+    /// needs imperative mutation, which a result builder doesn't allow.
+    private func chatDestination(partnerId: String, partnerName: String, partnerImageUrl: String?, eventId: String, eventTitle: String) -> some View {
+        // ChatView only reads id/name/image off the partner, so a lightweight profile is enough.
+        var partner = UserProfile(id: partnerId)
+        partner.name = partnerName
+        partner.profileImageUrl = partnerImageUrl
+        return ChatView(user: partner, eventId: eventId, eventTitle: eventTitle)
     }
 }
 

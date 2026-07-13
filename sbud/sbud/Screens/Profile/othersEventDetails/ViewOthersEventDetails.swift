@@ -128,6 +128,11 @@ struct ViewOthersEventDetails: View {
                                 onLeave: { showLeaveConfirm = true }
                             )
                             .padding(.top, 24)
+
+                            // Confirmed participants can message the event creator.
+                            if viewModel.joinState == .confirmed {
+                                messageCreatorButton(details: details)
+                            }
                         }
                     }
                 }
@@ -192,6 +197,26 @@ struct ViewOthersEventDetails: View {
 }
 
 private extension ViewOthersEventDetails {
+    func messageCreatorButton(details: EventFullDetails) -> some View {
+        Button {
+            coordinator.goToEventChat(
+                partnerId: details.creator.id,
+                partnerName: "\(details.creator.name) \(details.creator.surName)",
+                partnerImageUrl: details.creator.profileImageUrl,
+                eventId: viewModel.eventId,
+                eventTitle: details.title
+            )
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "tray.fill")
+                    .font(.system(size: 20))
+                Text("Message Creator")
+            }
+        }
+        .buttonStyle(PrimaryButton())
+        .padding(.top, 12)
+    }
+
     var participantsSection: some View {
         VStack(alignment: .leading) {
             HStack {

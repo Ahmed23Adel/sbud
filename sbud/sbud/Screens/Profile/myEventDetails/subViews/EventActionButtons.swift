@@ -32,7 +32,7 @@ struct EventActionButtons: View {
 
             case .acceptedHost:
 
-                messagesButton
+                // Messaging is creator ↔ participant only, so hosts get no messages button.
                 queueButton
 
             default:

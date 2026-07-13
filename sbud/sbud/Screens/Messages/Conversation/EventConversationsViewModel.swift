@@ -13,11 +13,23 @@ import Combine
 import FirebaseAnalytics
 
 class EventConversationsViewModel: ObservableObject {
-    
+
     @Published var recentMessages = [Message]()
+    @Published var participants = [UserProfile]()
     let eventId: String
     private var listener: ListenerRegistration?
-    
+
+    /// Every confirmed participant except the creator themselves, surfaced as tappable
+    /// avatars so the creator can start (or jump into) a chat with anyone in the event.
+    /// We intentionally do NOT hide people who already messaged — they still appear here
+    /// so the full participant roster is always visible; their thread also shows below.
+    var messageableParticipants: [UserProfile] {
+        let myUid = Auth.auth().currentUser?.uid
+        return participants
+            .filter { $0.id != myUid }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
     init(eventId: String) {
         self.eventId = eventId
         Analytics.logEvent(AnalyticsEventScreenView, parameters: [
@@ -25,13 +37,23 @@ class EventConversationsViewModel: ObservableObject {
             "event_id": eventId
         ])
     }
-    
+
     deinit {
         listener?.remove()
     }
-    
-    
+
+
     func loadData() {
+        Task { await loadParticipants() }
+        listenForRecentMessages()
+    }
+
+    private func loadParticipants() async {
+        let fetched = await JoinedEventsRepository().fetchParticipants(eventId: eventId)
+        await MainActor.run { self.participants = fetched }
+    }
+
+    private func listenForRecentMessages() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
         let query = Firestore.firestore().collection("messages")

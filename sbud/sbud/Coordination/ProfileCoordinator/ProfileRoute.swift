@@ -33,6 +33,8 @@ enum ProfileRoutePushed: Equatable, Hashable {
     case othersProfile(userId: String)
     case scannedProfile(userId: String)
     case eventConversations(eventId: String, eventTitle: String)
+    // Direct 1:1 chat — used by a participant to message the event creator.
+    case eventChat(partnerId: String, partnerName: String, partnerImageUrl: String?, eventId: String, eventTitle: String)
     case sessionSummary(event: EventFullDetails)
 }
 // MARK: - Sheet Types
