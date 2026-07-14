@@ -153,13 +153,14 @@ struct ViewMyEventDetails: View {
                 dateLocations: details.dateLocations
             )
             if details.isDateConfirmed,
-               let finalStart = details.finalStartDateTime,
-               let finalEnd   = details.finalEndDateTime,
-               let firstLoc   = details.dateLocations.first?.locations.first {
+               let confirmedEntry = details.dateLocations.first,
+               let firstLoc       = confirmedEntry.locations.first {
 
+                // Root final* fields aren't always populated on confirm; fall back to the
+                // confirmed entry's own start/end, which are written reliably.
                 EventWeatherWidget(
-                    finalStart: finalStart,
-                    finalEnd:   finalEnd,
+                    finalStart: details.finalStartDateTime ?? confirmedEntry.startDateTime,
+                    finalEnd:   details.finalEndDateTime ?? confirmedEntry.endDateTime,
                     latitude:   firstLoc.latitude,
                     longitude:  firstLoc.longitude
                 )

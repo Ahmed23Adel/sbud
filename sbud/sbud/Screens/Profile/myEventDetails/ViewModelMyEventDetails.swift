@@ -81,9 +81,12 @@ class ViewModelMyEventDetails {
             var (details, resolvedRole) = try await (detailsTask, roleTask)
 
             if details.isDateConfirmed && details.isLocationConfirmed {
-                // Once confirmed, there must be exactly one location.
-                if let firstLocation = details.dateLocations.first {
-                    details.dateLocations = [firstLocation]
+                // Once confirmed, there must be exactly one date entry with exactly one location.
+                if var confirmedEntry = details.dateLocations.first {
+                    if let confirmedLocation = confirmedEntry.locations.first {
+                        confirmedEntry.locations = [confirmedLocation]
+                    }
+                    details.dateLocations = [confirmedEntry]
                 }
             } else {
                 // Not confirmed yet: drop any duplicate IDs the database produced.
